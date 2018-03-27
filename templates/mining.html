@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+  <title>EVE Production Manager - By Frikkin Genius</title>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800">
+  <link rel='stylesheet' href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/bootstrap.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link href="/css/carousel.css" rel="stylesheet">
+
+  <style>
+  body {
+    background-image: url("img/29917.png");
+    background-color: #cccccc;
+  }
+  </style>
+<link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <div class="container" id = "main">
+    <div class="container" id="upperNav">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="/index.html">EVE Production Manager</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+          <!-- Button trigger modal -->
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#builderModal">
+            Builder
+          </button>
+          <img class="img-fluid" width=40 src="img/74_64_13.png"></img>
+
+          <!-- End Button trigger modal -->
+          <!-- Modal -->
+          <div class="modal fade" id="builderModal" tabindex="-1" role="dialog" aria-labelledby="builderModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="builderModalLabel">Builder Details</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  ...
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- End Modal -->
+
+          <ul class="navbar-nav ml-auto">
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#optionModal">
+              Options
+            </button>
+            <!-- End Button trigger modal -->
+            <!-- Modal -->
+            <div class="modal fade" id="optionModal" tabindex="-1" role="dialog" aria-labelledby="optionModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="optionModalLabel">Options</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    ...
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End Modal -->
+
+            <li class="nav-item"><a class="nav-link" href="#">Login</a></li>
+          </ul>
+        </div>
+      </div> <!-- upper nav -->
+
+      <div class="container" id="mainMenu">
+        <span class="border border-dark">
+          <nav class="navbar navbar-expand-lg navbar-light">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMainMenu">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMainMenu">
+              <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="btn btn-secondary" href="invent.html">Invent</a></li>
+                <li>..</li>
+                <li class="nav-item"><a class="btn btn-secondary" href="build.html">Build</a></li>
+                <li>..</li>
+                <li class="nav-item"><a class="btn btn-secondary" href="shopping_list.html">B.O.M.
+                  <span class="badge badge-light">14</span></a></li>
+                  <li>..</li>
+                <li class="nav-item"><a class="btn btn-secondary" href="pipeline.html">Pipeline
+                  <span class="badge badge-light">4</span></a></li>
+                    <li>..</li>
+                    <li class="nav-item"><a class="btn btn-success" href="financial.html">Financial Report</a></li>
+                    <li>..</li>
+                    <li class="nav-item"><a class="btn btn-danger" href="mining.html">Mining Calculator</a></li>
+                    <li>..</li>
+                    <li class="nav-item"><a class="btn btn-info" href="fittings.html">Ship Fittings</a></li>
+                  </ul>
+                </div>
+              </nav>
+            </div> <!-- Mian Menu -->
+
+            <div class="row px-0" id="row1">
+              <div class="col-sm-12">
+                <ul class="list-group mb-auto">
+                  <li class="list-group-item d-flex justify-content-between lh-condensed bg-danger">
+                    <h3 class="mx-auto text-white">Mining Calculator</h3>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <div class="col"></div>
+                    <div class="col-sm-5"> <!-- this increases or decreases selectbox size -->
+                      <select id="locations" class="form-control form-control-sm">
+                        <option selected>Choose...</option>
+                        <option>Jita</option>
+                        <option>Pakkon - If I sits, I fits</option>
+                        <option>Tama - Caldari Business Tribunal</option>
+                      </select>
+                    </div>
+                    <div class="col">
+                      <input name="fetch" class="btn-sm btn-primary mt-0" type="button" value="Fetch On-Hand Assets">
+                    </div>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
+                    <div class="col-12">
+                      <form>
+                        <table class="table table-light">
+                          <tbody>
+                            <tr>
+                              <td class="noBorder text-right">M3 per Cycle:</td>
+                              <td class="noBorder">
+                                <input type="text" class="col-sm-5 form-control form-control-sm py-0" id="yield" value="3640">
+                              </td>
+                              <td class="noBorder py-2" colspan="2"></td>
+                              <td class="noBorder py-2 text-center"><strong>Total Mineral Requirement</td>
+                              <td class="noBorder py-2 text-center"><strong>Mined</td>
+                              <td class="noBorder py-2 text-center"><strong>Net</td>
+                            </tr>
+                            <tr>
+                              <td class="noBorder text-right py-0">Cycle Time:</td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm-4 form-control form-control-sm py-0" id="yield" value="60">
+                              </td>
+                              <td class="noBorder py-1 text-right" colspan="2">Tritanium</td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="trit_req" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="trit_mined" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="trit_net" value="0">
+                              </td>
+                              <td class="noBorder py-0"></td>
+                            </tr>
+                            <tr>
+                              <td class="noBorder text-right py-0"># Cycles:</td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm-4 form-control form-control-sm py-0" id="num_cycles" value="60">
+                              </td>
+                              <td class="noBorder py-1 text-right" colspan="2">Pyerite</td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="pye_req" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="pye_mined" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="pye_net" value="0">
+                              </td>
+                              <td class="noBorder py-0"></td>
+                            </tr>
+                            <tr>
+                              <td class="noBorder text-center py-0" colspan="2"></td>
+                              <td class="noBorder py-1 text-right" colspan="2">Mexallon</td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="mex_req" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="mex_mined" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="mex_net" value="0">
+                              </td>
+                              <td class="noBorder py-0"></td>
+                            </tr>
+                            <tr>
+                              <td class="noBorder text-center py-0" colspan="2"><strong>Asteroid Targets</td>
+                              <td class="noBorder py-1 text-right" colspan="2">Isogen</td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="iso_req" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="iso_mined" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="iso_net" value="0">
+                              </td>
+                              <td class="noBorder py-0"></td>
+                            </tr>
+                            <tr>
+                              <td class="noBorder text-right py-1">Asteroid 1</td>
+                              <td class="noBorder py-0">
+                                <select id="asteroid1" class="form-control form-control-sm">
+                                  <option selected>Choose...</option>
+                                  <option>Spodumain</option>
+                                  <option>Gneiss</option>
+                                  <option>Crokite</option>
+                                </select>
+                              </td>
+                              <td class="noBorder py-0 text-right" colspan="2">Nocxium</td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="nox_req" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="nox_mined" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="nox_net" value="0">
+                              </td>
+                              <td class="noBorder py-0"></td>
+                            </tr>
+                            <tr>
+                              <td class="noBorder text-right py-1">Asteroid 2</td>
+                              <td class="noBorder py-0">
+                                <select id="asteroid2" class="form-control form-control-sm">
+                                  <option selected>Choose...</option>
+                                  <option>Spodumain</option>
+                                  <option>Gneiss</option>
+                                  <option>Crokite</option>
+                                </select>
+                              </td>
+                              <td class="noBorder py-0 text-right" colspan="2">Zydrine</td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="zyd_req" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="zyd_mined" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="zyd_net" value="0">
+                              </td>
+                              <td class="noBorder py-0"></td>
+                            </tr>
+                            <tr>
+                              <td class="noBorder text-right py-1">Asteroid 3</td>
+                              <td class="noBorder py-0">
+                                <select id="asteroid3" class="form-control form-control-sm">
+                                  <option selected>Choose...</option>
+                                  <option>Spodumain</option>
+                                  <option>Gneiss</option>
+                                  <option>Crokite</option>
+                                </select>
+                              </td>
+                              <td class="noBorder py-0 text-right" colspan="2">Megacyte</td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="meg_req" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="meg_mined" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="meg_net" value="0">
+                              </td>
+                              <td class="noBorder py-0"></td>
+                            </tr>
+                            <tr>
+                              <td class="noBorder text-right py-0"></td>
+                              <td class="noBorder py-0"></td>
+                              <td class="noBorder py-0 text-right" colspan="2">Morphite</td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="morp_req" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="morp_mined" value="0">
+                              </td>
+                              <td class="noBorder py-0">
+                                <input type="text" class="col-sm form-control form-control-sm py-0" id="morp_net" value="0">
+                              </td>
+                              <td class="noBorder py-0"></td>
+                            </tr>
+
+                          </tbody>
+                        </table>
+                      </form>
+                    </div>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between lh-condensed">
+                      <h5 class="text-center col-sm-12 text-primary">
+                        Ore Distribution Chart
+                      </h5>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed">
+                      <img src="img/mining_chart.png" class="img-fluid mx-auto" alt="Ore Chart" width="1000">
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+
+            </div> <!-- main -->
+
+            <script src="/js/jquery.min.js"></script>
+            <script src="/js/popper.min.js"></script>
+            <script src="/js/bootstrap.min.js"></script>
+          </body>
+          </html>

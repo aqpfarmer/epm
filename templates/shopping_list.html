@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+  <title>EVE Production Manager - By Frikkin Genius</title>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800">
+  <link rel='stylesheet' href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/bootstrap.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link href="/css/carousel.css" rel="stylesheet">
+
+  <style>
+  body {
+    background-image: url("img/29917.png");
+    background-color: #cccccc;
+  }
+  </style>
+<link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <div class="container" id = "main">
+    <div class="container" id="upperNav">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="/index.html">EVE Production Manager</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+          <!-- Button trigger modal -->
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#builderModal">
+            Builder
+          </button>
+          <img class="img-fluid" width=40 src="img/74_64_13.png"></img>
+
+          <!-- End Button trigger modal -->
+          <!-- Modal -->
+          <div class="modal fade" id="builderModal" tabindex="-1" role="dialog" aria-labelledby="builderModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="builderModalLabel">Builder Details</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  ...
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- End Modal -->
+
+          <ul class="navbar-nav ml-auto">
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#optionModal">
+              Options
+            </button>
+            <!-- End Button trigger modal -->
+            <!-- Modal -->
+            <div class="modal fade" id="optionModal" tabindex="-1" role="dialog" aria-labelledby="optionModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="optionModalLabel">Options</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    ...
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End Modal -->
+
+            <li class="nav-item"><a class="nav-link" href="#">Login</a></li>
+          </ul>
+        </div>
+      </div> <!-- upper nav -->
+
+      <div class="container" id="mainMenu">
+        <span class="border border-dark">
+          <nav class="navbar navbar-expand-lg navbar-light">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMainMenu">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMainMenu">
+              <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="btn btn-secondary" href="invent.html">Invent</a></li>
+                <li>..</li>
+                <li class="nav-item"><a class="btn btn-secondary" href="build.html">Build</a></li>
+                <li>..</li>
+                <li class="nav-item"><a class="btn btn-secondary" href="shopping_list.html">B.O.M.
+                  <span class="badge badge-light">14</span></a></li>
+                  <li>..</li>
+                <li class="nav-item"><a class="btn btn-secondary" href="pipeline.html">Pipeline
+                  <span class="badge badge-light">4</span></a></li>
+                    <li>..</li>
+                    <li class="nav-item"><a class="btn btn-success" href="financial.html">Financial Report</a></li>
+                    <li>..</li>
+                    <li class="nav-item"><a class="btn btn-danger" href="mining.html">Mining Calculator</a></li>
+                    <li>..</li>
+                    <li class="nav-item"><a class="btn btn-info" href="fittings.html">Ship Fittings</a></li>
+                  </ul>
+                </div>
+              </nav>
+            </div> <!-- Mian Menu -->
+
+            <div class="row px-0" id="row0">
+              <div class="col">
+                <ul class="list-group mb-0">
+                  <li class="list-group-item d-flex justify-content-between lh-condensed bg-secondary">
+                    <h3 class="mx-auto text-white">Bill Of Materials Total:<a class="text-warning"> 1,553,222,333 ISK</a></h3>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <div class="col"></div>
+                    <div class="col-sm-5"> <!-- this increases or decreases selectbox size -->
+                      <select id="locations" class="form-control form-control-sm">
+                        <option selected>Choose...</option>
+                        <option>Jita</option>
+                        <option>Pakkon - If I sits, I fits</option>
+                        <option>Tama - Caldari Business Tribunal</option>
+                      </select>
+                    </div>
+                    <div class="col">
+                      <input name="fetch" class="btn-sm btn-primary mt-0" type="button" value="Fetch On-Hand Assets">
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="row px-0" id="row1">
+              <div class="col">
+                <ul class="list-group mb-1">
+                  <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+                    <h4 class="mx-auto">Datacores</h4>
+                  </li>
+                  <li class="list-group-item py-0">
+                    <form>
+                      <table class="table table-hover">
+                        <thead>
+                          <tr>
+                            <th scope="col"></th>
+                            <th scope="col">Material</th>
+                            <th scope="col">QTY</th>
+                            <th scope="col">Jita Buy Price</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/20411_32.png"></th>
+                            <td><p class="mt-1">Datacore - High Energy Physics</p></td>
+                            <td><p class="mt-1 text-center">40</p></td>
+                            <td><p class="mt-1 text-center">6,160,105</p></td>
+                          </tr>
+                          <tr>
+                            <tr>
+                              <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/20413_32.png"></th>
+                              <td><p class="mt-1">Datacore - Laser Physics</p></td>
+                              <td><p class="mt-1 text-center">40</p></td>
+                              <td><p class="mt-1 text-center">4,200,105</p></td>
+                            </tr>
+                            <tr>
+                              <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/20411_32.png"></th>
+                              <td><p class="mt-1">Datacore - Electronic Engineering</p></td>
+                              <td><p class="mt-1 text-center">80</p></td>
+                              <td><p class="mt-1 text-center">9,572,145</p></td>
+                            </tr>
+                            <tr>
+                              <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/20411_32.png"></th>
+                              <td><p class="mt-1">Datacore - Gallentia Starship Engineering</p></td>
+                              <td><p class="mt-1 text-center">40</p></td>
+                              <td><p class="mt-1 text-center">3,050,311</p></td>
+                            </tr>
+                            <tr align="center"><td class="table-active" colspan="4"><strong>Datacore Total: 18,833,000</strong></td></tr>
+
+                        </tbody>
+                      </table>
+
+                    </form>
+                </div> <!-- col -->
+
+                <div class="col">
+                  <ul class="list-group mb-1">
+                    <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+                      <h4 class="mx-auto">Planetary Commodities</h4>
+                    </li>
+                    <li class="list-group-item py-0">
+                      <form>
+                        <table class="table table-hover">
+                          <thead>
+                            <tr>
+                              <th scope="col"></th>
+                              <th scope="col">Material</th>
+                              <th scope="col">QTY</th>
+                              <th scope="col">Jita Buy Price</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/9836_32.png"></th>
+                              <td><p class="mt-1">Consumer Electronics</p></td>
+                              <td><p class="mt-1 text-center">40</p></td>
+                              <td><p class="mt-1 text-center">6,160,105</p></td>
+                            </tr>
+                            <tr>
+                              <tr>
+                                <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/9848_32.png"></th>
+                                <td><p class="mt-1">Robotics</p></td>
+                                <td><p class="mt-1 text-center">40</p></td>
+                                <td><p class="mt-1 text-center">4,200,105</p></td>
+                              </tr>
+                              <tr>
+                                <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/9834_32.png"></th>
+                                <td><p class="mt-1">Guidance Systems</p></td>
+                                <td><p class="mt-1 text-center">80</p></td>
+                                <td><p class="mt-1 text-center">9,572,145</p></td>
+                              </tr>
+                              <tr align="center"><td class="table-active" colspan="4"><strong>Planet Commodity Total: 92,235,000</strong></td></tr>
+                          </tbody>
+                        </table>
+                      </form>
+                    </li>
+                  </div> <!-- col -->
+
+              </div> <!-- row1 -->
+
+              <div class="row px-0" id="row2">
+                <div class="col">
+                  <ul class="list-group mb-1">
+                    <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+                      <h4 class="mx-auto">Advanced Components</h4>
+                    </li>
+                    <li class="list-group-item py-0">
+                      <form>
+                        <table class="table table-hover">
+                          <thead>
+                            <tr>
+                              <th scope="col"></th>
+                              <th scope="col">Material</th>
+                              <th scope="col">QTY</th>
+                              <th scope="col">Jita Buy Price</th>
+                              <th scope="col">Option</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11690_32.png"></th>
+                              <td><p class="mt-1">Superconductor Rails</p></td>
+                              <td><p class="mt-1 text-center">40</p></td>
+                              <td><p class="mt-1 text-center">6,160,105</p></td>
+                              <td>
+                                <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio1" value="buy" checked>
+                                  <label class="form-check-label" for="inlineRadio1">Buy</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio2" value="build">
+                                  <label class="form-check-label" for="inlineRadio2">Build</label>
+                                </div>
+                              </td>
+                            </tr>
+
+                            <tr>
+                              <tr>
+                                <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11689_32.png"></th>
+                                <td><p class="mt-1">Laser Focusing Crystals</p></td>
+                                <td><p class="mt-1 text-center">40</p></td>
+                                <td><p class="mt-1 text-center">4,200,105</p></td>
+                                <td>
+                                  <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="inlineRadio3" value="buy" checked>
+                                    <label class="form-check-label" for="inlineRadio3">Buy</label>
+                                  </div>
+                                  <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="inlineRadio4" value="build">
+                                    <label class="form-check-label" for="inlineRadio4">Build</label>
+                                  </div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11553_32.png"></th>
+                                <td><p class="mt-1">Oscillator Capacitor Unit</p></td>
+                                <td><p class="mt-1 text-center">80</p></td>
+                                <td><p class="mt-1 text-center">9,572,145</p></td>
+                                <td>
+                                  <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="inlineRadioOptions3" id="inlineRadio5" value="buy" checked>
+                                    <label class="form-check-label" for="inlineRadio5">Buy</label>
+                                  </div>
+                                  <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="inlineRadioOptions3" id="inlineRadio6" value="build">
+                                    <label class="form-check-label" for="inlineRadio6">Build</label>
+                                  </div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11556_32.png"></th>
+                                <td><p class="mt-1">Pulse Shield Emitter</p></td>
+                                <td><p class="mt-1 text-center">40</p></td>
+                                <td><p class="mt-1 text-center">3,050,311</p></td>
+                                <td>
+                                  <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="inlineRadioOptions4" id="inlineRadio7" value="buy" checked>
+                                    <label class="form-check-label" for="inlineRadio7">Buy</label>
+                                  </div>
+                                  <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="inlineRadioOptions4" id="inlineRadio8" value="build">
+                                    <label class="form-check-label" for="inlineRadio8">Build</label>
+                                  </div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11535_32.png"></th>
+                                <td><p class="mt-1">Magnetometric Secnsor Cluster</p></td>
+                                <td><p class="mt-1 text-center">40</p></td>
+                                <td><p class="mt-1 text-center">3,050,311</p></td>
+                                <td>
+                                  <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="inlineRadioOptions5" id="inlineRadio9" value="buy" checked>
+                                    <label class="form-check-label" for="inlineRadio9">Buy</label>
+                                  </div>
+                                  <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="inlineRadioOptions5" id="inlineRadio10" value="build">
+                                    <label class="form-check-label" for="inlineRadio10">Build</label>
+                                  </div>
+                                </td>
+                              </tr>
+                              <tr align="center"><td class="table-active" colspan="5"><strong>Advanced Components Total: 18,833,000</strong></td></tr>
+
+                          </tbody>
+                        </table>
+
+                      </form>
+                    </li>
+                  </div> <!-- col -->
+                  <div class="col">
+                    <ul class="list-group mb-1">
+                      <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+                        <h4 class="mx-auto">Advanced Moon Goo</h4>
+                      </li>
+                      <li class="list-group-item py-0">
+                        <form>
+                          <table class="table table-hover">
+                            <thead>
+                              <tr>
+                                <th scope="col"></th>
+                                <th scope="col">Material</th>
+                                <th scope="col">QTY</th>
+                                <th scope="col">Jita Buy Price</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/16683_32.png"></th>
+                                  <td><p class="mt-1">Ferrogel</p></td>
+                                  <td><p class="mt-1 text-center">210</p></td>
+                                  <td><p class="mt-1 text-center">43,200,105</p></td>
+                                </tr>
+                                <tr>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/16678_32.png"></th>
+                                  <td><p class="mt-1">Sylramic Fibers</p></td>
+                                  <td><p class="mt-1 text-center">10,530</p></td>
+                                  <td><p class="mt-1 text-center">16,572,145</p></td>
+                                </tr>
+                                <tr>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/16670_32.png"></th>
+                                  <td><p class="mt-1">Crystallin Carbonide</p></td>
+                                  <td><p class="mt-1 text-center">10,530</p></td>
+                                  <td><p class="mt-1 text-center">4,972,145</p></td>
+                                </tr>
+                                <tr align="center"><td class="table-active" colspan="4"><strong>Minerals & Moon Goo Total: 92,235,000</strong></td></tr>
+
+                            </tbody>
+                          </table>
+
+                        </form>
+                      </li>
+
+                    </div> <!-- col -->
+                </div> <!-- row2 -->
+
+                <div class="row px-0" id="row3">
+                  <div class="col">
+                    <ul class="list-group mb-1">
+                      <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+                        <h4 class="mx-auto">Tech I Products</h4>
+                      </li>
+                      <li class="list-group-item py-0">
+                        <form>
+                          <table class="table table-hover">
+                            <thead>
+                              <tr>
+                                <th scope="col"></th>
+                                <th scope="col">Material</th>
+                                <th scope="col">QTY</th>
+                                <th scope="col">Jita Buy Price</th>
+                                <th scope="col">Option</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/608_32.png"></th>
+                                <td><p class="mt-1">Atron</p></td>
+                                <td><p class="mt-1 text-center">9</p></td>
+                                <td><p class="mt-1 text-center">3,778,697</p></td>
+                                <td>
+                                  <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio1" value="buy" checked>
+                                    <label class="form-check-label" for="inlineRadio1">Buy</label>
+                                  </div>
+                                  <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio2" value="build">
+                                    <label class="form-check-label" for="inlineRadio2">Build</label>
+                                  </div>
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <tr>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/2046_32.png"></th>
+                                  <td><p class="mt-1">Damage Control I</p></td>
+                                  <td><p class="mt-1 text-center">100</p></td>
+                                  <td><p class="mt-1 text-center">1,415,620</p></td>
+                                  <td>
+                                    <div class="form-check form-check-inline">
+                                      <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="inlineRadio3" value="buy" checked>
+                                      <label class="form-check-label" for="inlineRadio3">Buy</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                      <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="inlineRadio4" value="build">
+                                      <label class="form-check-label" for="inlineRadio4">Build</label>
+                                    </div>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/578_32.png"></th>
+                                  <td><p class="mt-1">Adaptive Invulnerability Field I</p></td>
+                                  <td><p class="mt-1 text-center">60</p></td>
+                                  <td><p class="mt-1 text-center">5,492,607</p></td>
+                                  <td>
+                                    <div class="form-check form-check-inline">
+                                      <input class="form-check-input" type="radio" name="inlineRadioOptions3" id="inlineRadio5" value="buy" checked>
+                                      <label class="form-check-label" for="inlineRadio5">Buy</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                      <input class="form-check-input" type="radio" name="inlineRadioOptions3" id="inlineRadio6" value="build">
+                                      <label class="form-check-label" for="inlineRadio6">Build</label>
+                                    </div>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/583_32.png"></th>
+                                  <td><p class="mt-1">Condor</p></td>
+                                  <td><p class="mt-1 text-center">6</p></td>
+                                  <td><p class="mt-1 text-center">3,050,311</p></td>
+                                  <td>
+                                    <div class="form-check form-check-inline">
+                                      <input class="form-check-input" type="radio" name="inlineRadioOptions4" id="inlineRadio7" value="buy" checked>
+                                      <label class="form-check-label" for="inlineRadio7">Buy</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                      <input class="form-check-input" type="radio" name="inlineRadioOptions4" id="inlineRadio8" value="build">
+                                      <label class="form-check-label" for="inlineRadio8">Build</label>
+                                    </div>
+                                  </td>
+                                </tr>
+                                <tr align="center"><td class="table-active" colspan="5"><strong>Tech 1 Total: 18,833,000</strong></td></tr>
+
+                            </tbody>
+                          </table>
+
+                        </form>
+                      </li>
+                    </div> <!-- col -->
+                    <div class="col">
+                      <ul class="list-group mb-1">
+                        <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+                          <h4 class="mx-auto">R.A.M. Tools</h4>
+                        </li>
+                        <li class="list-group-item py-0">
+                          <form>
+                            <table class="table table-hover">
+                              <thead>
+                                <tr>
+                                  <th scope="col"></th>
+                                  <th scope="col">Material</th>
+                                  <th scope="col">QTY</th>
+                                  <th scope="col">Jita Buy Price</th>
+                                  <th scope="col">Option</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11478_32.png"></th>
+                                  <td><p class="mt-1">R.A.M. Starship Tech</p></td>
+                                  <td><p class="mt-1 text-center">6</p></td>
+                                  <td><p class="mt-1 text-center">530,657</p></td>
+                                  <td>
+                                    <div class="form-check form-check-inline">
+                                      <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio1" value="buy" checked>
+                                      <label class="form-check-label" for="inlineRadio1">Buy</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                      <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio2" value="build">
+                                      <label class="form-check-label" for="inlineRadio2">Build</label>
+                                    </div>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11478_32.png"></th>
+                                  <td><p class="mt-1">R.A.M. Armor/Hull Tech</p></td>
+                                  <td><p class="mt-1 text-center">100</p></td>
+                                  <td><p class="mt-1 text-center">5,623,065</p></td>
+                                  <td>
+                                    <div class="form-check form-check-inline">
+                                      <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio1" value="buy" checked>
+                                      <label class="form-check-label" for="inlineRadio1">Buy</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                      <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio2" value="build">
+                                      <label class="form-check-label" for="inlineRadio2">Build</label>
+                                    </div>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11478_32.png"></th>
+                                  <td><p class="mt-1">R.A.M. Shield Tech</p></td>
+                                  <td><p class="mt-1 text-center">60</p></td>
+                                  <td><p class="mt-1 text-center">3,264,940</p></td>
+                                  <td>
+                                    <div class="form-check form-check-inline">
+                                      <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio1" value="buy" checked>
+                                      <label class="form-check-label" for="inlineRadio1">Buy</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                      <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio2" value="build">
+                                      <label class="form-check-label" for="inlineRadio2">Build</label>
+                                    </div>
+                                  </td>
+                                </tr>
+
+                                  <tr align="center"><td class="table-active" colspan="5"><strong>R.A.M. Total: 92,235,000</strong></td></tr>
+
+                              </tbody>
+                            </table>
+
+                          </form>
+                        </li>
+
+                      </div> <!-- col -->
+                  </div> <!-- row3 -->
+
+                  <div class="row px-0" id="row4">
+                    <div class="col">
+                      <ul class="list-group mb-1">
+                        <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+                          <h4 class="mx-auto">Minerals</h4>
+                        </li>
+                        <li class="list-group-item py-0">
+                          <form>
+                            <table class="table table-hover">
+                              <thead>
+                                <tr>
+                                  <th scope="col">Tritanium</th>
+                                  <th scope="col">Pyerite</th>
+                                  <th scope="col">Mexallon</th>
+                                  <th scope="col">Isogen</th>
+                                  <th scope="col">Nocxium</th>
+                                  <th scope="col">Zydrine</th>
+                                  <th scope="col">Megacyte</th>
+                                  <th scope="col">Morphite</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/34_32.png"></th>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/35_32.png"></th>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/36_32.png"></th>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/37_32.png"></th>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/38_32.png"></th>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/39_32.png"></th>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/40_32.png"></th>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11399_32.png"></th>
+                                </tr>
+                                <tr>
+                                  <td><p class="mt-1">1,535,419</p></td>
+                                  <td><p class="mt-1">959,272</p></td>
+                                  <td><p class="mt-1">76,107</p></td>
+                                  <td><p class="mt-1">5,192</p></td>
+                                  <td><p class="mt-1">499</p></td>
+                                  <td><p class="mt-1">0</p></td>
+                                  <td><p class="mt-1">0</p></td>
+                                  <td><p class="mt-1">811</p></td>
+                                </tr>
+                                <tr align="center">
+                                  <td colspan="8"><input name="add_mining" class="btn-sm btn-info" type="button" value="Send to Mining Calculator"></td>
+                                </tr>
+                                <tr align="center">
+                                  <td class="table-active" colspan="8"><strong>Mineral Jita Buy Value Total: 108,833,000</strong></td>
+                                </tr>
+                              </tbody>
+                            </table>
+
+                          </form>
+                        </li>
+                      </ul>
+                    </div> <!-- col -->
+                  </div> <!-- row4 -->
+
+
+
+            </div> <!-- main -->
+
+            <script src="/js/jquery.min.js"></script>
+            <script src="/js/popper.min.js"></script>
+            <script src="/js/bootstrap.min.js"></script>
+          </body>
+          </html>

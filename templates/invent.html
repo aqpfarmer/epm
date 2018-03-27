@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+  <title>EVE Production Manager - By Frikkin Genius</title>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800">
+  <link rel='stylesheet' href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/bootstrap.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link href="/css/carousel.css" rel="stylesheet">
+
+  <style>
+  body {
+    background-image: url("img/29917.png");
+    background-color: #cccccc;
+  }
+  </style>
+  <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <div class="container" id = "main">
+    <div class="container" id="upperNav">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="/index.html">EVE Production Manager</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+          <!-- Button trigger modal -->
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#builderModal">
+            Builder
+          </button>
+          <img class="img-fluid" width="40" src="img/74_64_13.png">
+          <!-- End Button trigger modal -->
+          <!-- Modal -->
+          <div class="modal fade" id="builderModal" tabindex="-1" role="dialog" aria-labelledby="builderModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="builderModalLabel">Builder Details</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  ...
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- End Modal -->
+
+          <ul class="navbar-nav ml-auto">
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#optionModal">
+              Options
+            </button>
+            <!-- End Button trigger modal -->
+            <!-- Modal -->
+            <div class="modal fade" id="optionModal" tabindex="-1" role="dialog" aria-labelledby="optionModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="optionModalLabel">Options</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    ...
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End Modal -->
+
+            <li class="nav-item"><a class="nav-link" href="#">Login</a></li>
+          </ul>
+        </div>
+      </div> <!-- upper nav -->
+
+      <div class="container" id="mainMenu">
+        <span class="border border-dark">
+          <nav class="navbar navbar-expand-lg navbar-light">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMainMenu">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMainMenu">
+              <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="btn btn-secondary" href="invent.html">Invent</a></li>
+                <li>..</li>
+                <li class="nav-item"><a class="btn btn-secondary" href="build.html">Build</a></li>
+                <li>..</li>
+                <li class="nav-item"><a class="btn btn-secondary" href="shopping_list.html">B.O.M.
+                  <span class="badge badge-light">14</span></a></li>
+                  <li>..</li>
+                  <li class="nav-item"><a class="btn btn-secondary" href="pipeline.html">Pipeline
+                    <span class="badge badge-light">4</span></a></li>
+                    <li>..</li>
+                    <li class="nav-item"><a class="btn btn-success" href="financial.html">Financial Report</a></li>
+                    <li>..</li>
+                    <li class="nav-item"><a class="btn btn-danger" href="mining.html">Mining Calculator</a></li>
+                    <li>..</li>
+                    <li class="nav-item"><a class="btn btn-info" href="fittings.html">Ship Fittings</a></li>
+                  </ul>
+                </div>
+              </nav>
+            </div> <!-- Mian Menu -->
+
+            <form>
+              <div class="form-group row bg-secondary mb-1">
+                <label for="invent_product" class="col-sm-3 col-form-label text-white text-right">Choose Product to Invent:</label>
+                <div class="col-sm-5"> <!-- this increases or decreases selectbox size -->
+                  <select id="invent_product" class="form-control">
+                    <option selected>Choose...</option>
+                    <option>Crow</option>
+                    <option>Raptor</option>
+                    <option>Ares</option>
+                    <option>Taranis</option>
+                    <option>Stiletto</option>
+                    <option>Claw</option>
+                    <option>Really really super long description thingamajib</option>
+                  </select>
+                </div>
+              </div>
+            </form>
+
+            <div class="row" id="row2">
+              <div class="col-3">
+                <ul class="list-group mb-auto">
+                  <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <div>
+                      <h5 class="my-0">Ares</h5>
+                    </div>
+                    <span class="text-muted">Tech II</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/Render/11202_64.png">
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <div>
+                      <h6 class="my-0">Ship Characteristics:</h6>
+                    </div>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <div>
+                      <h6 class="my-0">Interceptor bonuses (per skill level):</h6>
+                    </div>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <div>
+                      <p><small>15% reduction in Microwarpdrive signature radius penalty</small></p>
+                      <p><small>5% bonus to Warp Scrambler and Warp Disruper optimal range</small></p>
+                    </div>
+                  </li>
+                </ul>
+              </div> <!-- col 3 -->
+
+
+              <div class="col-5">
+                <ul class="list-group mb-auto">
+                  <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <div>
+                      <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11201_64.png">
+                    </div>
+                    <span class="text-muted">41% Success Probability for run</span>
+                  </li>
+                  <div class="row">
+                    <div class="col-sm-12">
+                      <form>
+                        <li class="list-group-item d-flex justify-content-between lh-condensed">
+                          <div class="form-group row">
+                            <label for="job_runs" class="col-sm-3 col-form-label text-black text-right">Job Runs:</label>
+                            <div class="col-sm-3"> <!-- this increases or decreases textbox size -->
+                              <input type="text" class="form-control" id="job_runs" placeholder="20">
+                            </div>
+                            <div class="col pt-1 mb-2">
+                              <p>Invention Time: <strong>35 hours</strong></p>
+                            </div>
+                            <div class="col pt-1 mb-2">
+                              <input name="add" class="btn-sm btn-info" type="button" value="Add to Invention Pipeline">
+                              <input name="del" class="btn-sm btn-danger" type="button" value="Delete from Pipeline">
+                            </div>
+                          </div> <!-- Form group row -->
+                        </li>
+                      </form>
+                    </div> <!-- col -->
+                    <div class="col-sm-12">
+                      <li class="list-group-item d-flex justify-content-between lh-condensed">
+                        <div class="row">
+                          <p class="text-primary">Base Product: <strong> Atron</strong></br>
+                            Datacore - Gallentean Starshpi Engineering:<strong> 40</strong></br>
+                            Datacore - High Energy Physics:<strong>40</strong>
+                          </p>
+                          <p class="font-weight-bold">
+                            Datacore Cost: 1,200,599 ISK
+                          </p>
+                        </div>
+                      </li>
+                    </div>
+
+                  </div> <!-- row -->
+                </ul>
+              </div> <!-- col 6 -->
+
+              <div class="col-4">
+                <ul class="list-group mb-auto">
+                  <li class="list-group-item d-flex justify-content-between lh-condensed py-2">
+                    <div>
+                      <h5 class="my-0 text-info">Invention Pipeline</h5>
+                    </div>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between lh-condensed pb-0">
+                    <form>
+                      <table class="table table-sm table-condensed table-hover">
+                        <thead>
+                          <tr>
+                            <th scope="col"><small><strong>Product</th>
+                            <th scope="col"><small><strong>Runs</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td><a href="#" id="11203"><small>Atron</a></td>
+                            <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs1" value="20"></td>
+                          </tr>
+                        </tbody>
+                        <tr>
+                          <td><a href="#" id="11203"><small>Crow</a></td>
+                          <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs2" value="20"></td>
+                        </tr>
+                        <tr>
+                          <td><a href="#" id="11203"><small>Maeldiction</a></td>
+                          <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs3" value="20"></td>
+                        </tr>
+                        <tr>
+                          <td><a href="#" id="11203"><small>Adaptive Invulnerability Field II</a></td>
+                          <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs4" value="40"></td>
+                        </tr>
+                        <tr>
+                          <td><a href="#" id="11203"><small>10mn Afterburner II</a></td>
+                          <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs5" value="40"></td>
+                        </tr>
+                        <tr>
+                          <td><a href="#" id="11203"><small>Damage Control II</a></td>
+                          <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs6" value="40"></td>
+                        </tr>
+                      </table>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
+                      <p class="text-secondary my-0"><small>Datacore - Gallentean Starship Engineering:<strong> 80</strong></small></p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
+                      <p class="text-secondary my-0"><small>Datacore - Gallentean Starship Engineering:<strong> 100</strong></small></p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
+                      <p class="text-secondary my-0"><small>Datacore - Caldari Starship Engineering:<strong> 40</strong></small></p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
+                      <p class="text-secondary my-0"><small>Datacore - Minmatar Starship Engineering:<strong> 80</strong></small></p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
+                      <p class="text-secondary my-0"><small>Datacore - Electronic Engineering:<strong> 80</strong></small></p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed">
+                      <div class="row">
+                        <p class="font-weight-bold mb-0">
+                          Total Cost: 21,800,599 ISK
+                        </p>
+                      </div>
+                    </form>
+                  </li>
+                  <form>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed">
+                      <div class="form-group row mx-auto">
+                        <input name="addbom" class="btn-sm btn-info" type="button" value="Add to B.O.M.">
+                      </div> <!-- Form group row -->
+                    </li>
+                  </form>
+                </ul>
+              </div> <!-- col 3 -->
+
+            </div> <!-- row2 -->
+
+          </div> <!-- main -->
+
+          <script src="/js/jquery.min.js"></script>
+          <script src="/js/popper.min.js"></script>
+          <script src="/js/bootstrap.min.js"></script>
+        </body>
+        </html>

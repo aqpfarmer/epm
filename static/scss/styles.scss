@@ -1,0 +1,33 @@
+// Variable overrides
+
+$body-bg: #343a40;
+$body-color: #111;
+
+
+.first-slide {
+  opacity: 0.6;
+  filter: alpha(opacity=50); /* For IE8 and earlier */
+}
+.second-slide {
+  opacity: 0.3;
+  filter: alpha(opacity=50); /* For IE8 and earlier */
+}
+.third-slide {
+  opacity: 0.5;
+  filter: alpha(opacity=50); /* For IE8 and earlier */
+}
+.lead {
+  color: cyan;
+}
+.featurette-heading {
+  color: #e9ecef;
+}
+
+.noBorder {
+    border:none !important;
+}
+
+
+
+// Bootstrap sass files
+@import "node_modules/bootstrap/scss/bootstrap";

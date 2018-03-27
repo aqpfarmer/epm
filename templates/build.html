@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+  <title>EVE Production Manager - By Frikkin Genius</title>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800">
+  <link rel='stylesheet' href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/bootstrap.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link href="/css/carousel.css" rel="stylesheet">
+
+  <style>
+  body {
+    background-image: url("img/29917.png");
+    background-color: #cccccc;
+  }
+  </style>
+<link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  <div class="container" id = "main">
+    <div class="container" id="upperNav">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="/index.html">EVE Production Manager</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+          <!-- Button trigger modal -->
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#builderModal">
+            Builder
+          </button>
+          <img class="img-fluid" width=40 src="img/74_64_13.png"></img>
+
+          <!-- End Button trigger modal -->
+          <!-- Modal -->
+          <div class="modal fade" id="builderModal" tabindex="-1" role="dialog" aria-labelledby="builderModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="builderModalLabel">Builder Details</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  ...
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- End Modal -->
+
+          <ul class="navbar-nav ml-auto">
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#optionModal">
+              Options
+            </button>
+            <!-- End Button trigger modal -->
+            <!-- Modal -->
+            <div class="modal fade" id="optionModal" tabindex="-1" role="dialog" aria-labelledby="optionModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="optionModalLabel">Options</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    ...
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End Modal -->
+
+            <li class="nav-item"><a class="nav-link" href="#">Login</a></li>
+          </ul>
+        </div>
+      </div> <!-- upper nav -->
+
+      <div class="container" id="mainMenu">
+        <span class="border border-dark">
+          <nav class="navbar navbar-expand-lg navbar-light">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMainMenu">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMainMenu">
+              <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="btn btn-secondary" href="invent.html">Invent</a></li>
+                <li>..</li>
+                <li class="nav-item"><a class="btn btn-secondary" href="build.html">Build</a></li>
+                <li>..</li>
+                <li class="nav-item"><a class="btn btn-secondary" href="shopping_list.html">B.O.M.
+                  <span class="badge badge-light">14</span></a></li>
+                  <li>..</li>
+                <li class="nav-item"><a class="btn btn-secondary" href="pipeline.html">Pipeline
+                  <span class="badge badge-light">4</span></a></li>
+                    <li>..</li>
+                    <li class="nav-item"><a class="btn btn-success" href="financial.html">Financial Report</a></li>
+                    <li>..</li>
+                    <li class="nav-item"><a class="btn btn-danger" href="mining.html">Mining Calculator</a></li>
+                    <li>..</li>
+                    <li class="nav-item"><a class="btn btn-info" href="fittings.html">Ship Fittings</a></li>
+                  </ul>
+                </div>
+              </nav>
+            </div> <!-- Mian Menu -->
+
+            <form>
+              <div class="form-group row bg-secondary mb-1">
+                <label for="build_product" class="col-sm-3 col-form-label text-white text-right">Choose Product to Build:</label>
+                <div class="col-sm-5"> <!-- this increases or decreases selectbox size -->
+                  <select id="build_product" class="form-control">
+                    <option selected>Choose...</option>
+                    <option>Crow</option>
+                    <option>Raptor</option>
+                    <option>Ares</option>
+                    <option>Taranis</option>
+                    <option>Stiletto</option>
+                    <option>Claw</option>
+                    <option>Really really super long description thingamajib</option>
+                  </select>
+                </div>
+                <label for="job_runs" class="col-sm-2 col-form-label text-white text-right">Job Runs:</label>
+                <div class="col-sm-1 "> <!-- this increases or decreases textbox size -->
+                  <input type="text" class="form-control" id="job_runs" placeholder="6">
+                </div>
+              </div>
+            </form>
+
+            <div class="row px-0" id="row2">
+              <div class="col-3">
+                <ul class="list-group mb-auto">
+                  <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <div>
+                      <h5 class="my-0">Ares</h5>
+                    </div>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11201_64.png">
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
+                    <div>
+                      <p class="text-primary my-0">Market Value: <strong>29,100,000</strong></p>
+                      <p class="text-danger my-0">Cost to Build: <strong>19,753,750</strong></p>
+                      <p class="text-success my-0">Profit Margin: <strong>95%</strong></p>
+                    </div>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
+                    <form>
+                      <table class="table table-hover table-sm ml-1">
+                        <tbody>
+                          <tr>
+                            <td><label for="bp_me" class="col-form-label text-black text-right">Blueprint ME</label></td>
+                            <td>
+                              <div class="col-sm-6"> <!-- this increases or decreases textbox size -->
+                                <input type="text" class="form-control mt-3" id="bp_me" placeholder="2%">
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td><label for="station_me" class="col-form-label text-black text-right my-0">Station ME</label></td>
+                            <td>
+                              <div class="col-sm-6"> <!-- this increases or decreases textbox size -->
+                                <input type="text" class="form-control mt-3" id="station_me" placeholder="1%">
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td><label for="bp_te" class="col-form-label text-black text-right my-0">Blueprint TE</label></td>
+                            <td>
+                              <div class="col-sm-6"> <!-- this increases or decreases textbox size -->
+                                <input type="text" class="form-control mt-3" id="bp_te" placeholder="2%">
+                              </div>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </form>
+                  </li>
+                </ul>
+              </div> <!-- col 3 -->
+
+
+              <div class="col-5">
+                <form>
+                  <ul class="list-group mb-auto">
+                    <li class="list-group-item d-flex justify-content-between lh-condensed">
+                      <div>
+                        <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11200_64.png">
+                      </div>
+                      <span class="text-muted">Production Time: <strong>4 hrs 11 min</strong></span>
+                    </li>
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <li class="list-group-item d-flex justify-content-between lh-condensed">
+                          <table class="table table-striped table-sm table-condensed">
+                            <thead>
+                              <tr>
+                                <th scope="col"></th>
+                                <th scope="col">Component</th>
+                                <th scope="col">QTY</th>
+                                <th scope="col">Cost</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/608_32.png"></th>
+                                <td>Atron</td>
+                                <td>6</td>
+                                <td>1,200,000</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"></th>
+                                <td>Contruction Blocks</td>
+                                <td>55</td>
+                                <td>710,000</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"></th>
+                                <td>Morphite</td>
+                                <td>48</td>
+                                <td>4,200,600</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"></th>
+                                <td>R.A.M. Starship Tech</td>
+                                <td>6</td>
+                                <td>200,100</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"></th>
+                                <td>Ion Thruster</td>
+                                <td>300</td>
+                                <td>3,990,000</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"></th>
+                                <td>Magnometric Sensor Cluster</td>
+                                <td>180</td>
+                                <td>6,075,345</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"></th>
+                                <td>Photon Microprocessor</td>
+                                <td>670</td>
+                                <td>10,000,222</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"></th>
+                                <td>Chrystalline Carbodide Armor Plate</td>
+                                <td>1,600</td>
+                                <td>1,023,483</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"></th>
+                                <td>Fusion Reactor Unit</td>
+                                <td>30</td>
+                                <td>348,600</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"></th>
+                                <td>Morphite</td>
+                                <td>48</td>
+                                <td>4,200,600</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"></th>
+                                <td>Oscillator Capacitor Unit</td>
+                                <td>225</td>
+                                <td>2,673,870</td>
+                              </tr>
+                              <tr>
+                                <th scope="row"></th>
+                                <td>Pulse Shield Emitter</td>
+                                <td>98</td>
+                                <td>4,200,600</td>
+                              </tr>
+
+                            </tbody>
+                          </table>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between lh-condensed">
+                          <div class="form-group">
+                            <h3 class="font-weight-bold mb-1 text-danger ml-4">
+                              Total Cost: 19,800,599 ISK
+                            </h3>
+                            <div class="col pt-1 mb-2">
+                              <input name="add" class="btn-sm btn-info" type="button" value="Add to Production Pipeline">
+                              <input name="del" class="btn-sm btn-danger" type="button" value="Delete from Pipeline">
+                            </div>
+                          </div>
+                        </li>
+                      </div>
+                    </div> <!-- row -->
+                  </ul>
+                </form>
+              </div> <!-- col 6 -->
+
+              <div class="col-4">
+                <ul class="list-group mb-auto">
+                  <li class="list-group-item d-flex justify-content-between lh-condensed py-2">
+                    <div>
+                      <h5 class="my-0 text-info">Production Pipeline</h5>
+                    </div>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+                    <table class="table table-sm table-condensed table-hover">
+                      <thead>
+                        <tr>
+                          <th scope="col"><small><strong>Product</th>
+                          <th scope="col"><small><strong>Runs</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><a href="#" id="11203"><small>Atron</a></td>
+                          <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs1" value="20"></td>
+                        </tr>
+                      </tbody>
+                      <tr>
+                        <td><a href="#" id="11203"><small>Crow</a></td>
+                        <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs2" value="20"></td>
+                      </tr>
+                      <tr>
+                        <td><a href="#" id="11203"><small>Maeldiction</a></td>
+                        <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs3" value="20"></td>
+                      </tr>
+                      <tr>
+                        <td><a href="#" id="11203"><small>Adaptive Invulnerability Field II</a></td>
+                        <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs4" value="40"></td>
+                      </tr>
+                      <tr>
+                        <td><a href="#" id="11203"><small>10mn Afterburner II</a></td>
+                        <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs5" value="40"></td>
+                      </tr>
+                      <tr>
+                        <td><a href="#" id="11203"><small>Damage Control II</a></td>
+                        <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs6" value="40"></td>
+                      </tr>
+                    </table>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed p-2">
+                      <p class="text-secondary my-0"><small>Pulse Shield Emitter:<strong>36</strong></small></p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed p-2">
+                      <p class="text-secondary my-0"><small>Ion Thruster:<strong>400</strong></small></p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed p-2">
+                      <p class="text-secondary my-0"><small>Morphite:<strong> 90</strong></small></p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed p-2">
+                      <p class="text-secondary my-0"><small>Photon Microprocessor:<strong> 120</strong></small></p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed p-2">
+                      <p class="text-secondary my-0"><small>Chrystalline Carbodide Armor Plate:<strong> 80</strong></small></p>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between lh-condensed">
+                      <div class="row">
+                        <p class="font-weight-bold mb-0">
+                          Total Cost: 21,800,599 ISK
+                        </p>
+                      </div>
+                    </li>
+                    <form>
+                      <li class="list-group-item d-flex justify-content-between lh-condensed">
+                        <div class="form-group row mx-auto">
+                          <input name="addbom" class="btn-sm btn-info" type="button" value="Add to B.O.M.">
+                        </div> <!-- Form group row -->
+                      </li>
+                    </form>
+                  </ul>
+                </div> <!-- col 3 -->
+
+              </div> <!-- row2 -->
+
+            </div> <!-- main -->
+
+            <script src="/js/jquery.min.js"></script>
+            <script src="/js/popper.min.js"></script>
+            <script src="/js/bootstrap.min.js"></script>
+          </body>
+          </html>
