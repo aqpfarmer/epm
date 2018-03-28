@@ -29,6 +29,7 @@ class User(db.Model, UserMixin):
     confirmed_at = db.Column(db.DateTime())
     roles = db.relationship('Role', secondary=roles_users, backref=db.backref('users', lazy='dynamic'))
 
+
 # Setup Flask flask_security
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
@@ -42,7 +43,11 @@ security = Security(app, user_datastore)
 
 @app.route("/")
 def index():
-   return render_template('index.html')
+   return render_template('home.html')
+
+@app.route("/register")
+def register():
+   return render_template('register.html')
 
 if __name__ == "__main__":
    app.run()
