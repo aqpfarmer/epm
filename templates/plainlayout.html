@@ -21,12 +21,9 @@
 </head>
 
 <body>
-  {% include 'includes/_navbar.html' %}
   <div class="container">
-    {% include 'includes/_messages.html' %}
     {% block body %}{% endblock %}
-  </div>
-  {% include 'includes/_footer.html' %}
+  </div
 
   <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
