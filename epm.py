@@ -45,7 +45,7 @@ class invtypes(db.Model):
     capacity = db.Column(db.Numeric())
     marketGroupID = db.Column(db.Integer())
 
-    def __init__(groupID, typeName, description, mass, volume, capacity, marketGroupID):
+    def __init__(self, groupID, typeName, description, mass, volume, capacity, marketGroupID):
         self.groupID = marketGroupID
         self.typeName = str(typeName)
         self.description = str(description)
@@ -53,6 +53,33 @@ class invtypes(db.Model):
         self.volume = volume
         self.capacity = capacity
         self.marketGroupID = marketGroupID
+
+class invention_pipeline(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.Integer())
+    product_id = db.Column(db.Integer())
+    blueprint_id = db.Column(db.Integer())
+    runs = db.Column(db.Integer())
+    datacore1_id = db.Column(db.Integer())
+    datacore2_id = db.Column(db.Integer())
+    datacore1_cost = db.Column(db.Numeric())
+    datacore2_cost = db.Column(db.Numeric())
+    product_name = db.Column(db.String(100))
+    datacore1 = db.Column(db.String(100))
+    datacore2 = db.Column(db.String(100))
+
+    def __init__(self, user_id, product_id, blueprint_id, runs, datacore1_id, datacore2_id, datacore1_cost, datacore2_cost, product_name, datacore1, datacore2):
+        self.user_id = user_id
+        self.product_id = product_id
+        self.blueprint_id = blueprint_id
+        self.runs = runs
+        self.datacore1_id = datacore1_id
+        self.datacore2_id = datacore2_id
+        self.datacore1_cost = datacore1_cost
+        self.datacore2_cost = datacore2_cost
+        self.product_name = product_name
+        self.datacore1 = datacore1
+        self.datacore2 = datacore2
 
 class v_build_requirements(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
@@ -131,15 +158,48 @@ def index():
 @app.route('/invent', methods=['GET'])
 def invent():
     form = LoginForm(request.form)
-    try:
-        myBlueprints = db.session.query(v_invention_product).all()
-        return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0)
-    except Exception as e:
-        flash('Couldn\'t get blueprint list. See log', 'danger')
-        app.logger.info(str(e))
-        return redirect(url_for('invent'))
+    #try:
+    myBlueprints = db.session.query(v_invention_product).all()
 
-@app.route('/invent_selected', methods=['POST'])
+    if 'myUser_id' in session:
+        pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2').all()
+
+        datacoresInPipeline = []
+        datacoreQtyInPipeline = []
+        matchFound = False
+        for item in pipeline:
+            if matchFound == False:
+                datacoresInPipeline += [item.datacore1]
+                datacoreQtyInPipeline += [item.runs]
+                datacoresInPipeline += [item.datacore2]
+                datacoreQtyInPipeline += [item.runs]
+
+            for dc in datacoresInPipeline:
+                if dc == item.datacore1:
+                    index = datacoresInPipeline.index(item.datacore1)
+                    datacoreQtyInPipeline[index] = datacoreQtyInPipeline[index] + item.runs
+                    matchFound = True
+                else:
+                    matchFound = False
+
+                if dc == item.datacore2:
+                    index = datacoresInPipeline.index(item.datacore2)
+                    datacoreQtyInPipeline[index] = datacoreQtyInPipeline[index] + item.runs
+                    matchFound = True
+                else:
+                    matchFound = False
+
+        #print datacoresInPipeline
+        return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0, pipeline=pipeline, datacores=datacoresInPipeline, datacoreQty=datacoreQtyInPipeline)
+    else:
+        return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0)
+
+    #except Exception as e:
+    #    flash('Couldn\'t get blueprint list. See log', 'danger')
+    #    app.logger.info(str(e))
+    #    return redirect(url_for('invent'))
+
+@app.route('/invent_selected', methods=['POST','GET'])
 def invent_selected():
     id = request.form.get('invent_product')
     form = LoginForm(request.form)
@@ -161,11 +221,49 @@ def invent_selected():
 
         myBaseProduct = db.session.query(v_build_requirements).filter_by(id = selected_bp.t2_id).filter(v_build_requirements.group_id <> 334).filter(v_build_requirements.group_id <> 18).filter(v_build_requirements.group_id <> 1034).filter(v_build_requirements.group_id <> 332).filter(v_build_requirements.group_id <> 1040).one()
 
-        return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacores = myDatacores, datacoresCost = myDatacoresCost, baseProduct = myBaseProduct.material)
+        if 'myUser_id' in session:
+            pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2').all()
+            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacores = myDatacores, datacoresCost = myDatacoresCost, baseProduct = myBaseProduct.material, pipeline=pipeline)
+        else:
+            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacores = myDatacores, datacoresCost = myDatacoresCost, baseProduct = myBaseProduct.material)
+
     except Exception as e:
         flash('Problem querying blueprint. See log', 'danger')
         app.logger.info(str(e))
         return redirect(url_for('invent'))
+
+@app.route('/invent_add_pipeline', methods=['POST'])
+def invent_add_pipeline():
+    id = request.form.get('bp_id')
+    form = LoginForm(request.form)
+
+    if 'myUser_id' in session:
+        try:
+            myBlueprints = db.session.query(v_invention_product).all()
+            selected_bp = db.session.query(v_invention_product).filter_by(id = id).one()
+            selected_product = db.session.query(v_product).filter_by(id = selected_bp.t2_id).one()
+            myProduct = db.session.query(invtypes).filter_by(typeID = int(selected_product.t2_id)).one()
+            myDatacores = db.session.query(v_datacore_requirements).filter_by(id = id).with_entities('id','datacore','quantity','dc_id').all()
+            datacore1_cost = get_marketValue(myDatacores[0].dc_id, 'buy') * myDatacores[0].quantity
+            datacore2_cost = get_marketValue(myDatacores[1].dc_id, 'buy') * myDatacores[1].quantity
+            pipeline = invention_pipeline(session['myUser_id'],  myProduct.typeID, id, request.form.get('job_runs'), myDatacores[0].dc_id, myDatacores[1].dc_id, datacore1_cost, datacore2_cost, myProduct.typeName, myDatacores[0].datacore, myDatacores[1].datacore)
+
+            db.session.add(pipeline)
+            db.session.commit()
+            msg = 'Successful added to pipeline.'
+
+            pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2').all()
+
+            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0, pipeline=pipeline)
+
+        except Exception as e:
+            error = 'Problem adding to pipeline. See log.'
+            app.logger.info(str(e))
+            return redirect(url_for('invent'))
+    else:
+        flash('You must be logged in to add to pipeline.', 'danger')
+        return redirect(url_for('invent'))
+
 
 @app.route('/updateBuilder', methods=['POST'])
 def updateBuilder():

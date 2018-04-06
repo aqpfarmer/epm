@@ -4,7 +4,7 @@
 <form action="{{ url_for('invent_selected')}}" method="POST">
   <div class="form-group row bg-secondary mb-1">
     <label for="invent_product" class="col-sm-3 col-form-label text-white text-right">Choose Product to Invent:</label>
-    <div class="col-sm-5"> <!-- this increases or decreases selectbox size -->
+    <div class="col-sm-4"> <!-- this increases or decreases selectbox size -->
       <select id="invent_product" name="invent_product" class="form-control" onChange="this.form.submit()">
         {% if bp_id > 0 %}
           <option value="{{selected_bp.id}}" selected>{{selected_bp.t2_blueprint}} </option>
@@ -16,6 +16,7 @@
         {% endfor %}
       </select>
     </div>
+    <p class="col-sm-5 col-form-label text-white pt-2 text-center">Invention Pipeline</p>
   </div>
 </form>
 
@@ -44,9 +45,9 @@
       <li class="list-group-item d-flex justify-content-between lh-condensed">
         <div>
           {% if bp_id > 0 %}
-            <h6 class="my-0">Description: {{product.typeID}}</h6>
+            <h6 class="my-0">Description </h6>
           {% else %}
-            <h6 class="my-0">Description: </h6>
+            <h6 class="my-0">Description </h6>
           {% endif %}
         </div>
       </li>
@@ -63,45 +64,43 @@
   </div> <!-- col 3 -->
 
 
-  <div class="col-5">
+  <div class="col-4">
     <ul class="list-group mb-auto">
       <li class="list-group-item d-flex justify-content-between lh-condensed">
-        <div>
+        <div "col-sm-3">
           {% if bp_id > 0 %}
             <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{selected_bp.t2_id}}_64.png">
           {% else %}
             <img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/33_128_2.png') }}">
           {% endif %}
         </div>
-        {% if bp_id > 0 %}
-          <span class="text-muted">{{probability}} Success Probability for run</span>
-        {% else %}
-          <span class="text-muted">% Success Probability for run</span>
-        {% endif %}
+        <div class="col-sm-9 pt-1 mb-2">
+          {% if bp_id > 0 %}
+            <p> Success Probability: <strong>{{probability}}</strong> </p>
+            <p> Invention Time: <strong>{{time}} hours</strong></p>
+          {% else %}
+            <p class="text-muted">Success Probability: --</p>
+            <p class="text-muted">Invention Time: --</p>
+          {% endif %}
+        </div>
       </li>
       <div class="row">
         <div class="col-sm-12">
-          <form action="" method="POST">
+          <form class="form-inline" action="{{ url_for('invent_add_pipeline')}}" method="POST">
             <li class="list-group-item d-flex justify-content-between lh-condensed">
-              <div class="form-group row">
-                <label for="job_runs" class="col-sm-3 col-form-label text-black text-right">Job Runs:</label>
-                <div class="col-sm-3"> <!-- this increases or decreases textbox size -->
-                  <input type="text" class="form-control" id="job_runs" name="job_runs" value="20">
-                </div>
-                <div class="col pt-1 mb-2">
+              <div class="form-group mx-0">
+                <label for="job_runs" class="col-form-label text-black col-sm-4"><strong>Job Runs:</strong></label>
+                <input type="text" size="1" class="form-control" id="job_runs" name="job_runs" value="20">
+                <div class="col pt-1 my-0">
+                  <input name="add" class="btn-sm btn-info" type="submit" value="Add to Invention Pipeline">
                   {% if bp_id > 0 %}
-                    <p>Invention Time: <strong>{{time}} hours</strong></p>
-                  {% else %}
-                    <p>Invention Time: --</p>
+                    <input type="hidden" name="bp_id" value="{{bp_id}}" id="bp_id">
                   {% endif %}
-                </div>
-                <div class="col pt-1 mb-2">
-                  <input name="add" class="btn-sm btn-info" type="button" value="Add to Invention Pipeline">
-                  <input name="del" class="btn-sm btn-danger" type="button" value="Delete from Pipeline">
+                </form>
                 </div>
               </div> <!-- Form group row -->
             </li>
-          </form>
+
         </div> <!-- col -->
         <div class="col-sm-12">
           <li class="list-group-item d-flex justify-content-between lh-condensed">
@@ -137,67 +136,58 @@
     </ul>
   </div> <!-- col 6 -->
 
-  <div class="col-4">
+  <div class="col-5">
     <ul class="list-group mb-auto">
-      <li class="list-group-item d-flex justify-content-between lh-condensed py-2">
-        <div>
-          <h5 class="my-0 text-info">Invention Pipeline</h5>
-        </div>
-      </li>
       <li class="list-group-item d-flex justify-content-between lh-condensed pb-0">
         <form>
-          <table class="table table-sm table-condensed table-hover">
+          <table class="table table-sm table-condensed table-hover table-responsive">
             <thead>
               <tr>
-                <th scope="col"><small><strong>Product</th>
+                <th scope="col" colspan="3"><small><strong>Product</th>
+                <th scope="col"><small> </th>
                 <th scope="col"><small><strong>Runs</th>
+                <th scope="col"><small><strong>Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td><a href="#" id="11203"><small>Atron</a></td>
-                <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs1" value="20"></td>
-              </tr>
-            </tbody>
-            <tr>
-              <td><a href="#" id="11203"><small>Crow</a></td>
-              <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs2" value="20"></td>
-            </tr>
-            <tr>
-              <td><a href="#" id="11203"><small>Maeldiction</a></td>
-              <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs3" value="20"></td>
-            </tr>
-            <tr>
-              <td><a href="#" id="11203"><small>Adaptive Invulnerability Field II</a></td>
-              <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs4" value="40"></td>
-            </tr>
-            <tr>
-              <td><a href="#" id="11203"><small>10mn Afterburner II</a></td>
-              <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs5" value="40"></td>
-            </tr>
-            <tr>
-              <td><a href="#" id="11203"><small>Damage Control II</a></td>
-              <td><input type="text" class="col-sm-4 form-control form-control-sm py-0" id="runs6" value="40"></td>
-            </tr>
+              {% if 'myUser_id' in session %}
+                <form action="{{ url_for('invent')}}" method="post">
+                {% for item in pipeline %}
+                    <tr>
+                      <td colspan="4"><small>{{item.product_name}}</td>
+                      <td><input type="text" class="form-control-sm py-0" size="1" id="{{item.id}}" value="{{item.runs}}"></td>
+                      <td><div class="btn-group px-1">
+                        <button class="btn btn-sm" type="submit" id="edit"><i class="fas fa-pencil-alt"></i></button>
+                        <button class="btn btn-sm" type="submit" id="delete"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                      </td>
+                    </tr>
+                {% endfor %}
+              </form>
+              {% endif %}
           </table>
         </li>
         <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
-          <p class="text-secondary my-0"><small>Datacore - Gallentean Starship Engineering:<strong> 80</strong></small></p>
-        </li>
-        <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
-          <p class="text-secondary my-0"><small>Datacore - Gallentean Starship Engineering:<strong> 100</strong></small></p>
-        </li>
-        <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
-          <p class="text-secondary my-0"><small>Datacore - Caldari Starship Engineering:<strong> 40</strong></small></p>
-        </li>
-        <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
-          <p class="text-secondary my-0"><small>Datacore - Minmatar Starship Engineering:<strong> 80</strong></small></p>
-        </li>
-        <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
-          <p class="text-secondary my-0"><small>Datacore - Electronic Engineering:<strong> 80</strong></small></p>
+          <table class="table table-sm table-condensed table-hover table-responsive pl-3">
+            <thead>
+              <tr>
+                <th scope="col" colspan="2"><small><strong>Datacore</th>
+                <th scope="col"><small><strong>QTY </th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if 'myUser_id' in session %}
+                {% for item in datacores %}
+                <tr>
+                  <td colspan="2"><small> {{item}} </td>
+                  <td><small> {{datacoreQty[loop.index]}} </td>
+                </tr>
+                {% endfor %}
+              {% endif %}
+            </table>
         </li>
         <li class="list-group-item d-flex justify-content-between lh-condensed">
-          <div class="row">
+          <div class="mx-auto row">
             <p class="font-weight-bold mb-0">
               Total Cost: 21,800,599 ISK
             </p>
