@@ -150,6 +150,7 @@ class LoginForm(Form):
     email = StringField('Email', [validators.Length(min=6, max=50)])
     password = PasswordField('Password', [validators.DataRequired()])
 
+
 @app.route("/")
 def index():
     form = LoginForm(request.form)
@@ -158,46 +159,25 @@ def index():
 @app.route('/invent', methods=['GET'])
 def invent():
     form = LoginForm(request.form)
-    #try:
-    myBlueprints = db.session.query(v_invention_product).all()
+    try:
+        myBlueprints = db.session.query(v_invention_product).all()
 
-    if 'myUser_id' in session:
-        pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2').all()
+        if 'myUser_id' in session:
+            pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2').all()
 
-        datacoresInPipeline = []
-        datacoreQtyInPipeline = []
-        matchFound = False
-        for item in pipeline:
-            if matchFound == False:
-                datacoresInPipeline += [item.datacore1]
-                datacoreQtyInPipeline += [item.runs]
-                datacoresInPipeline += [item.datacore2]
-                datacoreQtyInPipeline += [item.runs]
+            datacoresInPipeline = invention_pipeline_rollup(pipeline)
+            datacoreQtyInPipeline = invention_pipeline_rollup_qty(pipeline)
+            datacoreCost = invention_pipeline_rollup_cost(pipeline)
 
-            for dc in datacoresInPipeline:
-                if dc == item.datacore1:
-                    index = datacoresInPipeline.index(item.datacore1)
-                    datacoreQtyInPipeline[index] = datacoreQtyInPipeline[index] + item.runs
-                    matchFound = True
-                else:
-                    matchFound = False
+            #print datacoresInPipeline
+            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0, pipeline=pipeline, datacores=datacoresInPipeline, datacoreQty=datacoreQtyInPipeline, datacoreCost=datacoreCost)
+        else:
+            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0)
 
-                if dc == item.datacore2:
-                    index = datacoresInPipeline.index(item.datacore2)
-                    datacoreQtyInPipeline[index] = datacoreQtyInPipeline[index] + item.runs
-                    matchFound = True
-                else:
-                    matchFound = False
-
-        #print datacoresInPipeline
-        return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0, pipeline=pipeline, datacores=datacoresInPipeline, datacoreQty=datacoreQtyInPipeline)
-    else:
-        return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0)
-
-    #except Exception as e:
-    #    flash('Couldn\'t get blueprint list. See log', 'danger')
-    #    app.logger.info(str(e))
-    #    return redirect(url_for('invent'))
+    except Exception as e:
+        flash('Couldn\'t get blueprint list. See log', 'danger')
+        app.logger.info(str(e))
+        return redirect(url_for('invent'))
 
 @app.route('/invent_selected', methods=['POST','GET'])
 def invent_selected():
@@ -367,7 +347,68 @@ def get_marketValue(typeID, buyOrSell):
         error = 'Problem with Market API. See log'
         return 0
 
+def invention_pipeline_rollup(pipeline):
+    datacoresInPipeline = []
+    matchFound = False
 
+    for item in pipeline:
+        if matchFound == False:
+            datacoresInPipeline += [item.datacore1]
+            datacoresInPipeline += [item.datacore2]
+        else:
+            matchFound == False
+
+        for dc in datacoresInPipeline:
+            if dc == item.datacore1:
+                matchFound = True
+            elif dc == item.datacore2:
+                matchFound = True
+            else:
+                matchFound = False
+
+        #print ("item1: " + item.datacore1 + " Item2: " + item.datacore2)
+        #matchFound = False
+        print ("----------------")
+        print datacoresInPipeline
+
+    return datacoresInPipeline
+
+def invention_pipeline_rollup_qty(pipeline):
+    datacoreQtyInPipeline = []
+    datacoresInPipeline = invention_pipeline_rollup(pipeline)
+    matchFound = False
+
+    for item in pipeline:
+        if matchFound == False:
+            datacoreQtyInPipeline += [item.runs]
+            datacoreQtyInPipeline += [item.runs]
+        else:
+            matchFound == False
+
+        for dc in datacoresInPipeline:
+            if dc == item.datacore1:
+                index = datacoresInPipeline.index(item.datacore1)
+                datacoreQtyInPipeline[index] = datacoreQtyInPipeline[index] + item.runs
+                matchFound = True
+            else:
+                matchFound = False
+
+            if dc == item.datacore2:
+                index = datacoresInPipeline.index(item.datacore2)
+                datacoreQtyInPipeline[index] = datacoreQtyInPipeline[index] + item.runs
+                matchFound = True
+            else:
+                matchFound = False
+
+    return datacoreQtyInPipeline
+
+def invention_pipeline_rollup_cost(pipeline):
+    datacoreCost = 0
+    for item in pipeline:
+        datacoreCost += item.datacore1_cost * item.runs
+        datacoreCost += item.datacore2_cost * item.runs
+
+    return datacoreCost
 
 if __name__ == "__main__":
    app.run()

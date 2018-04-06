@@ -92,9 +92,13 @@
                 <label for="job_runs" class="col-form-label text-black col-sm-4"><strong>Job Runs:</strong></label>
                 <input type="text" size="1" class="form-control" id="job_runs" name="job_runs" value="20">
                 <div class="col pt-1 my-0">
-                  <input name="add" class="btn-sm btn-info" type="submit" value="Add to Invention Pipeline">
                   {% if bp_id > 0 %}
+                    <input name="add" class="btn-sm btn-info" type="submit" value="Add to Invention Pipeline">
                     <input type="hidden" name="bp_id" value="{{bp_id}}" id="bp_id">
+                  {% else %}
+                    <!-- <fieldset disabled> -->
+                      <input name="add" class="btn-sm btn-info" type="submit" value="Add to Invention Pipeline">
+                    <!-- </fieldset> -->
                   {% endif %}
                 </form>
                 </div>
@@ -143,10 +147,10 @@
           <table class="table table-sm table-condensed table-hover table-responsive">
             <thead>
               <tr>
-                <th scope="col" colspan="3"><small><strong>Product</th>
-                <th scope="col"><small> </th>
-                <th scope="col"><small><strong>Runs</th>
-                <th scope="col"><small><strong>Action</th>
+                <th scope="col" colspan="3"><strong>Product</th>
+                <th scope="col"> </th>
+                <th scope="col"><strong>Runs</th>
+                <th scope="col"><strong>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -154,7 +158,7 @@
                 <form action="{{ url_for('invent')}}" method="post">
                 {% for item in pipeline %}
                     <tr>
-                      <td colspan="4"><small>{{item.product_name}}</td>
+                      <td colspan="4">{{item.product_name}}</td>
                       <td><input type="text" class="form-control-sm py-0" size="1" id="{{item.id}}" value="{{item.runs}}"></td>
                       <td><div class="btn-group px-1">
                         <button class="btn btn-sm" type="submit" id="edit"><i class="fas fa-pencil-alt"></i></button>
@@ -171,16 +175,16 @@
           <table class="table table-sm table-condensed table-hover table-responsive pl-3">
             <thead>
               <tr>
-                <th scope="col" colspan="2"><small><strong>Datacore</th>
-                <th scope="col"><small><strong>QTY </th>
+                <th scope="col" colspan="2"><strong>Datacore</th>
+                <th scope="col"><strong>QTY </th>
               </tr>
             </thead>
             <tbody>
               {% if 'myUser_id' in session %}
                 {% for item in datacores %}
                 <tr>
-                  <td colspan="2"><small> {{item}} </td>
-                  <td><small> {{datacoreQty[loop.index]}} </td>
+                  <td colspan="2">{{item}} </td>
+                  <td>{{datacoreQty[loop.index]}} </td>
                 </tr>
                 {% endfor %}
               {% endif %}
@@ -189,7 +193,11 @@
         <li class="list-group-item d-flex justify-content-between lh-condensed">
           <div class="mx-auto row">
             <p class="font-weight-bold mb-0">
-              Total Cost: 21,800,599 ISK
+              {% if 'myUser_id' in session %}
+                Total Cost: {{"{:,}".format(datacoreCost)}} ISK
+              {% else %}
+                Total Cost:  --
+              {% endif %}
             </p>
           </div>
         </form>
