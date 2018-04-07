@@ -67,8 +67,10 @@ class invention_pipeline(db.Model):
     product_name = db.Column(db.String(100))
     datacore1 = db.Column(db.String(100))
     datacore2 = db.Column(db.String(100))
+    datacore1_count = db.Column(db.Integer())
+    datacore2_count = db.Column(db.Integer())
 
-    def __init__(self, user_id, product_id, blueprint_id, runs, datacore1_id, datacore2_id, datacore1_cost, datacore2_cost, product_name, datacore1, datacore2):
+    def __init__(self, user_id, product_id, blueprint_id, runs, datacore1_id, datacore2_id, datacore1_cost, datacore2_cost, product_name, datacore1, datacore2, datacore1_count, datacore2_count):
         self.user_id = user_id
         self.product_id = product_id
         self.blueprint_id = blueprint_id
@@ -80,6 +82,8 @@ class invention_pipeline(db.Model):
         self.product_name = product_name
         self.datacore1 = datacore1
         self.datacore2 = datacore2
+        self.datacore1_count = datacore1_count
+        self.datacore2_count = datacore2_count
 
 class v_build_requirements(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
@@ -156,21 +160,37 @@ def index():
     form = LoginForm(request.form)
     return render_template('home.html', form=form)
 
-@app.route('/invent', methods=['GET'])
+@app.route('/invent', methods=['GET','POST'])
 def invent():
     form = LoginForm(request.form)
     try:
         myBlueprints = db.session.query(v_invention_product).all()
 
         if 'myUser_id' in session:
-            pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2').all()
+            if request.method == 'POST':
+                if request.form['action'] == 'edit':
+                    if request.form['pipeline_id']:
+                        pipeline_id = request.form['pipeline_id']
+                        runs = request.form['runs']
+                        pipeline = db.session.query(invention_pipeline).filter_by(id = pipeline_id).one()
+                        pipeline.runs = runs
+                        db.session.add(pipeline)
+                        db.session.commit()
+                        msg = 'Successfully updated pipeline runs.'
+                elif request.form.get('action') == 'delete':
+                    if request.form.get('pipeline_id'):
+                        pipeline_id = request.form.get('pipeline_id')
+                        pipeline = db.session.query(invention_pipeline).filter_by(id = pipeline_id).one()
+                        db.session.delete(pipeline)
+                        db.session.commit()
+                        msg = 'Successfully deleted pipeline product.'
 
-            datacoresInPipeline = invention_pipeline_rollup(pipeline)
-            datacoreQtyInPipeline = invention_pipeline_rollup_qty(pipeline)
+            pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2','datacore1_count','datacore2_count').all()
+
+            datacoresInPipeline = invention_pipeline_rollup_qty(pipeline)
             datacoreCost = invention_pipeline_rollup_cost(pipeline)
 
-            #print datacoresInPipeline
-            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0, pipeline=pipeline, datacores=datacoresInPipeline, datacoreQty=datacoreQtyInPipeline, datacoreCost=datacoreCost)
+            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0, pipeline=pipeline, datacoresInPipeline=datacoresInPipeline, datacoreCost="{:,.2f}".format(datacoreCost))
         else:
             return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0)
 
@@ -202,8 +222,13 @@ def invent_selected():
         myBaseProduct = db.session.query(v_build_requirements).filter_by(id = selected_bp.t2_id).filter(v_build_requirements.group_id <> 334).filter(v_build_requirements.group_id <> 18).filter(v_build_requirements.group_id <> 1034).filter(v_build_requirements.group_id <> 332).filter(v_build_requirements.group_id <> 1040).one()
 
         if 'myUser_id' in session:
-            pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2').all()
-            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacores = myDatacores, datacoresCost = myDatacoresCost, baseProduct = myBaseProduct.material, pipeline=pipeline)
+
+            pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2','datacore1_count','datacore2_count').all()
+            datacoresInPipeline = invention_pipeline_rollup_qty(pipeline)
+            datacoreCost = invention_pipeline_rollup_cost(pipeline)
+
+            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacores = myDatacores, datacoresCost = myDatacoresCost, baseProduct = myBaseProduct.material, pipeline=pipeline, datacoresInPipeline=datacoresInPipeline, datacoreCost="{:,.2f}".format(datacoreCost))
+
         else:
             return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacores = myDatacores, datacoresCost = myDatacoresCost, baseProduct = myBaseProduct.material)
 
@@ -226,15 +251,16 @@ def invent_add_pipeline():
             myDatacores = db.session.query(v_datacore_requirements).filter_by(id = id).with_entities('id','datacore','quantity','dc_id').all()
             datacore1_cost = get_marketValue(myDatacores[0].dc_id, 'buy') * myDatacores[0].quantity
             datacore2_cost = get_marketValue(myDatacores[1].dc_id, 'buy') * myDatacores[1].quantity
-            pipeline = invention_pipeline(session['myUser_id'],  myProduct.typeID, id, request.form.get('job_runs'), myDatacores[0].dc_id, myDatacores[1].dc_id, datacore1_cost, datacore2_cost, myProduct.typeName, myDatacores[0].datacore, myDatacores[1].datacore)
+            pipeline = invention_pipeline(session['myUser_id'],  myProduct.typeID, id, request.form.get('job_runs'), myDatacores[0].dc_id, myDatacores[1].dc_id, datacore1_cost, datacore2_cost, myProduct.typeName, myDatacores[0].datacore, myDatacores[1].datacore,myDatacores[0].quantity, myDatacores[1].quantity)
 
             db.session.add(pipeline)
             db.session.commit()
             msg = 'Successful added to pipeline.'
 
-            pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2').all()
+            pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2','datacore1_count','datacore2_count').all()
 
-            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0, pipeline=pipeline)
+            #return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0, pipeline=pipeline)
+            return redirect(url_for('invent'))
 
         except Exception as e:
             error = 'Problem adding to pipeline. See log.'
@@ -347,63 +373,41 @@ def get_marketValue(typeID, buyOrSell):
         error = 'Problem with Market API. See log'
         return 0
 
-def invention_pipeline_rollup(pipeline):
+
+def invention_pipeline_rollup_qty(pipeline):
     datacoresInPipeline = []
-    matchFound = False
+    matchFound1 = False
+    matchFound2 = False
 
     for item in pipeline:
-        if matchFound == False:
-            datacoresInPipeline += [item.datacore1]
-            datacoresInPipeline += [item.datacore2]
-        else:
-            matchFound == False
-
         for dc in datacoresInPipeline:
             if dc == item.datacore1:
-                matchFound = True
+                index = datacoresInPipeline.index(item.datacore1) +1
+                dc_count = datacoresInPipeline[index]
+                datacoresInPipeline[index] = dc_count + (item.runs * item.datacore1_count)
+                matchFound1 = True
             elif dc == item.datacore2:
-                matchFound = True
-            else:
-                matchFound = False
+                index = datacoresInPipeline.index(item.datacore2) +1
+                dc_count = datacoresInPipeline[index]
+                datacoresInPipeline[index] = dc_count + (item.runs * item.datacore2_count)
+                matchFound2 = True
 
-        #print ("item1: " + item.datacore1 + " Item2: " + item.datacore2)
-        #matchFound = False
-        print ("----------------")
-        print datacoresInPipeline
+        if matchFound1 == True:
+            matchFound1 = False
+        else:
+            datacoresInPipeline += [item.datacore1]
+            datacoresInPipeline += [item.runs * item.datacore1_count]
+
+        if matchFound2 == True:
+            matchFound2 = False
+        else:
+            datacoresInPipeline += [item.datacore2]
+            datacoresInPipeline += [item.runs * item.datacore2_count]
 
     return datacoresInPipeline
 
-def invention_pipeline_rollup_qty(pipeline):
-    datacoreQtyInPipeline = []
-    datacoresInPipeline = invention_pipeline_rollup(pipeline)
-    matchFound = False
-
-    for item in pipeline:
-        if matchFound == False:
-            datacoreQtyInPipeline += [item.runs]
-            datacoreQtyInPipeline += [item.runs]
-        else:
-            matchFound == False
-
-        for dc in datacoresInPipeline:
-            if dc == item.datacore1:
-                index = datacoresInPipeline.index(item.datacore1)
-                datacoreQtyInPipeline[index] = datacoreQtyInPipeline[index] + item.runs
-                matchFound = True
-            else:
-                matchFound = False
-
-            if dc == item.datacore2:
-                index = datacoresInPipeline.index(item.datacore2)
-                datacoreQtyInPipeline[index] = datacoreQtyInPipeline[index] + item.runs
-                matchFound = True
-            else:
-                matchFound = False
-
-    return datacoreQtyInPipeline
-
 def invention_pipeline_rollup_cost(pipeline):
-    datacoreCost = 0
+    datacoreCost = 0.0
     for item in pipeline:
         datacoreCost += item.datacore1_cost * item.runs
         datacoreCost += item.datacore2_cost * item.runs

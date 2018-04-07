@@ -143,7 +143,6 @@
   <div class="col-5">
     <ul class="list-group mb-auto">
       <li class="list-group-item d-flex justify-content-between lh-condensed pb-0">
-        <form>
           <table class="table table-sm table-condensed table-hover table-responsive">
             <thead>
               <tr>
@@ -155,19 +154,23 @@
             </thead>
             <tbody>
               {% if 'myUser_id' in session %}
-                <form action="{{ url_for('invent')}}" method="post">
+
                 {% for item in pipeline %}
                     <tr>
+                      <form action="{{ url_for('invent')}}" method="post">
                       <td colspan="4">{{item.product_name}}</td>
-                      <td><input type="text" class="form-control-sm py-0" size="1" id="{{item.id}}" value="{{item.runs}}"></td>
+                      <td><input type="text" class="form-control-sm py-0" size="1" name="runs" id="runs" value="{{item.runs}}"></td>
                       <td><div class="btn-group px-1">
-                        <button class="btn btn-sm" type="submit" id="edit"><i class="fas fa-pencil-alt"></i></button>
-                        <button class="btn btn-sm" type="submit" id="delete"><i class="fas fa-trash-alt"></i></button>
+                        <button class="btn btn-sm" type="submit" name="action" value="edit">
+                          <i class="fas fa-pencil-alt"></i></button>
+                        <button class="btn btn-sm" type="submit" name="action" value="delete">
+                          <i class="fas fa-trash-alt"></i></button>
                         </div>
                       </td>
+                      <input type="hidden" name="pipeline_id" value="{{item.id}}" id="pipeline_id">
+                      </form>
                     </tr>
                 {% endfor %}
-              </form>
               {% endif %}
           </table>
         </li>
@@ -181,11 +184,16 @@
             </thead>
             <tbody>
               {% if 'myUser_id' in session %}
-                {% for item in datacores %}
+                {% set count = namespace(a=0) %}
+                {% for item in datacoresInPipeline %}
+                {% if datacoresInPipeline[count.a]|length > 1 %}
                 <tr>
-                  <td colspan="2">{{item}} </td>
-                  <td>{{datacoreQty[loop.index]}} </td>
+                  <td colspan="2">{{ datacoresInPipeline[count.a] }}</td>
+                  {% set count.a = count.a + 1 %}
+                  <td> {{ datacoresInPipeline[count.a] }} </td>
                 </tr>
+                {% set count.a = count.a + 1 %}
+                {% endif %}
                 {% endfor %}
               {% endif %}
             </table>
@@ -194,7 +202,7 @@
           <div class="mx-auto row">
             <p class="font-weight-bold mb-0">
               {% if 'myUser_id' in session %}
-                Total Cost: {{"{:,}".format(datacoreCost)}} ISK
+                Total Cost: {{ datacoreCost }} ISK
               {% else %}
                 Total Cost:  --
               {% endif %}
