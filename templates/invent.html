@@ -127,7 +127,7 @@
               <p class="font-weight-bold">
                 Datacore Cost:
                 {% if bp_id > 0 %}
-                  {{"{:,}".format(datacoresCost * 20)}} ISK
+                  {{"{:,.0f}".format(datacoresCost * 20)}} ISK
                 {% else %}
                     --
                 {% endif %}
@@ -158,7 +158,7 @@
                 {% for item in pipeline %}
                     <tr>
                       <form action="{{ url_for('invent')}}" method="post">
-                      <td colspan="4">{{item.product_name}}</td>
+                      <td colspan="4"><a href="/invent_selected?invent_product={{ item.blueprint_id }}">{{item.product_name}}</td>
                       <td><input type="text" class="form-control-sm py-0" size="1" name="runs" id="runs" value="{{item.runs}}"></td>
                       <td><div class="btn-group px-1">
                         <button class="btn btn-sm" type="submit" name="action" value="edit">
