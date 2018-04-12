@@ -116,8 +116,8 @@
               {% endif %}
 
                 {% if bp_id > 0 %}
-                  {% for datacore in datacores %}
-                    {{datacore.datacore}}:<strong> {{datacore.quantity * 20}}</strong></br>
+                  {% for datacore in datacoreRequirements %}
+                    {{datacore.datacore}}</br>
                   {% endfor %}
                 {% else %}
                   --</br>
@@ -127,7 +127,7 @@
               <p class="font-weight-bold">
                 Datacore Cost:
                 {% if bp_id > 0 %}
-                  {{"{:,.0f}".format(datacoresCost * 20)}} ISK
+                  {{"{:,.0f}".format(datacoresCost)}} ISK
                 {% else %}
                     --
                 {% endif %}
@@ -155,10 +155,10 @@
             <tbody>
               {% if 'myUser_id' in session %}
 
-                {% for item in pipeline %}
+                {% for item in pipeline_products %}
                     <tr>
                       <form action="{{ url_for('invent')}}" method="post">
-                      <td colspan="4"><a href="/invent_selected?invent_product={{ item.blueprint_id }}">{{item.product_name}}</td>
+                      <td colspan="4"><a href="/invent_selected?invent_productName={{ item.product_name }}">{{item.product_name}}</td>
                       <td><input type="text" class="form-control-sm py-0" size="1" name="runs" id="runs" value="{{item.runs}}"></td>
                       <td><div class="btn-group px-1">
                         <button class="btn btn-sm" type="submit" name="action" value="edit">
@@ -167,7 +167,7 @@
                           <i class="fas fa-trash-alt"></i></button>
                         </div>
                       </td>
-                      <input type="hidden" name="pipeline_id" value="{{item.id}}" id="pipeline_id">
+                      <input type="hidden" name="product_name" id="product_name" value="{{item.product_name}}">
                       </form>
                     </tr>
                 {% endfor %}
@@ -185,14 +185,14 @@
             <tbody>
               {% if 'myUser_id' in session %}
                 {% set count = namespace(a=0) %}
-                {% for item in datacoresInPipeline %}
-                {% if datacoresInPipeline[count.a]|length > 1 %}
+                {% for item in materialInPipeline %}
+                {% if materialInPipeline[count.a]|length > 1 %}
                 <tr>
-                  <td colspan="2">{{ datacoresInPipeline[count.a] }}</td>
-                  {% set count.a = count.a + 1 %}
-                  <td> {{ datacoresInPipeline[count.a] }} </td>
+                  <td colspan="2">{{ materialInPipeline[count.a] }}</td>
+                  {% set count.a = count.a +1  %}
+                  <td> {{ "{:,.0f}".format(materialInPipeline[count.a]) }} </td>
                 </tr>
-                {% set count.a = count.a + 1 %}
+                {% set count.a = count.a +1 %}
                 {% endif %}
                 {% endfor %}
               {% endif %}
@@ -202,7 +202,7 @@
           <div class="mx-auto row">
             <p class="font-weight-bold mb-0">
               {% if 'myUser_id' in session %}
-                Total Cost: {{ datacoreCost }} ISK
+                Total Cost: {{ "{:,.0f}".format(pipelineCost) }} ISK
               {% else %}
                 Total Cost:  --
               {% endif %}
@@ -210,13 +210,6 @@
           </div>
         </form>
       </li>
-      <form>
-        <li class="list-group-item d-flex justify-content-between lh-condensed">
-          <div class="form-group row mx-auto">
-            <input name="addbom" class="btn-sm btn-info" type="button" value="Add to B.O.M.">
-          </div> <!-- Form group row -->
-        </li>
-      </form>
     </ul>
   </div> <!-- col 3 -->
 

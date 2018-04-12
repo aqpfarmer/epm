@@ -6,6 +6,7 @@ from passlib.hash import sha256_crypt
 from datetime import datetime
 import requests
 import json
+from sqlalchemy import or_
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chris:funkytown@catfish/evesde'
@@ -77,36 +78,28 @@ class build_pipeline(db.Model):
         self.product_name = product_name
         self.material = material
 
-class invention_pipeline(db.Model):
+class invent_pipeline(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     user_id = db.Column(db.Integer())
     product_id = db.Column(db.Integer())
     blueprint_id = db.Column(db.Integer())
-    runs = db.Column(db.Integer())
-    datacore1_id = db.Column(db.Integer())
-    datacore2_id = db.Column(db.Integer())
-    datacore1_cost = db.Column(db.Numeric())
-    datacore2_cost = db.Column(db.Numeric())
     product_name = db.Column(db.String(100))
-    datacore1 = db.Column(db.String(100))
-    datacore2 = db.Column(db.String(100))
-    datacore1_count = db.Column(db.Integer())
-    datacore2_count = db.Column(db.Integer())
+    runs = db.Column(db.Integer())
+    datacore_id = db.Column(db.Integer())
+    datacore_qty = db.Column(db.Integer())
+    datacore_cost = db.Column(db.Numeric())
+    datacore = db.Column(db.String(100))
 
-    def __init__(self, user_id, product_id, blueprint_id, runs, datacore1_id, datacore2_id, datacore1_cost, datacore2_cost, product_name, datacore1, datacore2, datacore1_count, datacore2_count):
+    def __init__(self, user_id, product_id, blueprint_id, runs, product_name, datacore_id, datacore_qty, datacore_cost, datacore):
         self.user_id = user_id
         self.product_id = product_id
         self.blueprint_id = blueprint_id
         self.runs = runs
-        self.datacore1_id = datacore1_id
-        self.datacore2_id = datacore2_id
-        self.datacore1_cost = datacore1_cost
-        self.datacore2_cost = datacore2_cost
         self.product_name = product_name
-        self.datacore1 = datacore1
-        self.datacore2 = datacore2
-        self.datacore1_count = datacore1_count
-        self.datacore2_count = datacore2_count
+        self.datacore_id = datacore_id
+        self.datacore_qty = datacore_qty
+        self.datacore_cost = datacore_cost
+        self.datacore = datacore
 
 class v_build_requirements(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
@@ -124,6 +117,16 @@ class v_build_requirements(db.Model):
         self.product_id = product_id
 
 class v_build_pipeline_products(db.Model):
+    product_name = db.Column(db.String(100))
+    user_id = db.Column(db.Integer(), primary_key=True)
+    runs = db.Column(db.Integer())
+
+    def __init__(product_name, user_id, runs):
+        self.product_name = str(product_name)
+        self.user_id = user_id
+        self.runs = runs
+
+class v_invent_pipeline_products(db.Model):
     product_name = db.Column(db.String(100))
     user_id = db.Column(db.Integer(), primary_key=True)
     runs = db.Column(db.Integer())
@@ -209,6 +212,19 @@ def index():
     form = LoginForm(request.form)
     return render_template('home.html', form=form)
 
+@app.route("/bom")
+def bom():
+    form = LoginForm(request.form)
+    #try:
+    inv_pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore').order_by('datacore').all()
+
+    return render_template('shopping_list.html', form=form, inv_pipeline=inv_pipeline)
+
+    #except Exception as e:
+    #    flash('Problem with B.o.M. - see log.', 'danger')
+    #    app.logger.info(str(e))
+    #    return redirect(url_for('bom'))
+
 @app.route('/build', methods=['GET','POST'])
 def build():
     form = LoginForm(request.form)
@@ -278,7 +294,7 @@ def build_selected():
         mySellMedian = "{:,.0f}".format(querySell)
         buildTime = db.session.query(v_build_time).filter_by(id = id).one()
         myTime = "{:,}".format(buildTime.time/60)
-        myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = id).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id').all()
+        myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = id, product_id = selected_bp.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id').all()
         myBuildCost = 0
         myMaterialCost = []
         for requirements in myBuildRequirements:
@@ -367,32 +383,37 @@ def invent():
     form = LoginForm(request.form)
     try:
         myBlueprints = db.session.query(v_invention_product).all()
+        if request.method == 'POST':
+            if request.form['action'] == 'edit':
+                if request.form['product_name']:
+                    product_name = request.form['product_name']
+                    runs = request.form['runs']
+                    pipeline = db.session.query(invent_pipeline).filter_by(product_name = product_name).all()
+                    for item in pipeline:
+                        item.runs = runs
+                        db.session.add(item)
+                        db.session.commit()
+
+                    flash('Successfully updated pipeline runs.', 'success')
+            elif request.form.get('action') == 'delete':
+                if request.form.get('product_name'):
+                    product_name = request.form.get('product_name')
+                    pipeline = db.session.query(invent_pipeline).filter_by(product_name = product_name).all()
+                    for item in pipeline:
+                        db.session.delete(item)
+                        db.session.commit()
+
+                    flash('Successfully deleted pipeline product.', 'success')
 
         if 'myUser_id' in session:
-            if request.method == 'POST':
-                if request.form['action'] == 'edit':
-                    if request.form['pipeline_id']:
-                        pipeline_id = request.form['pipeline_id']
-                        runs = request.form['runs']
-                        pipeline = db.session.query(invention_pipeline).filter_by(id = pipeline_id).one()
-                        pipeline.runs = runs
-                        db.session.add(pipeline)
-                        db.session.commit()
-                        flash('Successfully updated pipeline runs.', 'success')
-                elif request.form.get('action') == 'delete':
-                    if request.form.get('pipeline_id'):
-                        pipeline_id = request.form.get('pipeline_id')
-                        pipeline = db.session.query(invention_pipeline).filter_by(id = pipeline_id).one()
-                        db.session.delete(pipeline)
-                        db.session.commit()
-                        flash('Successfully deleted pipeline product.', 'success')
+            pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore').order_by('datacore').all()
 
-            pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2','datacore1_count','datacore2_count').all()
+            pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name', 'user_id', 'runs')
 
-            datacoresInPipeline = invention_pipeline_rollup_qty(pipeline)
-            datacoreCost = invention_pipeline_rollup_cost(pipeline)
+            materialInPipeline = invent_pipeline_rollup_qty(pipeline)
+            materialCost = invent_pipeline_rollup_cost(pipeline)
 
-            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0, pipeline=pipeline, datacoresInPipeline=datacoresInPipeline, datacoreCost="{:,.0f}".format(datacoreCost))
+            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0, pipeline=pipeline, materialInPipeline=materialInPipeline, pipeline_products=pipeline_products, pipelineCost=materialCost)
         else:
             return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0)
 
@@ -403,14 +424,21 @@ def invent():
 
 @app.route('/invent_selected', methods=['POST','GET'])
 def invent_selected():
+    queryByName = False
     id = request.form.get('invent_product')
-    if request.args.get('invent_product'):
-        id = request.args.get('invent_product')
+    if request.args.get('invent_productName'):
+        queryByName = True
 
     form = LoginForm(request.form)
     try:
         myBlueprints = db.session.query(v_invention_product).all()
-        selected_bp = db.session.query(v_invention_product).filter_by(id = id).one()
+        if queryByName == True:
+            productName = request.args.get('invent_productName')
+            selected_bp = db.session.query(v_invention_product).filter_by(t2_blueprint = productName).first()
+            id = selected_bp.id
+        else:
+            selected_bp = db.session.query(v_invention_product).filter_by(id = id).one()
+
         selected_product = db.session.query(v_product).filter_by(id = selected_bp.t2_id).one()
         myProduct = db.session.query(invtypes).filter_by(typeID = int(selected_product.t2_id)).one()
         myProbability = db.session.query(v_probability).filter_by(id = id).one()
@@ -419,23 +447,26 @@ def invent_selected():
         mySellMedian = "{:,.0f}".format(querySell)
         inventTime = db.session.query(v_invent_time).filter_by(id = id).one()
         myTime = "{:,}".format((inventTime.time/60)/60)
-        myDatacores = db.session.query(v_datacore_requirements).filter_by(id = id).with_entities('id','datacore','quantity','dc_id').all()
+        myDatacoreRequirements = db.session.query(v_datacore_requirements).filter_by(id = id).with_entities('id','datacore','quantity','dc_id').all()
         myDatacoresCost = 0
-        for datacore in myDatacores:
+        for datacore in myDatacoreRequirements:
             myDatacoresCost = myDatacoresCost + get_marketValue(datacore.dc_id, 'buy') * datacore.quantity
 
         myBaseProduct = db.session.query(v_build_requirements).filter_by(id = selected_bp.t2_id).filter(v_build_requirements.group_id <> 334).filter(v_build_requirements.group_id <> 18).filter(v_build_requirements.group_id <> 1034).filter(v_build_requirements.group_id <> 332).filter(v_build_requirements.group_id <> 1040).one()
 
         if 'myUser_id' in session:
 
-            pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2','datacore1_count','datacore2_count').all()
-            datacoresInPipeline = invention_pipeline_rollup_qty(pipeline)
-            datacoreCost = invention_pipeline_rollup_cost(pipeline)
+            pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore').order_by('datacore').all()
 
-            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacores = myDatacores, datacoresCost = myDatacoresCost, baseProduct = myBaseProduct.material, pipeline=pipeline, datacoresInPipeline=datacoresInPipeline, datacoreCost="{:,.0f}".format(datacoreCost))
+            pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name', 'user_id', 'runs')
+
+            materialInPipeline = invent_pipeline_rollup_qty(pipeline)
+            materialCost = invent_pipeline_rollup_cost(pipeline)
+
+            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacoreRequirements = myDatacoreRequirements, datacoresCost=myDatacoresCost, baseProduct = myBaseProduct.material, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products)
 
         else:
-            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacores = myDatacores, datacoresCost = myDatacoresCost, baseProduct = myBaseProduct.material)
+            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacoreRequirements=myDatacoreRequirements, datacoresCost = myDatacoresCost, baseProduct = myBaseProduct.material)
 
     except Exception as e:
         flash('Problem querying blueprint. See log', 'danger')
@@ -449,47 +480,54 @@ def invent_add_pipeline():
 
     if 'myUser_id' in session:
         try:
-            myBlueprints = db.session.query(v_invention_product).all()
-            selected_bp = db.session.query(v_invention_product).filter_by(id = id).one()
-            selected_product = db.session.query(v_product).filter_by(id = selected_bp.t2_id).one()
-            myProduct = db.session.query(invtypes).filter_by(typeID = int(selected_product.t2_id)).one()
-            myDatacores = db.session.query(v_datacore_requirements).filter_by(id = id).with_entities('id','datacore','quantity','dc_id').all()
-            datacore1_cost = get_marketValue(myDatacores[0].dc_id, 'buy') * myDatacores[0].quantity
-            datacore2_cost = get_marketValue(myDatacores[1].dc_id, 'buy') * myDatacores[1].quantity
-            myProbability = db.session.query(v_probability).filter_by(id = id).one()
-            myProbPercent = "{:.2%}".format(myProbability.probability)
-            querySell = get_marketValue(str(myProduct.typeID),'sell')
-            mySellMedian = "{:,.0f}".format(querySell)
-            inventTime = db.session.query(v_invent_time).filter_by(id = id).one()
-            myTime = "{:,}".format((inventTime.time/60)/60)
-            myDatacoresCost = 0
-            for datacore in myDatacores:
-                myDatacoresCost = myDatacoresCost + get_marketValue(datacore.dc_id, 'buy') * datacore.quantity
+            if id > 0:
+                myBlueprints = db.session.query(v_invention_product).all()
+                selected_bp = db.session.query(v_invention_product).filter_by(id = id).one()
+                selected_product = db.session.query(v_product).filter_by(id = selected_bp.t2_id).one()
+                myProduct = db.session.query(invtypes).filter_by(typeID = int(selected_bp.t2_id)).one()
+                querySell = get_marketValue(str(myProduct.typeID),'sell')
+                inventTime = db.session.query(v_invent_time).filter_by(id = id).one()
+                myTime = "{:,}".format((inventTime.time/60)/60)
+                myDatacoreRequirements = db.session.query(v_datacore_requirements).filter_by(id = id).with_entities('id','datacore','quantity','dc_id').all()
+                myInventCost = 0
+                myDatacoreCost = []
+                for requirements in myDatacoreRequirements:
+                    myDatacoreCost += [get_marketValue(requirements.dc_id, 'buy') * requirements.quantity]
 
-            myBaseProduct = db.session.query(v_build_requirements).filter_by(id = selected_bp.t2_id).filter(v_build_requirements.group_id <> 334).filter(v_build_requirements.group_id <> 18).filter(v_build_requirements.group_id <> 1034).filter(v_build_requirements.group_id <> 332).filter(v_build_requirements.group_id <> 1040).one()
+                for cost in myDatacoreCost:
+                    myInventCost += cost
 
-            if request.form.get('job_runs') <> '' and request.form.get('job_runs') <> 0:
-                pipeline = invention_pipeline(session['myUser_id'],  myProduct.typeID, id, request.form.get('job_runs'), myDatacores[0].dc_id, myDatacores[1].dc_id, datacore1_cost, datacore2_cost, myProduct.typeName, myDatacores[0].datacore, myDatacores[1].datacore,myDatacores[0].quantity, myDatacores[1].quantity)
+                pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore').order_by('datacore').all()
 
-                db.session.add(pipeline)
-                db.session.commit()
-                flash('Successfully added to pipeline.','success')
-                pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2','datacore1_count','datacore2_count').all()
+                pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name', 'user_id', 'runs')
 
-                return redirect(url_for('invent'))
+                materialInPipeline = invent_pipeline_rollup_qty(pipeline)
+                materialCost = invent_pipeline_rollup_cost(pipeline)
+
+                if request.form.get('job_runs') <> '':
+                    for requirements in myDatacoreRequirements:
+                        myCost = get_marketValue(requirements.dc_id, 'buy') * requirements.quantity
+
+                        pipeline = invent_pipeline(session['myUser_id'],  myProduct.typeID, id, request.form.get('job_runs'), selected_bp.t2_blueprint, requirements.dc_id, requirements.quantity, myCost, requirements.datacore)
+
+                        db.session.add(pipeline)
+                        db.session.commit()
+
+                    flash('Successfully added to pipeline.','success')
+                    return redirect(url_for('invent'))
+                else:
+                    flash('Enter a quantity in job runs field.', 'danger')
+                    return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, datacoreRequirements = myDatacoreRequirements, inventCost = myInventCost, datacoreCost = myDatacoreCost, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products)
+
             else:
-                flash('Enter a quantity in job runs field.', 'danger')
-                pipeline = db.session.query(invention_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','datacore1_id','datacore2_id','datacore1_cost','datacore2_cost','product_name','datacore1','datacore2','datacore1_count','datacore2_count').all()
-
-                datacoresInPipeline = invention_pipeline_rollup_qty(pipeline)
-                datacoreCost = invention_pipeline_rollup_cost(pipeline)
-
-                return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacores = myDatacores, datacoresCost = myDatacoresCost, baseProduct = myBaseProduct.material, pipeline=pipeline, datacoresInPipeline=datacoresInPipeline, datacoreCost="{:,.0f}".format(datacoreCost))
+                flash('Choose a product to invent.', 'danger')
+                return redirect(url_for('invent'))
 
         except Exception as e:
             flash('Problem adding to pipeline. See log.', 'danger')
             app.logger.info(str(e))
             return redirect(url_for('invent'))
+
     else:
         flash('You must be logged in to add to pipeline.', 'danger')
         return redirect(url_for('invent'))
@@ -625,45 +663,32 @@ def build_pipeline_rollup_qty(pipeline):
 
     return materialInPipeline
 
-def invention_pipeline_rollup_qty(pipeline):
-    datacoresInPipeline = []
+def invent_pipeline_rollup_cost(pipeline):
+    buildCost = 0.0
+    for item in pipeline:
+        buildCost += item.datacore_cost * item.runs
+
+    return buildCost
+
+def invent_pipeline_rollup_qty(pipeline):
+    materialInPipeline = []
     matchFound1 = False
-    matchFound2 = False
 
     for item in pipeline:
-        for dc in datacoresInPipeline:
-            if dc == item.datacore1:
-                index = datacoresInPipeline.index(item.datacore1) +1
-                dc_count = datacoresInPipeline[index]
-                datacoresInPipeline[index] = dc_count + (item.runs * item.datacore1_count)
+        for mat in materialInPipeline:
+            if mat == item.datacore:
+                index = materialInPipeline.index(item.datacore) +1
+                myCount = materialInPipeline[index]
+                materialInPipeline[index] = myCount + (item.runs * item.datacore_qty)
                 matchFound1 = True
-            elif dc == item.datacore2:
-                index = datacoresInPipeline.index(item.datacore2) +1
-                dc_count = datacoresInPipeline[index]
-                datacoresInPipeline[index] = dc_count + (item.runs * item.datacore2_count)
-                matchFound2 = True
 
         if matchFound1 == True:
             matchFound1 = False
         else:
-            datacoresInPipeline += [item.datacore1]
-            datacoresInPipeline += [item.runs * item.datacore1_count]
+            materialInPipeline += [item.datacore]
+            materialInPipeline += [item.runs * item.datacore_qty]
 
-        if matchFound2 == True:
-            matchFound2 = False
-        else:
-            datacoresInPipeline += [item.datacore2]
-            datacoresInPipeline += [item.runs * item.datacore2_count]
-
-    return datacoresInPipeline
-
-def invention_pipeline_rollup_cost(pipeline):
-    datacoreCost = 0.0
-    for item in pipeline:
-        datacoreCost += item.datacore1_cost * item.runs
-        datacoreCost += item.datacore2_cost * item.runs
-
-    return datacoreCost
+    return materialInPipeline
 
 if __name__ == "__main__":
    app.run()

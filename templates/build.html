@@ -75,10 +75,11 @@
             {% endif %}
           </div>
           {% if bp_id > 0 %}
-            <div class="text-muted pt-2">Production Time: <strong>{{ time }} min</strong></div>
+            <div class="text-muted pt-2">Production Time:<br> <strong>{{ time }} min</strong></div>
           {% else %}
             <div class="text-muted pt-2">Production Time: -- </div>
           {% endif %}
+
 
           <div>
             <form class="" action="{{ url_for('build_add_pipeline')}}" method="POST">
