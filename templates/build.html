@@ -84,7 +84,7 @@
           <div>
             <form class="" action="{{ url_for('build_add_pipeline')}}" method="POST">
               <label for="job_runs" class="col-form-label text-black col-sm pl-1"><strong>Job Runs:</strong></label>
-              <input type="text" size="1" class="form-control-sm" id="job_runs" name="job_runs">
+              <input type="text" size="1" class="form-control-sm" id="job_runs" name="job_runs" value="{{ runs }}">
                 {% if bp_id > 0 %}
                   <input name="add" class="btn-sm btn-info pl-1" type="submit" value="Add to Build Pipeline">
                   <input type="hidden" name="bp_id" value="{{bp_id}}" id="bp_id">
@@ -116,8 +116,8 @@
                     <tr>
                       <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{requirement.material_id}}_32.png"></th>
                       <td>{{requirement.material}}</td>
-                      <td>{{ "{:,.0f}".format(requirement.qty) }}</td>
-                      <td>{{ "{:,.0f}".format(materialCost[count.a]) }}</td>
+                      <td>{{ "{:,.0f}".format(requirement.qty * runs) }}</td>
+                      <td>{{ "{:,.0f}".format(materialCost[count.a] * runs) }}</td>
                     </tr>
                     {% set count.a = count.a + 1 %}
                     {% endfor %}
@@ -129,7 +129,7 @@
               <div class="form-group">
                 <h4 class="font-weight-bold mb-1 text-danger ml-4">
                   {% if bp_id > 0 %}
-                    Material Cost: {{ "{:,.0f}".format(buildCost) }} ISK
+                    Material Cost: {{ "{:,.0f}".format(buildCost * runs) }} ISK
                   {% else %}
                     Product Cost: --
                   {% endif%}
@@ -160,7 +160,7 @@
                 {% for item in pipeline_products %}
                     <tr>
                       <form action="{{ url_for('build')}}" method="post">
-                      <td colspan="4"><a href="/build_selected?build_productName={{ item.product_name }}">{{item.product_name}}</td>
+                      <td colspan="4"><a href="/build_selected?build_productName={{ item.product_name }}&runs={{item.runs}}">{{item.product_name}}</td>
                       <td><input type="text" class="form-control-sm py-0" size="1" name="runs" id="runs" value="{{item.runs}}"></td>
                       <td><div class="btn-group px-1">
                         <button class="btn btn-sm" type="submit" name="action" value="edit">
@@ -186,16 +186,11 @@
             </thead>
             <tbody>
               {% if 'myUser_id' in session %}
-                {% set count = namespace(a=0) %}
                 {% for item in materialInPipeline %}
-                {% if materialInPipeline[count.a]|length > 1 %}
                 <tr>
-                  <td colspan="2">{{ materialInPipeline[count.a] }}</td>
-                  {% set count.a = count.a + 1 %}
-                  <td> {{ "{:,.0f}".format(materialInPipeline[count.a]) }} </td>
+                  <td colspan="2">{{ item.material }}</td>
+                  <td> {{ "{:,.0f}".format(item.material_qty ) }} </td>
                 </tr>
-                {% set count.a = count.a + 1 %}
-                {% endif %}
                 {% endfor %}
               {% endif %}
             </table>

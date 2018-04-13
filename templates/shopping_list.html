@@ -45,15 +45,19 @@
             </thead>
             <tbody>
               {% if 'myUser_id' in session %}
-                {% for item in inv_pipeline %}
+              {% set total = namespace(a=0) %}
+                {% for item in datacoresInPipeline %}
                 <tr>
                   <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{ item.datacore_id }}_32.png"></th>
                   <td colspan="2">{{ item.datacore }}</td>
                   <td> {{ item.datacore_qty * item.runs }} </td>
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.datacore_cost * item.runs) }}</p></td>
                 </tr>
+                {% set total.a = total.a + (item.datacore_cost * item.runs) %}
                 {% endfor %}
-                <tr align="center"><td class="table-active" colspan="4"><strong>Datacore Total: 111,111,111</strong></td></tr>
+                <tr align="center">
+                  <td class="table-active" colspan="5"><h5>Datacore Total: {{ "{:,.0f}".format(total.a) }}</h5></td>
+                </tr>
               {% endif %}
             </tbody>
           </table>
@@ -68,36 +72,32 @@
         </li>
         <li class="list-group-item py-0">
           <form>
-            <table class="table table-hover">
+            <table class="table table-sm table-condensed table-hover table-responsive pl-3">
               <thead>
                 <tr>
                   <th scope="col"></th>
+                  <th scope="col"></th>
                   <th scope="col">Material</th>
                   <th scope="col">QTY</th>
-                  <th scope="col">Jita Buy Price</th>
+                  <th scope="col"><center>Jita Buy Price</th>
                 </tr>
               </thead>
               <tbody>
+                {% if 'myUser_id' in session %}
+                {% set total = namespace(a=0) %}
+                  {% for item in planetaryInPipeline %}
                 <tr>
-                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/9836_32.png"></th>
-                  <td><p class="mt-1">Consumer Electronics</p></td>
-                  <td><p class="mt-1 text-center">40</p></td>
-                  <td><p class="mt-1 text-center">6,160,105</p></td>
+                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
+                  <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
+                  <td><p class="mt-1 text-center">{{ item.material_qty  }}</p></td>
+                  <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
                 </tr>
-                <tr>
-                  <tr>
-                    <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/9848_32.png"></th>
-                    <td><p class="mt-1">Robotics</p></td>
-                    <td><p class="mt-1 text-center">40</p></td>
-                    <td><p class="mt-1 text-center">4,200,105</p></td>
-                  </tr>
-                  <tr>
-                    <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/9834_32.png"></th>
-                    <td><p class="mt-1">Guidance Systems</p></td>
-                    <td><p class="mt-1 text-center">80</p></td>
-                    <td><p class="mt-1 text-center">9,572,145</p></td>
-                  </tr>
-                  <tr align="center"><td class="table-active" colspan="4"><strong>Planet Commodity Total: 92,235,000</strong></td></tr>
+                {% set total.a = total.a + (item.material_cost * item.runs) %}
+                {% endfor %}
+                <tr align="center">
+                  <td class="table-active" colspan="5"><h5>Planetary Commodities Total: {{ "{:,.0f}".format(total.a) }}</h5></td>
+                </tr>
+                {% endif %}
               </tbody>
             </table>
           </form>
@@ -114,9 +114,10 @@
         </li>
         <li class="list-group-item py-0">
           <form>
-            <table class="table table-hover">
+            <table class="table table-sm table-condensed table-hover table-responsive pl-3">
               <thead>
                 <tr>
+                  <th scope="col"></th>
                   <th scope="col"></th>
                   <th scope="col">Material</th>
                   <th scope="col">QTY</th>
@@ -125,90 +126,31 @@
                 </tr>
               </thead>
               <tbody>
+                {% if 'myUser_id' in session %}
+                {% set total = namespace(a=0) %}
+                  {% for item in componentInPipeline %}
                 <tr>
-                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11690_32.png"></th>
-                  <td><p class="mt-1">Superconductor Rails</p></td>
-                  <td><p class="mt-1 text-center">40</p></td>
-                  <td><p class="mt-1 text-center">6,160,105</p></td>
+                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
+                  <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
+                  <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
+                  <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
                   <td>
                     <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio1" value="buy" checked>
-                      <label class="form-check-label" for="inlineRadio1">Buy</label>
+                      <input class="form-check-input" type="radio" name="{{item.material_id}}" id="buy" checked>
+                      <label class="form-check-label" for="buy">Buy</label>
                     </div>
                     <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio2" value="build">
-                      <label class="form-check-label" for="inlineRadio2">Build</label>
+                      <input class="form-check-input" type="radio" name="{{item.material_id}}" id="build">
+                      <label class="form-check-label" for="build">Build</label>
                     </div>
                   </td>
                 </tr>
-
-                <tr>
-                  <tr>
-                    <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11689_32.png"></th>
-                    <td><p class="mt-1">Laser Focusing Crystals</p></td>
-                    <td><p class="mt-1 text-center">40</p></td>
-                    <td><p class="mt-1 text-center">4,200,105</p></td>
-                    <td>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="inlineRadio3" value="buy" checked>
-                        <label class="form-check-label" for="inlineRadio3">Buy</label>
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="inlineRadio4" value="build">
-                        <label class="form-check-label" for="inlineRadio4">Build</label>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11553_32.png"></th>
-                    <td><p class="mt-1">Oscillator Capacitor Unit</p></td>
-                    <td><p class="mt-1 text-center">80</p></td>
-                    <td><p class="mt-1 text-center">9,572,145</p></td>
-                    <td>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions3" id="inlineRadio5" value="buy" checked>
-                        <label class="form-check-label" for="inlineRadio5">Buy</label>
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions3" id="inlineRadio6" value="build">
-                        <label class="form-check-label" for="inlineRadio6">Build</label>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11556_32.png"></th>
-                    <td><p class="mt-1">Pulse Shield Emitter</p></td>
-                    <td><p class="mt-1 text-center">40</p></td>
-                    <td><p class="mt-1 text-center">3,050,311</p></td>
-                    <td>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions4" id="inlineRadio7" value="buy" checked>
-                        <label class="form-check-label" for="inlineRadio7">Buy</label>
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions4" id="inlineRadio8" value="build">
-                        <label class="form-check-label" for="inlineRadio8">Build</label>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11535_32.png"></th>
-                    <td><p class="mt-1">Magnetometric Secnsor Cluster</p></td>
-                    <td><p class="mt-1 text-center">40</p></td>
-                    <td><p class="mt-1 text-center">3,050,311</p></td>
-                    <td>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions5" id="inlineRadio9" value="buy" checked>
-                        <label class="form-check-label" for="inlineRadio9">Buy</label>
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions5" id="inlineRadio10" value="build">
-                        <label class="form-check-label" for="inlineRadio10">Build</label>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr align="center"><td class="table-active" colspan="5"><strong>Advanced Components Total: 18,833,000</strong></td></tr>
-
+                {% set total.a = total.a + (item.material_cost * item.runs) %}
+                {% endfor %}
+                <tr align="center">
+                  <td class="table-active" colspan="5"><h5>Advanced Components Total: {{ "{:,.0f}".format(total.a) }}</h5></td>
+                </tr>
+                {% endif %}
               </tbody>
             </table>
 
@@ -218,40 +160,36 @@
       <div class="col">
         <ul class="list-group mb-1">
           <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
-            <h4 class="mx-auto">Advanced Moon Goo</h4>
+            <h4 class="mx-auto">Component Materials</h4>
           </li>
           <li class="list-group-item py-0">
             <form>
-              <table class="table table-hover">
+              <table class="table table-sm table-condensed table-hover table-responsive pl-3">
                 <thead>
                   <tr>
                     <th scope="col"></th>
+                    <th scope="col"></th>
                     <th scope="col">Material</th>
                     <th scope="col">QTY</th>
-                    <th scope="col">Jita Buy Price</th>
+                    <th scope="col"><center>Jita Buy Price</th>
                   </tr>
                 </thead>
                 <tbody>
+                  {% if 'myUser_id' in session %}
+                  {% set total = namespace(a=0) %}
+                    {% for item in materialInPipeline %}
                     <tr>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/16683_32.png"></th>
-                      <td><p class="mt-1">Ferrogel</p></td>
-                      <td><p class="mt-1 text-center">210</p></td>
-                      <td><p class="mt-1 text-center">43,200,105</p></td>
+                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
+                      <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
+                      <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
+                      <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
                     </tr>
-                    <tr>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/16678_32.png"></th>
-                      <td><p class="mt-1">Sylramic Fibers</p></td>
-                      <td><p class="mt-1 text-center">10,530</p></td>
-                      <td><p class="mt-1 text-center">16,572,145</p></td>
+                    {% set total.a = total.a + (item.material_cost * item.runs) %}
+                    {% endfor %}
+                    <tr align="center">
+                      <td class="table-active" colspan="5"><h5>Component Material Total: {{ "{:,.0f}".format(total.a) }}</h5></td>
                     </tr>
-                    <tr>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/16670_32.png"></th>
-                      <td><p class="mt-1">Crystallin Carbonide</p></td>
-                      <td><p class="mt-1 text-center">10,530</p></td>
-                      <td><p class="mt-1 text-center">4,972,145</p></td>
-                    </tr>
-                    <tr align="center"><td class="table-active" colspan="4"><strong>Minerals & Moon Goo Total: 92,235,000</strong></td></tr>
-
+                    {% endif %}
                 </tbody>
               </table>
 
@@ -269,85 +207,43 @@
           </li>
           <li class="list-group-item py-0">
             <form>
-              <table class="table table-hover">
+              <table class="table table-sm table-condensed table-hover table-responsive pl-3">
                 <thead>
                   <tr>
                     <th scope="col"></th>
+                    <th scope="col"></th>
                     <th scope="col">Material</th>
                     <th scope="col">QTY</th>
-                    <th scope="col">Jita Buy Price</th>
+                    <th scope="col"><center>Jita Buy Price</th>
                     <th scope="col">Option</th>
                   </tr>
                 </thead>
                 <tbody>
+                  {% if 'myUser_id' in session %}
+                  {% set total = namespace(a=0) %}
+                    {% for item in tech1InPipeline %}
                   <tr>
-                    <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/608_32.png"></th>
-                    <td><p class="mt-1">Atron</p></td>
-                    <td><p class="mt-1 text-center">9</p></td>
-                    <td><p class="mt-1 text-center">3,778,697</p></td>
+                    <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
+                    <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
+                    <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
+                    <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
                     <td>
                       <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio1" value="buy" checked>
-                        <label class="form-check-label" for="inlineRadio1">Buy</label>
+                        <input class="form-check-input" type="radio" name="{{item.material_id}}" id="buy" checked>
+                        <label class="form-check-label" for="buy">Buy</label>
                       </div>
                       <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio2" value="build">
-                        <label class="form-check-label" for="inlineRadio2">Build</label>
+                        <input class="form-check-input" type="radio" name="{{item.material_id}}" id="build">
+                        <label class="form-check-label" for="build">Build</label>
                       </div>
                     </td>
                   </tr>
-
-                  <tr>
-                    <tr>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/2046_32.png"></th>
-                      <td><p class="mt-1">Damage Control I</p></td>
-                      <td><p class="mt-1 text-center">100</p></td>
-                      <td><p class="mt-1 text-center">1,415,620</p></td>
-                      <td>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="inlineRadio3" value="buy" checked>
-                          <label class="form-check-label" for="inlineRadio3">Buy</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions2" id="inlineRadio4" value="build">
-                          <label class="form-check-label" for="inlineRadio4">Build</label>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/578_32.png"></th>
-                      <td><p class="mt-1">Adaptive Invulnerability Field I</p></td>
-                      <td><p class="mt-1 text-center">60</p></td>
-                      <td><p class="mt-1 text-center">5,492,607</p></td>
-                      <td>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions3" id="inlineRadio5" value="buy" checked>
-                          <label class="form-check-label" for="inlineRadio5">Buy</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions3" id="inlineRadio6" value="build">
-                          <label class="form-check-label" for="inlineRadio6">Build</label>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/583_32.png"></th>
-                      <td><p class="mt-1">Condor</p></td>
-                      <td><p class="mt-1 text-center">6</p></td>
-                      <td><p class="mt-1 text-center">3,050,311</p></td>
-                      <td>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions4" id="inlineRadio7" value="buy" checked>
-                          <label class="form-check-label" for="inlineRadio7">Buy</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions4" id="inlineRadio8" value="build">
-                          <label class="form-check-label" for="inlineRadio8">Build</label>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr align="center"><td class="table-active" colspan="5"><strong>Tech 1 Total: 18,833,000</strong></td></tr>
-
+                  {% set total.a = total.a + (item.material_cost * item.runs) %}
+                  {% endfor %}
+                  <tr align="center">
+                    <td class="table-active" colspan="6"><h5>Tech 1 Total: {{ "{:,.0f}".format(total.a) }}</h5></td>
+                  </tr>
+                  {% endif %}
                 </tbody>
               </table>
 
@@ -361,9 +257,10 @@
             </li>
             <li class="list-group-item py-0">
               <form>
-                <table class="table table-hover">
+                <table class="table table-sm table-condensed table-hover table-responsive pl-3">
                   <thead>
                     <tr>
+                      <th scope="col"></th>
                       <th scope="col"></th>
                       <th scope="col">Material</th>
                       <th scope="col">QTY</th>
@@ -372,57 +269,31 @@
                     </tr>
                   </thead>
                   <tbody>
+                    {% if 'myUser_id' in session %}
+                    {% set total = namespace(a=0) %}
+                      {% for item in ramInPipeline %}
                     <tr>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11478_32.png"></th>
-                      <td><p class="mt-1">R.A.M. Starship Tech</p></td>
-                      <td><p class="mt-1 text-center">6</p></td>
-                      <td><p class="mt-1 text-center">530,657</p></td>
+                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
+                      <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
+                      <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
+                      <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
                       <td>
                         <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio1" value="buy" checked>
-                          <label class="form-check-label" for="inlineRadio1">Buy</label>
+                          <input class="form-check-input" type="radio" name="{{item.material_id}}" id="buy" checked>
+                          <label class="form-check-label" for="buy">Buy</label>
                         </div>
                         <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio2" value="build">
-                          <label class="form-check-label" for="inlineRadio2">Build</label>
+                          <input class="form-check-input" type="radio" name="{{item.material_id}}" id="build">
+                          <label class="form-check-label" for="build">Build</label>
                         </div>
                       </td>
                     </tr>
-                    <tr>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11478_32.png"></th>
-                      <td><p class="mt-1">R.A.M. Armor/Hull Tech</p></td>
-                      <td><p class="mt-1 text-center">100</p></td>
-                      <td><p class="mt-1 text-center">5,623,065</p></td>
-                      <td>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio1" value="buy" checked>
-                          <label class="form-check-label" for="inlineRadio1">Buy</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio2" value="build">
-                          <label class="form-check-label" for="inlineRadio2">Build</label>
-                        </div>
-                      </td>
+                    {% set total.a = total.a + (item.material_cost * item.runs) %}
+                    {% endfor %}
+                    <tr align="center">
+                      <td class="table-active" colspan="6"><h5>R.A.M. Total: {{ "{:,.0f}".format(total.a) }}</h5></td>
                     </tr>
-                    <tr>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11478_32.png"></th>
-                      <td><p class="mt-1">R.A.M. Shield Tech</p></td>
-                      <td><p class="mt-1 text-center">60</p></td>
-                      <td><p class="mt-1 text-center">3,264,940</p></td>
-                      <td>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio1" value="buy" checked>
-                          <label class="form-check-label" for="inlineRadio1">Buy</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="inlineRadioOptions1" id="inlineRadio2" value="build">
-                          <label class="form-check-label" for="inlineRadio2">Build</label>
-                        </div>
-                      </td>
-                    </tr>
-
-                      <tr align="center"><td class="table-active" colspan="5"><strong>R.A.M. Total: 92,235,000</strong></td></tr>
-
+                    {% endif %}
                   </tbody>
                 </table>
 
@@ -440,46 +311,65 @@
             </li>
             <li class="list-group-item py-0">
               <form>
-                <table class="table table-hover">
+                <table class="table table-xlg table-hover">
                   <thead>
                     <tr>
-                      <th scope="col">Tritanium</th>
-                      <th scope="col">Pyerite</th>
-                      <th scope="col">Mexallon</th>
-                      <th scope="col">Isogen</th>
-                      <th scope="col">Nocxium</th>
-                      <th scope="col">Zydrine</th>
-                      <th scope="col">Megacyte</th>
-                      <th scope="col">Morphite</th>
+                      <th colspan="2" scope="col">Tritanium</th>
+                      <th colspan="2" scope="col">Pyerite</th>
+                      <th colspan="2" scope="col">Mexallon</th>
+                      <th colspan="2" scope="col">Isogen</th>
+                      <th colspan="2" scope="col">Nocxium</th>
+                      <th colspan="2" scope="col">Zydrine</th>
+                      <th colspan="2" scope="col">Megacyte</th>
+                      <th colspan="2" scope="col">Morphite</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/34_32.png"></th>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/35_32.png"></th>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/36_32.png"></th>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/37_32.png"></th>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/38_32.png"></th>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/39_32.png"></th>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/40_32.png"></th>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11399_32.png"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/34_64.png"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/35_64.png"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/36_64.png"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/37_64.png"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/38_64.png"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/39_64.png"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/40_64.png"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11399_64.png"></th>
                     </tr>
                     <tr>
-                      <td><p class="mt-1">1,535,419</p></td>
-                      <td><p class="mt-1">959,272</p></td>
-                      <td><p class="mt-1">76,107</p></td>
-                      <td><p class="mt-1">5,192</p></td>
-                      <td><p class="mt-1">499</p></td>
-                      <td><p class="mt-1">0</p></td>
-                      <td><p class="mt-1">0</p></td>
-                      <td><p class="mt-1">811</p></td>
+                    {% if 'myUser_id' in session %}
+                    {% set total = namespace(a=0) %}
+                      {% for item in mineralInPipeline %}
+                      <td colspan="2">
+
+                          {% if item.material_id == 34 %}
+                            {{ "{:,.0f}".format(item.material_qty) }}
+                          {% elif item.material_id == 35 %}
+                            {{ "{:,.0f}".format(item.material_qty) }}
+                            {% elif item.material_id == 36 %}
+                              {{ "{:,.0f}".format(item.material_qty) }}
+                              {% elif item.material_id == 37 %}
+                                {{ "{:,.0f}".format(item.material_qty) }}
+                                {% elif item.material_id == 38 %}
+                                  {{ "{:,.0f}".format(item.material_qty) }}
+                                  {% elif item.material_id == 39 %}
+                                    {{ "{:,.0f}".format(item.material_qty) }}
+                                    {% elif item.material_id == 40 %}
+                                      {{ "{:,.0f}".format(item.material_qty) }}
+                                      {% elif item.material_id == 11399 %}
+                                        {{ "{:,.0f}".format(item.material_qty) }}
+                                      {% endif %}
+
+                      </td>
+                      {% set total.a = total.a + (item.material_cost * item.runs) %}
+                      {% endfor %}
                     </tr>
                     <tr align="center">
-                      <td colspan="8"><input name="add_mining" class="btn-sm btn-info" type="button" value="Send to Mining Calculator"></td>
+                      <td colspan="16"><input name="add_mining" class="btn-sm btn-info" type="button" value="Send to Mining Calculator"></td>
                     </tr>
                     <tr align="center">
-                      <td class="table-active" colspan="8"><strong>Mineral Jita Buy Value Total: 108,833,000</strong></td>
+                      <td class="table-active" colspan="16"><h5>Mineral Jita Buy Value Total: {{ "{:,.0f}".format(total.a) }}</h5></td>
                     </tr>
+                    {% endif %}
                   </tbody>
                 </table>
 
