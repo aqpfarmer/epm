@@ -5,7 +5,7 @@
   <div class="col">
     <ul class="list-group mb-0">
       <li class="list-group-item d-flex justify-content-between lh-condensed bg-secondary">
-        <h3 class="mx-auto text-white">Bill Of Materials Total:<a class="text-warning"> 1,553,222,333 ISK</a></h3>
+        <h3 class="mx-auto text-white">Bill Of Materials Total:<a class="text-warning"> {{ "{:,.0f}".format(bom_total) }} ISK</a></h3>
       </li>
       <li class="list-group-item d-flex justify-content-between lh-condensed">
         <div class="col"></div>
@@ -32,7 +32,6 @@
         <h4 class="mx-auto">Datacores</h4>
       </li>
       <li class="list-group-item py-0">
-        <form>
           <table class="table table-sm table-condensed table-hover table-responsive pl-3">
             <thead>
               <tr>
@@ -45,7 +44,6 @@
             </thead>
             <tbody>
               {% if 'myUser_id' in session %}
-              {% set total = namespace(a=0) %}
                 {% for item in datacoresInPipeline %}
                 <tr>
                   <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{ item.datacore_id }}_32.png"></th>
@@ -53,16 +51,13 @@
                   <td> {{ item.datacore_qty * item.runs }} </td>
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.datacore_cost * item.runs) }}</p></td>
                 </tr>
-                {% set total.a = total.a + (item.datacore_cost * item.runs) %}
                 {% endfor %}
                 <tr align="center">
-                  <td class="table-active" colspan="5"><h5>Datacore Total: {{ "{:,.0f}".format(total.a) }}</h5></td>
+                  <td class="table-active" colspan="5"><h5>Datacore Total: {{ "{:,.0f}".format(dc_total) }}</h5></td>
                 </tr>
               {% endif %}
             </tbody>
           </table>
-
-        </form>
     </div> <!-- col -->
 
     <div class="col">
@@ -71,10 +66,10 @@
           <h4 class="mx-auto">Planetary Commodities</h4>
         </li>
         <li class="list-group-item py-0">
-          <form>
             <table class="table table-sm table-condensed table-hover table-responsive pl-3">
               <thead>
                 <tr>
+                  <th scope="col"></th>
                   <th scope="col"></th>
                   <th scope="col"></th>
                   <th scope="col">Material</th>
@@ -84,23 +79,20 @@
               </thead>
               <tbody>
                 {% if 'myUser_id' in session %}
-                {% set total = namespace(a=0) %}
                   {% for item in planetaryInPipeline %}
                 <tr>
                   <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
-                  <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
+                  <td colspan="3"><p class="mt-1">{{ item.material }}</p></td>
                   <td><p class="mt-1 text-center">{{ item.material_qty  }}</p></td>
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
                 </tr>
-                {% set total.a = total.a + (item.material_cost * item.runs) %}
                 {% endfor %}
                 <tr align="center">
-                  <td class="table-active" colspan="5"><h5>Planetary Commodities Total: {{ "{:,.0f}".format(total.a) }}</h5></td>
+                  <td class="table-active" colspan="6"><h5>Planetary Commodities Total: {{ "{:,.0f}".format(planet_total) }}</h5></td>
                 </tr>
                 {% endif %}
               </tbody>
             </table>
-          </form>
         </li>
       </div> <!-- col -->
 
@@ -113,7 +105,6 @@
           <h4 class="mx-auto">Advanced Components</h4>
         </li>
         <li class="list-group-item py-0">
-          <form>
             <table class="table table-sm table-condensed table-hover table-responsive pl-3">
               <thead>
                 <tr>
@@ -127,8 +118,8 @@
               </thead>
               <tbody>
                 {% if 'myUser_id' in session %}
-                {% set total = namespace(a=0) %}
                   {% for item in componentInPipeline %}
+                  <form action="{{ url_for('bom')}}" method="POST">
                 <tr>
                   <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
                   <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
@@ -136,25 +127,33 @@
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
                   <td>
                     <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="{{item.material_id}}" id="buy" checked>
-                      <label class="form-check-label" for="buy">Buy</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="{{item.material_id}}" id="build">
-                      <label class="form-check-label" for="build">Build</label>
+                      {% if item.build_or_buy == 0 %}
+                        <input class="form-check-input" type="radio" name="build_or_buy" value="buy" checked>
+                        <label class="form-check-label" for="buy">Buy</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="build_or_buy" value="build" onChange="this.form.submit()">
+                        <label class="form-check-label" for="build">Build</label>
+                      {% else %}
+                        <input class="form-check-input" type="radio" name="build_or_buy" value="buy" onChange="this.form.submit()">
+                        <label class="form-check-label" for="buy">Buy</label>
+                      </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="build_or_buy" value="build" checked>
+                          <label class="form-check-label" for="build">Build</label>
+                      {% endif %}
                     </div>
                   </td>
                 </tr>
-                {% set total.a = total.a + (item.material_cost * item.runs) %}
+                <input type="hidden" name="material_id" value="{{ item.material_id }}">
+              </form>
                 {% endfor %}
                 <tr align="center">
-                  <td class="table-active" colspan="5"><h5>Advanced Components Total: {{ "{:,.0f}".format(total.a) }}</h5></td>
+                  <td class="table-active" colspan="6"><h5>Advanced Components Total: {{ "{:,.0f}".format(component_total) }}</h5></td>
                 </tr>
                 {% endif %}
               </tbody>
             </table>
-
-          </form>
         </li>
       </div> <!-- col -->
       <div class="col">
@@ -163,7 +162,6 @@
             <h4 class="mx-auto">Component Materials</h4>
           </li>
           <li class="list-group-item py-0">
-            <form>
               <table class="table table-sm table-condensed table-hover table-responsive pl-3">
                 <thead>
                   <tr>
@@ -176,7 +174,6 @@
                 </thead>
                 <tbody>
                   {% if 'myUser_id' in session %}
-                  {% set total = namespace(a=0) %}
                     {% for item in materialInPipeline %}
                     <tr>
                       <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
@@ -184,16 +181,13 @@
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
                     </tr>
-                    {% set total.a = total.a + (item.material_cost * item.runs) %}
                     {% endfor %}
                     <tr align="center">
-                      <td class="table-active" colspan="5"><h5>Component Material Total: {{ "{:,.0f}".format(total.a) }}</h5></td>
+                      <td class="table-active" colspan="6"><h5>Component Material Total: {{ "{:,.0f}".format(material_total) }}</h5></td>
                     </tr>
                     {% endif %}
                 </tbody>
               </table>
-
-            </form>
           </li>
 
         </div> <!-- col -->
@@ -206,8 +200,7 @@
             <h4 class="mx-auto">Tech I Products</h4>
           </li>
           <li class="list-group-item py-0">
-            <form>
-              <table class="table table-sm table-condensed table-hover table-responsive pl-3">
+                <table class="table table-sm table-condensed table-hover table-responsive pl-3">
                 <thead>
                   <tr>
                     <th scope="col"></th>
@@ -220,7 +213,6 @@
                 </thead>
                 <tbody>
                   {% if 'myUser_id' in session %}
-                  {% set total = namespace(a=0) %}
                     {% for item in tech1InPipeline %}
                   <tr>
                     <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
@@ -238,16 +230,13 @@
                       </div>
                     </td>
                   </tr>
-                  {% set total.a = total.a + (item.material_cost * item.runs) %}
                   {% endfor %}
                   <tr align="center">
-                    <td class="table-active" colspan="6"><h5>Tech 1 Total: {{ "{:,.0f}".format(total.a) }}</h5></td>
+                    <td class="table-active" colspan="6"><h5>Tech 1 Total: {{ "{:,.0f}".format(tech1_total) }}</h5></td>
                   </tr>
                   {% endif %}
                 </tbody>
               </table>
-
-            </form>
           </li>
         </div> <!-- col -->
         <div class="col">
@@ -256,25 +245,24 @@
               <h4 class="mx-auto">R.A.M. Tools</h4>
             </li>
             <li class="list-group-item py-0">
-              <form>
                 <table class="table table-sm table-condensed table-hover table-responsive pl-3">
                   <thead>
                     <tr>
                       <th scope="col"></th>
                       <th scope="col"></th>
+                      <th scope="col"></th>
                       <th scope="col">Material</th>
                       <th scope="col">QTY</th>
-                      <th scope="col">Jita Buy Price</th>
+                      <th scope="col"><center>Jita Buy Price</th>
                       <th scope="col">Option</th>
                     </tr>
                   </thead>
                   <tbody>
                     {% if 'myUser_id' in session %}
-                    {% set total = namespace(a=0) %}
                       {% for item in ramInPipeline %}
                     <tr>
                       <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
-                      <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
+                      <td colspan="3"><p class="mt-1">{{ item.material }}</p></td>
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
                       <td>
@@ -288,16 +276,13 @@
                         </div>
                       </td>
                     </tr>
-                    {% set total.a = total.a + (item.material_cost * item.runs) %}
                     {% endfor %}
                     <tr align="center">
-                      <td class="table-active" colspan="6"><h5>R.A.M. Total: {{ "{:,.0f}".format(total.a) }}</h5></td>
+                      <td class="table-active" colspan="7"><h5>R.A.M. Total: {{ "{:,.0f}".format(ram_total) }}</h5></td>
                     </tr>
                     {% endif %}
                   </tbody>
                 </table>
-
-              </form>
             </li>
 
           </div> <!-- col -->
@@ -310,7 +295,6 @@
               <h4 class="mx-auto">Minerals</h4>
             </li>
             <li class="list-group-item py-0">
-              <form>
                 <table class="table table-xlg table-hover">
                   <thead>
                     <tr>
@@ -337,43 +321,40 @@
                     </tr>
                     <tr>
                     {% if 'myUser_id' in session %}
-                    {% set total = namespace(a=0) %}
+                      {% for index in range(0,8,1) %}
                       {% for item in mineralInPipeline %}
                       <td colspan="2">
-
-                          {% if item.material_id == 34 %}
-                            {{ "{:,.0f}".format(item.material_qty) }}
-                          {% elif item.material_id == 35 %}
-                            {{ "{:,.0f}".format(item.material_qty) }}
-                            {% elif item.material_id == 36 %}
-                              {{ "{:,.0f}".format(item.material_qty) }}
-                              {% elif item.material_id == 37 %}
-                                {{ "{:,.0f}".format(item.material_qty) }}
-                                {% elif item.material_id == 38 %}
-                                  {{ "{:,.0f}".format(item.material_qty) }}
-                                  {% elif item.material_id == 39 %}
-                                    {{ "{:,.0f}".format(item.material_qty) }}
-                                    {% elif item.material_id == 40 %}
-                                      {{ "{:,.0f}".format(item.material_qty) }}
-                                      {% elif item.material_id == 11399 %}
-                                        {{ "{:,.0f}".format(item.material_qty) }}
+                          {% if item.material_id == 34 and index == 0 %}
+                            <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                          {% elif item.material_id == 35   and index == 1 %}
+                            <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                            {% elif item.material_id == 36  and index == 2 %}
+                              <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                              {% elif item.material_id == 37  and index == 3 %}
+                                <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                                {% elif item.material_id == 38  and index == 4 %}
+                                  <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                                  {% elif item.material_id == 39  and index == 5 %}
+                                    <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                                    {% elif item.material_id == 40  and index == 6 %}
+                                      <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                                      {% elif item.material_id == 11399  and index == 7 %}
+                                        <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
                                       {% endif %}
 
                       </td>
-                      {% set total.a = total.a + (item.material_cost * item.runs) %}
+                      {% endfor %}
                       {% endfor %}
                     </tr>
                     <tr align="center">
                       <td colspan="16"><input name="add_mining" class="btn-sm btn-info" type="button" value="Send to Mining Calculator"></td>
                     </tr>
                     <tr align="center">
-                      <td class="table-active" colspan="16"><h5>Mineral Jita Buy Value Total: {{ "{:,.0f}".format(total.a) }}</h5></td>
+                      <td class="table-active" colspan="16"><h5>Mineral Jita Buy Value Total: {{ "{:,.0f}".format(mineral_total) }}</h5></td>
                     </tr>
                     {% endif %}
                   </tbody>
                 </table>
-
-              </form>
             </li>
           </ul>
         </div> <!-- col -->

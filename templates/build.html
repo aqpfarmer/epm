@@ -36,7 +36,7 @@
       <li class="list-group-item d-flex justify-content-between lh-condensed">
         {% if bp_id > 0 %}
           <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{product.typeID}}_64.png">
-          <p class="text-right text-success">Jita Market Value: {{ "{:,.2f}".format(sell_median) }} isk</p>
+          <p class="text-right text-success">Jita Market Value: {{ "{:,.0f}".format(sell_median) }} isk</p>
         {% else %}
           <img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/build.png') }}">
         {% endif %}
@@ -45,6 +45,7 @@
       <li class="list-group-item d-flex justify-content-between lh-condensed">
         <div>
           {% if bp_id > 0 %}
+            <p>Profit Margin: {{ "{:.2%}".format(sell_median/buildCost) }} </p>
             <h6 class="my-0">Description </h6>
           {% else %}
             <h6 class="my-0">Description </h6>
@@ -111,16 +112,16 @@
                 </thead>
                 <tbody>
                   {% if bp_id > 0 %}
-                    {% set count = namespace(a=0) %}
-                    {% for requirement in buildRequirements %}
-                    <tr>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{requirement.material_id}}_32.png"></th>
-                      <td>{{requirement.material}}</td>
-                      <td>{{ "{:,.0f}".format(requirement.qty * runs) }}</td>
-                      <td>{{ "{:,.0f}".format(materialCost[count.a] * runs) }}</td>
-                    </tr>
-                    {% set count.a = count.a + 1 %}
-                    {% endfor %}
+                  {% set count = namespace(a=0) %}
+                  {% for requirement in buildRequirements %}
+                  <tr>
+                    <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{requirement.material_id}}_32.png"></th>
+                    <td>{{requirement.material}}</td>
+                    <td>{{ "{:,.0f}".format(requirement.qty * runs) }}</td>
+                    <td>{{ "{:,.0f}".format(materialCost[count.a] * runs) }}</td>
+                  </tr>
+                  {% set count.a = count.a + 1 %}
+                  {% endfor %}
                   {% endif%}
                 </tbody>
               </table>
@@ -160,7 +161,7 @@
                 {% for item in pipeline_products %}
                     <tr>
                       <form action="{{ url_for('build')}}" method="post">
-                      <td colspan="4"><a href="/build_selected?build_productName={{ item.product_name }}&runs={{item.runs}}">{{item.product_name}}</td>
+                      <td colspan="4"><a href="/build_selected?build_product={{ item.blueprint_id }}&runs={{item.runs}}">{{item.product_name}}</td>
                       <td><input type="text" class="form-control-sm py-0" size="1" name="runs" id="runs" value="{{item.runs}}"></td>
                       <td><div class="btn-group px-1">
                         <button class="btn btn-sm" type="submit" name="action" value="edit">
@@ -169,7 +170,7 @@
                           <i class="fas fa-trash-alt"></i></button>
                         </div>
                       </td>
-                      <input type="hidden" name="product_name" id="product_name" value="{{item.product_name}}">
+                      <input type="hidden" name="product_id" id="product_id" value="{{item.blueprint_id}}">
                       </form>
                     </tr>
                 {% endfor %}
@@ -207,13 +208,6 @@
           </div>
         </form>
       </li>
-      <form>
-        <li class="list-group-item d-flex justify-content-between lh-condensed">
-          <div class="form-group row mx-auto">
-            <input name="addbom" class="btn-sm btn-info" type="button" value="Add to B.O.M.">
-          </div> <!-- Form group row -->
-        </li>
-      </form>
     </ul>
   </div> <!-- col 3 -->
 
