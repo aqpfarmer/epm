@@ -1,252 +1,117 @@
-<!DOCTYPE html>
-<html class="no-js" lang="en">
-<head>
-  <title>EVE Production Manager - By Frikkin Genius</title>
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% extends 'layout.html' %}
+{% block body %}
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800">
-  <link rel='stylesheet' href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="/css/bootstrap.css">
-  <link rel="stylesheet" href="/css/styles.css">
-  <link href="/css/carousel.css" rel="stylesheet">
-
-  <style>
-  body {
-    background-image: url("img/29917.png");
-    background-color: #cccccc;
-  }
-  </style>
-<link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
-</head>
-<body>
-  <div class="container" id = "main">
-    <div class="container" id="upperNav">
-      <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <a class="navbar-brand" href="/index.html">EVE Production Manager</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
-          <!-- Button trigger modal -->
-          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#builderModal">
-            Builder
-          </button>
-          <img class="img-fluid" width=40 src="img/74_64_13.png"></img>
-
-          <!-- End Button trigger modal -->
-          <!-- Modal -->
-          <div class="modal fade" id="builderModal" tabindex="-1" role="dialog" aria-labelledby="builderModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="builderModalLabel">Builder Details</h5>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div class="modal-body">
-                  ...
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- End Modal -->
-
-          <ul class="navbar-nav ml-auto">
-            <!-- Button trigger modal -->
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#optionModal">
-              Options
-            </button>
-            <!-- End Button trigger modal -->
-            <!-- Modal -->
-            <div class="modal fade" id="optionModal" tabindex="-1" role="dialog" aria-labelledby="optionModalLabel" aria-hidden="true">
-              <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="optionModalLabel">Options</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                  <div class="modal-body">
-                    ...
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- End Modal -->
-
-            <li class="nav-item"><a class="nav-link" href="#">Login</a></li>
-          </ul>
-        </div>
-      </div> <!-- upper nav -->
-
-      <div class="container" id="mainMenu">
-        <span class="border border-dark">
-          <nav class="navbar navbar-expand-lg navbar-light">
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMainMenu">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarMainMenu">
-              <ul class="navbar-nav ml-auto">
-                <li class="nav-item"><a class="btn btn-secondary" href="invent.html">Invent</a></li>
-                <li>..</li>
-                <li class="nav-item"><a class="btn btn-secondary" href="build.html">Build</a></li>
-                <li>..</li>
-                <li class="nav-item"><a class="btn btn-secondary" href="shopping_list.html">B.O.M.
-                  <span class="badge badge-light">14</span></a></li>
-                  <li>..</li>
-                <li class="nav-item"><a class="btn btn-secondary" href="pipeline.html">Pipeline
-                  <span class="badge badge-light">4</span></a></li>
-                    <li>..</li>
-                    <li class="nav-item"><a class="btn btn-success" href="financial.html">Financial Report</a></li>
-                    <li>..</li>
-                    <li class="nav-item"><a class="btn btn-danger" href="mining.html">Mining Calculator</a></li>
-                    <li>..</li>
-                    <li class="nav-item"><a class="btn btn-info" href="fittings.html">Ship Fittings</a></li>
-                  </ul>
-                </div>
-              </nav>
-            </div> <!-- Mian Menu -->
-
-            <div class="row px-0" id="row1">
-              <div class="col-sm-12">
-                <ul class="list-group mb-auto">
-                  <li class="list-group-item d-flex justify-content-between lh-condensed bg-secondary">
-                    <h3 class="mx-auto text-white">Production Pipeline</h3>
-                  </li>
-                  <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
-                    <form>
-                      <table class="table table-striped">
-                        <thead>
-                          <tr>
-                            <th scope="col"></th>
-                            <th scope="col">Product</th>
-                            <th scope="col">Pipeline</th>
-                            <th scope="col">QTY</th>
-                            <th scope="col">Local Sell Price</th>
-                            <th scope="col">Total Value</th>
-                            <th scope="col">Prod Cost (ea)</th>
-                            <th scope="col">PM %</th>
-                            <th scope="col">Jita Sell Price</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11200_64.png"></th>
-                            <td><p class="mt-1">Ares</p></td>
-                            <td>
-                              <select id="pipeline_select" class="form-control text-center" style="width:160px;">
-                                <option selected>Future Build</option>
-                                <option>On Market</option>
-                                <option>Being Built</option>
-                                <option>Being Invented</option>
-                              </select>
-                              <input name="add1" class="btn-sm btn-info" type="button" value="Add to Inv">
-                              <input name="del1" class="btn-sm btn-danger" type="button" value="Delete">
-                            </td>
-                            <td><p class="mt-1 text-center">6</p></td>
-                            <td>
-                              <input type="text" class="form-control text-center" size="10" id="local_sell">
-                            </td>
-                            <td><p class="mt-1 text-center">29,855,091</p></td>
-                            <td><p class="mt-1 text-center">19,800,599</p></td>
-                            <td><p class="mt-1 text-center text-primary"><strong>95%</strong></p></td>
-                            <td><p class="mt-1 text-center">26,660,199</p></td>
-                          </tr>
-                          <tr>
-                            <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11176_64.png"></th>
-                            <td><p class="mt-1">Crow</p></td>
-                            <td>
-                              <select id="pipeline_select" class="form-control text-center" style="width:160px;">
-                                <option>Future Build</option>
-                                <option>On Market</option>
-                                <option selected>Being Built</option>
-                                <option>Being Invented</option>
-                              </select>
-                              <input name="del2" class="btn-sm btn-danger" type="button" value="Delete">
-                            </td>
-                            <td><p class="mt-1 text-center">9</p></td>
-                            <td>
-                              <input type="text" class="form-control text-center" size="10" id="local_sell">
-                            </td>
-                            <td><p class="mt-1 text-center">39,865,191</p></td>
-                            <td><p class="mt-1 text-center">27,501,598</p></td>
-                            <td><p class="mt-1 text-center text-primary"><strong>115%</strong></p></td>
-                            <td><p class="mt-1 text-center">38,450,179</p></td>
-                          </tr>
-                          <tr>
-                            <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/2281_64.png"></th>
-                            <td><p class="mt-1">Adaptive Invulerability Field II</p></td>
-                            <td>
-                              <select id="pipeline_select" class="form-control text-center" style="width:160px;">
-                                <option>Future Build</option>
-                                <option selected>On Market</option>
-                                <option>Being Built</option>
-                                <option>Being Invented</option>
-                              </select>
-                              <input name="del3" class="btn-sm btn-danger" type="button" value="Delete">
-                            </td>
-                            <td><p class="mt-1 text-center">110</p></td>
-                            <td>
-                              <input type="text" class="form-control text-center" size="10" id="local_sell">
-                            </td>
-                            <td><p class="mt-1 text-center">189,167,001</p></td>
-                            <td><p class="mt-1 text-center">1,881,590</p></td>
-                            <td><p class="mt-1 text-center text-primary"><strong>36%</srong></p></td>
-                            <td><p class="mt-1 text-center">2,150,179</p></td>
-                          </tr>
-                          <tr>
-                            <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/3025_64.png"></th>
-                            <td><p class="mt-1">Heavy Beam Laser II</p></td>
-                            <td>
-                              <select id="pipeline_select" class="form-control text-center" style="width:160px;">
-                                <option>Future Build</option>
-                                <option>On Market</option>
-                                <option>Being Built</option>
-                                <option selected>Being Invented</option>
-                              </select>
-                              <input name="add2" class="btn-sm btn-info" type="button" value="Add to Prod">
-                              <input name="del4" class="btn-sm btn-danger" type="button" value="Delete">
-                            </td>
-                            <td><p class="mt-1 text-center">
-                              <input type="text" class="form-control text-center" size="1" id="qty">
-                            </p></td>
-                            <td>
-                              <input type="text" class="form-control text-center" size="10" id="local_sell" placeholder="1,123,456,789">
-                            </td>
-                            <td><p class="mt-1 text-center">179,167,001</p></td>
-                            <td><p class="mt-1 text-center">3,981,560</p></td>
-                            <td><p class="mt-1 text-center text-danger"><strong>-16%</strong></p></td>
-                            <td><p class="mt-1 text-center">3,050,024</p></td>
-                          </tr>
-
-                        </tbody>
-                      </table>
-                    </form>
-                  </li>
-                  <li class="list-group-item d-flex justify-content-between lh-condensed">
-                      <h5 class="text-center col-sm-12">
-                        Total Pipeline Value: 6,919,800,101 ISK
-                      </h5>
-                  </li>
-                </div>
-              </div>
+<div class="row px-0" id="row1">
+  <div class="col-sm-12">
+    <ul class="list-group mb-auto">
+      <li class="list-group-item d-flex justify-content-between lh-condensed bg-secondary">
+        <h3 class="mx-auto text-white">Production Pipeline</h3>
+      </li>
+      <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
+        <form>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                <th scope="col">Product</th>
+                <th scope="col"><center>Status</th>
+                <th scope="col"><center>QTY</th>
+                <th scope="col"><center>Local Sell Price</th>
+                <th scope="col"><center>Total Value</th>
+                <th scope="col"><center>Prod Cost (ea)</th>
+                <th scope="col"><center>PM %</th>
+                <th scope="col"><center>Jita Sell Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if 'myUser_id' in session %}
+                {% for item in inv_pipeline %}
+                <form action="{{ url_for('pipeline')}}" method="POST">
+                <tr>
+                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.blueprint_id}}_64.png"></th>
+                  <td><p class="mt-1">{{ item.product_name }}</p></td>
+                  <td>
+                    <select name="pipeline_select" id="pipeline_select" class="form-control text-center" style="width:160px;">
+                      <option value="1">On Market</option>
+                      <option value="2">Being Built</option>
+                      <option value="3" selected>Being Invented</option>
+                    </select>
+                    <input name="del1" class="btn-sm btn-danger" type="button" value="Delete">
+                  </td>
+                  <td><p class="mt-1 text-center"><input type="text" class="form-control text-center" size="3" id="qty" value="1"></p></td>
+                  <td>
+                    <input type="text" class="form-control text-center" size="10" id="local_sell">
+                  </td>
+                  <td><p class="mt-1 text-center">--</p></td>
+                  <td><p class="mt-1 text-center">--</p></td>
+                  <td><p class="mt-1 text-center text-primary"><strong>--</strong></p></td>
+                  <td><p class="mt-1 text-center">--</p></td>
+                </tr>
+              </form>
+              {% endfor %}
+              {% for item in bld_pipeline %}
+                <form action="{{ url_for('pipeline')}}" method="POST">
+                <tr>
+                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.product_id}}_64.png"></th>
+                  <td><p class="mt-1">{{ item.product_name }}</p></td>
+                  <td>
+                    <select name="pipeline_select" id="pipeline_select" class="form-control text-center" style="width:160px;">
+                      <option value="1">On Market</option>
+                      <option value="2" selected>Being Built</option>
+                      <option value="3">Being Invented</option>
+                    </select>
+                    <input name="del1" class="btn-sm btn-danger" type="button" value="Delete">
+                  </td>
+                  <td><p class="mt-1 text-center"><input type="text" class="form-control text-center" size="3" id="qty" value="{{ item.runs }}"></p></td>
+                  <td>
+                    <input type="text" class="form-control text-center" size="10" id="local_sell">
+                  </td>
+                  <td><p class="mt-1 text-center">--</p></td>
+                  <td><p class="mt-1 text-center">--</p></td>
+                  <td><p class="mt-1 text-center text-primary"><strong>--</strong></p></td>
+                  <td><p class="mt-1 text-center">--</p></td>
+                </tr>
+              </form>
+            {% endfor %}
+            {% endif %}
+              <form action="{{ url_for('pipeline')}}" method="POST">
+              <tr>
+                <td colspan="2"><select id="build_product" name="build_product" class="form-control" style="width:300px;" onChange="this.form.submit()">
+                      <option selected value="new"> -- Add To Pipeline --</option>
+                  {% for blueprint in blueprints %}
+                      <option value="{{blueprint.id}}">{{blueprint.t2_blueprint}} </option>
+                  {% endfor %}
+                </td>
+                <td>
+                  <select name="pipeline_select" id="pipeline_select" class="form-control text-center" style="width:160px;">
+                    <option value="0" selected>Future Build</option>
+                    <option value="1">On Market</option>
+                    <option value="2">Being Built</option>
+                    <option value="3">Being Invented</option>
+                  </select>
+                </td>
+                <td><p class="mt-1 text-center"><input type="text" class="form-control text-center" size="3" id="qty" value="1"></p></td>
+                <td>
+                  <input type="text" class="form-control text-center" size="10" id="local_sell">
+                </td>
+                <td><p class="mt-1 text-center">--</p></td>
+                <td><p class="mt-1 text-center">--</p></td>
+                <td><p class="mt-1 text-center text-primary"><strong>--</strong></p></td>
+                <td><p class="mt-1 text-center">--</p></td>
+              </tr>
+            </form>
+            </tbody>
+          </table>
+        </form>
+      </li>
+      <li class="list-group-item d-flex justify-content-between lh-condensed">
+          <h5 class="text-center col-sm-12">
+            Total Pipeline Value: 6,919,800,101 ISK
+          </h5>
+      </li>
+    </div>
+  </div>
 
 
-            </div> <!-- main -->
-
-            <script src="/js/jquery.min.js"></script>
-            <script src="/js/popper.min.js"></script>
-            <script src="/js/bootstrap.min.js"></script>
-          </body>
-          </html>
+</div> <!-- main -->
+{% endblock %}

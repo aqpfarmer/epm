@@ -214,6 +214,7 @@
                 <tbody>
                   {% if 'myUser_id' in session %}
                     {% for item in tech1InPipeline %}
+                    <form action="{{ url_for('bom')}}" method="POST">
                   <tr>
                     <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
                     <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
@@ -221,16 +222,27 @@
                     <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
                     <td>
                       <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="{{item.material_id}}" id="buy" checked>
-                        <label class="form-check-label" for="buy">Buy</label>
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="{{item.material_id}}" id="build">
-                        <label class="form-check-label" for="build">Build</label>
+                        {% if item.build_or_buy == 0 %}
+                          <input class="form-check-input" type="radio" name="build_or_buy" value="buy" checked>
+                          <label class="form-check-label" for="buy">Buy</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="build_or_buy" value="build" onChange="this.form.submit()">
+                          <label class="form-check-label" for="build">Build</label>
+                        {% else %}
+                          <input class="form-check-input" type="radio" name="build_or_buy" value="buy" onChange="this.form.submit()">
+                          <label class="form-check-label" for="buy">Buy</label>
+                        </div>
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="build_or_buy" value="build" checked>
+                            <label class="form-check-label" for="build">Build</label>
+                        {% endif %}
                       </div>
                     </td>
                   </tr>
-                  {% endfor %}
+                  <input type="hidden" name="material_id" value="{{ item.material_id }}">
+                </form>
+                {% endfor %}
                   <tr align="center">
                     <td class="table-active" colspan="6"><h5>Tech 1 Total: {{ "{:,.0f}".format(tech1_total) }}</h5></td>
                   </tr>
@@ -250,8 +262,7 @@
                     <tr>
                       <th scope="col"></th>
                       <th scope="col"></th>
-                      <th scope="col"></th>
-                      <th scope="col">Material</th>
+                      <th colspan="2" scope="col">Material</th>
                       <th scope="col">QTY</th>
                       <th scope="col"><center>Jita Buy Price</th>
                       <th scope="col">Option</th>
@@ -260,6 +271,7 @@
                   <tbody>
                     {% if 'myUser_id' in session %}
                       {% for item in ramInPipeline %}
+                      <form action="{{ url_for('bom')}}" method="POST">
                     <tr>
                       <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
                       <td colspan="3"><p class="mt-1">{{ item.material }}</p></td>
@@ -267,16 +279,27 @@
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
                       <td>
                         <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="{{item.material_id}}" id="buy" checked>
-                          <label class="form-check-label" for="buy">Buy</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input class="form-check-input" type="radio" name="{{item.material_id}}" id="build">
-                          <label class="form-check-label" for="build">Build</label>
+                          {% if item.build_or_buy == 0 %}
+                            <input class="form-check-input" type="radio" name="build_or_buy" value="buy" checked>
+                            <label class="form-check-label" for="buy">Buy</label>
+                          </div>
+                          <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="build_or_buy" value="build" onChange="this.form.submit()">
+                            <label class="form-check-label" for="build">Build</label>
+                          {% else %}
+                            <input class="form-check-input" type="radio" name="build_or_buy" value="buy" onChange="this.form.submit()">
+                            <label class="form-check-label" for="buy">Buy</label>
+                          </div>
+                            <div class="form-check form-check-inline">
+                              <input class="form-check-input" type="radio" name="build_or_buy" value="build" checked>
+                              <label class="form-check-label" for="build">Build</label>
+                          {% endif %}
                         </div>
                       </td>
                     </tr>
-                    {% endfor %}
+                    <input type="hidden" name="material_id" value="{{ item.material_id }}">
+                  </form>
+                  {% endfor %}
                     <tr align="center">
                       <td class="table-active" colspan="7"><h5>R.A.M. Total: {{ "{:,.0f}".format(ram_total) }}</h5></td>
                     </tr>
@@ -323,26 +346,24 @@
                     {% if 'myUser_id' in session %}
                       {% for index in range(0,8,1) %}
                       {% for item in mineralInPipeline %}
-                      <td colspan="2">
-                          {% if item.material_id == 34 and index == 0 %}
-                            <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
-                          {% elif item.material_id == 35   and index == 1 %}
-                            <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
-                            {% elif item.material_id == 36  and index == 2 %}
-                              <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
-                              {% elif item.material_id == 37  and index == 3 %}
-                                <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
-                                {% elif item.material_id == 38  and index == 4 %}
-                                  <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
-                                  {% elif item.material_id == 39  and index == 5 %}
-                                    <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
-                                    {% elif item.material_id == 40  and index == 6 %}
-                                      <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
-                                      {% elif item.material_id == 11399  and index == 7 %}
-                                        <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
-                                      {% endif %}
 
-                      </td>
+                          {% if item.material_id == 34 and index == 0 %}
+                            <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p> </td>
+                          {% elif item.material_id == 35   and index == 1 %}
+                            <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p> </td>
+                            {% elif item.material_id == 36  and index == 2 %}
+                              <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p></td>
+                              {% elif item.material_id == 37  and index == 3 %}
+                                <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p></td>
+                                {% elif item.material_id == 38  and index == 4 %}
+                                  <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p></td>
+                                  {% elif item.material_id == 39  and index == 5 %}
+                                    <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p></td>
+                                    {% elif item.material_id == 40  and index == 6 %}
+                                      <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p></td>
+                                      {% elif item.material_id == 11399  and index == 7 %}
+                                        <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p></td>
+                                      {% endif %}
                       {% endfor %}
                       {% endfor %}
                     </tr>
