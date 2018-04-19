@@ -167,9 +167,10 @@
                   <tr>
                     <th scope="col"></th>
                     <th scope="col"></th>
-                    <th scope="col">Material</th>
+                    <th scope="col" colspan="2">Material</th>
                     <th scope="col">QTY</th>
                     <th scope="col"><center>Jita Buy Price</th>
+                    <th class="text-white" scope="col"><center>Option</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -177,13 +178,14 @@
                     {% for item in materialInPipeline %}
                     <tr>
                       <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
-                      <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
+                      <td colspan="3"><p class="mt-1">{{ item.material }}</p></td>
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
+                      <td colspan="3"><p class="mt-1 text-white">filler filler filler</p></td>
                     </tr>
                     {% endfor %}
                     <tr align="center">
-                      <td class="table-active" colspan="6"><h5>Component Material Total: {{ "{:,.0f}".format(material_total) }}</h5></td>
+                      <td class="table-active" colspan="7"><h5>Component Material Total: {{ "{:,.0f}".format(material_total) }}</h5></td>
                     </tr>
                     {% endif %}
                 </tbody>
@@ -344,28 +346,63 @@
                     </tr>
                     <tr>
                     {% if 'myUser_id' in session %}
+                    {% set mine_or_buy = namespace(c=0) %}
                       {% for index in range(0,8,1) %}
-                      {% for item in mineralInPipeline %}
-
+                        <td colspan="2"><p class="pl-3">
+                        {% for item in mineralInPipeline %}
+                          {% if item.build_or_buy == 1 %}{% set mine_or_buy.c=1 %}{% endif %}
                           {% if item.material_id == 34 and index == 0 %}
-                            <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p> </td>
-                          {% elif item.material_id == 35   and index == 1 %}
-                            <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p> </td>
-                            {% elif item.material_id == 36  and index == 2 %}
-                              <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p></td>
-                              {% elif item.material_id == 37  and index == 3 %}
-                                <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p></td>
-                                {% elif item.material_id == 38  and index == 4 %}
-                                  <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p></td>
-                                  {% elif item.material_id == 39  and index == 5 %}
-                                    <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p></td>
-                                    {% elif item.material_id == 40  and index == 6 %}
-                                      <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p></td>
-                                      {% elif item.material_id == 11399  and index == 7 %}
-                                        <td colspan="2"><p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p></td>
-                                      {% endif %}
+                            <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                          {% endif %}
+                          {% if item.material_id == 35 and index == 1 %}
+                            <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                          {% endif %}
+                          {% if item.material_id == 36 and index == 2 %}
+                            <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                          {% endif %}
+                          {% if item.material_id == 37 and index == 3 %}
+                            <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                          {% endif %}
+                          {% if item.material_id == 38 and index == 4 %}
+                            <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                          {% endif %}
+                          {% if item.material_id == 39 and index == 5 %}
+                            <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                          {% endif %}
+                          {% if item.material_id == 40 and index == 6 %}
+                            <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                          {% endif %}
+                          {% if item.material_id == 11399 and index == 7 %}
+                            <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                           {% endif %}
+                        {% endfor %}
                       {% endfor %}
-                      {% endfor %}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="16"><center>
+                        <form action="{{ url_for('bom')}}" method="POST">
+                              {% if mine_or_buy.c == 1%}
+                                <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="mine_or_buy" value="buy" onChange="this.form.submit()">
+                                  <label class="form-check-label" for="buy">Buy the Minerals</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="mine_or_buy" value="mine" checked>
+                                  <label class="form-check-label" for="mine">Mine my own Minerals</label>
+                                </div>
+                            {% else %}
+                                <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="mine_or_buy" value="buy" checked>
+                                  <label class="form-check-label" for="buy">Buy the Minerals</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                  <input class="form-check-input" type="radio" name="mine_or_buy" value="mine" onChange="this.form.submit()">
+                                  <label class="form-check-label" for="mine">Mine my own Minerals</label>
+                                </div>
+                            {% endif %}
+                          </form>
+                      </td>
                     </tr>
                     <tr align="center">
                       <td colspan="16"><input name="add_mining" class="btn-sm btn-info" type="button" value="Send to Mining Calculator"></td>

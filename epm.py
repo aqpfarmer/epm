@@ -72,8 +72,9 @@ class build_pipeline(db.Model):
     local_sell_price = db.Column(db.Numeric())
     build_cost = db.Column(db.Numeric())
     material_comp_id = db.Column(db.Integer())
+    status = db.Column(db.Integer())
 
-    def __init__(self, user_id, product_id, blueprint_id, runs, material_id, material_qty, material_cost, product_name, material, group_id, build_or_buy, jita_sell_price, local_sell_price, build_cost, material_comp_id):
+    def __init__(self, user_id, product_id, blueprint_id, runs, material_id, material_qty, material_cost, product_name, material, group_id, build_or_buy, jita_sell_price, local_sell_price, build_cost, material_comp_id, status):
         self.user_id = user_id
         self.product_id = product_id
         self.blueprint_id = blueprint_id
@@ -89,6 +90,7 @@ class build_pipeline(db.Model):
         self.local_sell_price = local_sell_price
         self.build_cost = build_cost
         self.material_comp_id = material_comp_id
+        self.status = status
 
 class invent_pipeline(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
@@ -101,8 +103,9 @@ class invent_pipeline(db.Model):
     datacore_qty = db.Column(db.Integer())
     datacore_cost = db.Column(db.Numeric())
     datacore = db.Column(db.String(100))
+    status = db.Column(db.Integer())
 
-    def __init__(self, user_id, product_id, blueprint_id, runs, product_name, datacore_id, datacore_qty, datacore_cost, datacore):
+    def __init__(self, user_id, product_id, blueprint_id, runs, product_name, datacore_id, datacore_qty, datacore_cost, datacore, status):
         self.user_id = user_id
         self.product_id = product_id
         self.blueprint_id = blueprint_id
@@ -112,6 +115,7 @@ class invent_pipeline(db.Model):
         self.datacore_qty = datacore_qty
         self.datacore_cost = datacore_cost
         self.datacore = datacore
+        self.status = status
 
 class v_build_requirements(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
@@ -148,8 +152,9 @@ class v_build_pipeline_products(db.Model):
     jita_sell_price = db.Column(db.Numeric())
     local_sell_price = db.Column(db.Numeric())
     build_cost = db.Column(db.Numeric())
+    status = db.Column(db.Integer())
 
-    def __init__(product_name, user_id, blueprint_id, product_id, runs, jita_sell_price, local_sell_price, build_cost):
+    def __init__(product_name, user_id, blueprint_id, product_id, runs, jita_sell_price, local_sell_price, build_cost, status):
         self.product_name = str(product_name)
         self.user_id = user_id
         self.blueprint_id = blueprint_id
@@ -158,18 +163,21 @@ class v_build_pipeline_products(db.Model):
         self.jita_sell_price = jita_sell_price
         self.local_sell_price = local_sell_price
         self.build_cost = build_cost
+        self.status = status
 
 class v_invent_pipeline_products(db.Model):
     product_name = db.Column(db.String(100))
     user_id = db.Column(db.Integer(), primary_key=True)
     blueprint_id = db.Column(db.Integer())
     runs = db.Column(db.Integer())
+    status = db.Column(db.Integer())
 
-    def __init__(product_name, user_id, blueprint_idruns):
+    def __init__(product_name, user_id, blueprint_id, runs, status):
         self.product_name = str(product_name)
         self.user_id = user_id
         self.blueprint_id = blueprint_id
         self.runs = runs
+        self.status = status
 
 class v_datacore_requirements(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
@@ -269,14 +277,99 @@ def index():
 def pipeline():
     form = LoginForm(request.form)
     if 'myUser_id' in session:
-        myBlueprints = db.session.query(v_build_product).all()
+        inv_pipeline = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name','user_id','runs','blueprint_id','status').order_by('product_name').all()
 
-        inv_pipeline = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name','user_id','runs','blueprint_id').order_by('product_name').all()
+        bld_pipeline = db.session.query(v_build_pipeline_products).filter_by(user_id= session['myUser_id']).with_entities('product_name','user_id','blueprint_id','product_id','runs','jita_sell_price','local_sell_price','build_cost','status').order_by('product_name').all()
 
-        bld_pipeline = db.session.query(v_build_pipeline_products).filter_by(user_id= session['myUser_id']).with_entities('product_name','user_id','blueprint_id','product_id','runs','jita_sell_price','local_sell_price','build_cost').order_by('product_name').all()
+        if request.method == 'POST':
+            if request.form.get('inv_pipeline_select'):
+                if request.form.get('action') == 'UPD':
+                    bp_id = request.form.get('blueprint_id')
+                    runs = request.form.get('qty')
+                    status = request.form.get('inv_pipeline_select')
 
-        return render_template('pipeline.html', form=form, blueprints=myBlueprints, inv_pipeline=inv_pipeline, bld_pipeline=bld_pipeline)
+                    pipeline = db.session.query(invent_pipeline).filter_by(blueprint_id = bp_id).all()
+                    for item in pipeline:
+                        item.runs = runs
+                        item.status = status
+                        db.session.add(item)
+                        db.session.commit()
+                    print request.form.get('inv_pipeline_select')
+                    if request.form.get('inv_pipeline_select') == '2':
 
+                        pipeline = db.session.query(invent_pipeline).filter_by(blueprint_id = bp_id).all()
+                        product_id = 0
+                        blueprint_id = 0
+                        product_name = ''
+                        for item in pipeline:
+                            product_id = item.product_id
+                            blueprint_id = item.blueprint_id
+                            product_name = item.product_name
+                            db.session.delete(item)
+                            db.session.commit()
+
+                        selected_product = db.session.query(v_product).filter_by(id = product_id).one()
+                        querySell = get_marketValue(selected_product.t2_id,'buy')
+                        myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = product_id, product_id=selected_product.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id').all()
+
+                        myBuildCost = 0
+                        myMaterialCost = []
+                        for requirements in myBuildRequirements:
+                            myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
+
+                        for cost in myMaterialCost:
+                            myBuildCost = myBuildCost + cost
+
+                        for requirements in myBuildRequirements:
+                            myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty
+
+                            pipeline = build_pipeline(session['myUser_id'],  selected_product.t2_id, product_id, runs, requirements.material_id, requirements.qty, myCost, product_name, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2)
+
+                            db.session.add(pipeline)
+                            db.session.commit()
+
+                        flash('Successfully converted invention to build product.', 'success')
+
+                if request.form.get('action') == 'DEL':
+                        bp_id = request.form.get('blueprint_id')
+
+                        pipeline = db.session.query(invent_pipeline).filter_by(blueprint_id = bp_id).all()
+                        for item in pipeline:
+                            db.session.delete(item)
+                            db.session.commit()
+                        flash('Successfully deleted pipeline product.', 'success')
+
+                inv_pipeline = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name','user_id','runs','blueprint_id','status').order_by('product_name').all()
+
+            if request.form.get('bld_pipeline_select'):
+                if request.form.get('action') == 'UPD':
+                    bp_id = request.form.get('blueprint_id')
+                    runs = request.form.get('qty')
+                    status = request.form.get('bld_pipeline_select')
+                    local_sell_price = float(request.form.get('local_sell'))
+
+
+
+                    pipeline = db.session.query(build_pipeline).filter_by(blueprint_id = bp_id).all()
+                    for item in pipeline:
+                        item.runs = runs
+                        item.status = status
+                        item.local_sell_price = local_sell_price
+                        db.session.add(item)
+                        db.session.commit()
+
+                if request.form.get('action') == 'DEL':
+                    bp_id = request.form.get('blueprint_id')
+
+                    pipeline = db.session.query(build_pipeline).filter_by(blueprint_id = bp_id).all()
+                    for item in pipeline:
+                        db.session.delete(item)
+                        db.session.commit()
+                    flash('Successfully deleted pipeline product.', 'success')
+
+                bld_pipeline = db.session.query(v_build_pipeline_products).filter_by(user_id= session['myUser_id']).with_entities('product_name','user_id','blueprint_id','product_id','runs','jita_sell_price','local_sell_price','build_cost','status').order_by('product_name').all()
+
+        return render_template('pipeline.html', form=form, inv_pipeline=inv_pipeline, bld_pipeline=bld_pipeline)
     else:
         flash('You must be logged in to view the pipeline', 'danger')
         return redirect(url_for('index'))
@@ -285,159 +378,224 @@ def pipeline():
 def bom():
     form = LoginForm(request.form)
     if 'myUser_id' in session:
-        try:
-            build_or_buy = 0
-            if request.method == 'POST':
-                if request.form.get('build_or_buy') == 'buy':
+        #try:
+        build_or_buy = 0
+        if request.method == 'POST':
+            if request.form.get('build_or_buy') == 'buy':
+                build_or_buy = 0
+
+            elif request.form.get('build_or_buy') == 'build':
+                build_or_buy = 1
+
+            material_id = request.form.get('material_id')
+            pipeline = db.session.query(build_pipeline).filter_by(material_id = material_id).all()
+            for item in pipeline:
+                item.build_or_buy = build_or_buy
+                db.session.add(item)
+                db.session.commit()
+
+            if request.form.get('mine_or_buy'):
+                if request.form.get('mine_or_buy') == 'mine':
+                    build_or_buy = 1
+                elif request.form.get('mine_or_buy') == 'buy':
                     build_or_buy = 0
 
-                elif request.form.get('build_or_buy') == 'build':
-                    build_or_buy = 1
-
-                material_id = request.form.get('material_id')
-                pipeline = db.session.query(build_pipeline).filter_by(material_id = material_id).all()
+                pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],group_id=18, status=2).all()
                 for item in pipeline:
                     item.build_or_buy = build_or_buy
+                    if build_or_buy == 1:
+                        item.material_cost = 0.0
+                    else:
+                        item.material_cost = get_marketValue(item.material_id, 'sell') * item.material_qty
+
                     db.session.add(item)
                     db.session.commit()
 
-            inv_pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore').order_by('datacore').all()
+                    comp_blueprint_id = item.blueprint_id
+                    newcost_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],blueprint_id=comp_blueprint_id).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').all()
+                    materialCost = build_pipeline_rollup_cost(newcost_pipeline)
+                    for item1 in newcost_pipeline:
+                        comp = db.session.query(build_pipeline).filter_by(id=item1.id).one()
+                        comp.build_cost = materialCost / comp.runs
+                        db.session.add(comp)
+                        db.session.commit()
 
-            planetary_pipeline = db.session.query(build_pipeline).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==1034, build_pipeline.group_id==1040))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id').order_by('material').all()
+        inv_pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','status').order_by('datacore').all()
 
-            component_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=334).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id').order_by('material').all()
+        planetary_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==1034, build_pipeline.group_id==1040))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').order_by('material').all()
 
-            for component in component_pipeline:
-                if component.build_or_buy == 1 and component.material_cost > 0:
-                    comp = db.session.query(build_pipeline).filter_by(id=component.id).one()
-                    comp.material_cost = 0.0
+        component_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=334, status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').order_by('material').all()
+
+        comp_blueprint_id = 0
+        for component in component_pipeline:
+            if component.build_or_buy == 1 and component.material_cost > 0:
+                comp = db.session.query(build_pipeline).filter_by(id=component.id).one()
+                comp.material_cost = 0.0
+                db.session.add(comp)
+                db.session.commit()
+
+                myBuildComponents = db.session.query(v_build_components).filter_by(id = component.material_id).with_entities('id','material','material_id','quantity').all()
+                comp_blueprint_id = component.blueprint_id
+
+                for requirements in myBuildComponents:
+                    myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * component.material_qty
+
+                    pipeline = build_pipeline(session['myUser_id'],  component.product_id, component.blueprint_id, component.runs, requirements.material_id, requirements.quantity * component.material_qty, myCost, component.product_name, requirements.material, 429, 0, component.jita_sell_price, component.local_sell_price, component.build_cost, component.material_id, component.status)
+
+                    db.session.add(pipeline)
+                    db.session.commit()
+
+                newcost_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],blueprint_id=comp_blueprint_id).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').all()
+                materialCost = build_pipeline_rollup_cost(newcost_pipeline)
+                for item in newcost_pipeline:
+                    comp = db.session.query(build_pipeline).filter_by(id=item.id).one()
+                    comp.build_cost = materialCost / comp.runs
                     db.session.add(comp)
                     db.session.commit()
 
-                    myBuildComponents = db.session.query(v_build_components).filter_by(id = component.material_id).with_entities('id','material','material_id','quantity').all()
+            elif component.build_or_buy == 0 and component.material_cost == 0:
+                comp = db.session.query(build_pipeline).filter_by(id=component.id).one()
+                comp.material_cost = get_marketValue(component.material_id, 'sell') * component.material_qty
+                db.session.add(comp)
+                db.session.commit()
+                mat_id = comp.material_id
+                comp_blueprint_id = component.blueprint_id
 
-                    for requirements in myBuildComponents:
-                        myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * component.material_qty
-
-                        pipeline = build_pipeline(session['myUser_id'],  component.product_id, component.blueprint_id, component.runs, requirements.material_id, requirements.quantity * component.material_qty, myCost, component.product_name, requirements.material, 429, 0, component.jita_sell_price, component.local_sell_price, component.build_cost, component.product_id)
-
-                        db.session.add(pipeline)
-                        db.session.commit()
-
-                elif component.build_or_buy == 0 and component.material_cost == 0:
-                    comp = db.session.query(build_pipeline).filter_by(id=component.id).one()
-                    comp.material_cost = get_marketValue(component.material_id, 'sell') * component.material_qty
-                    db.session.add(comp)
+                mats = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'], group_id=429, material_comp_id=mat_id,status=2).all()
+                for mat in mats:
+                    db.session.delete(mat)
                     db.session.commit()
-                    mat_id = comp.product_id
 
-                    mats = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'], group_id=429, material_comp_id=mat_id).all()
-                    for mat in mats:
-                        db.session.delete(mat)
-                        db.session.commit()
-
-            component_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=334).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id').order_by('material').all()
-
-            material_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=429).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id').order_by('material').all()
-
-            tech1_pipeline = db.session.query(build_pipeline).filter(build_pipeline.user_id == session['myUser_id']).filter(build_pipeline.group_id <> 334).filter(build_pipeline.group_id <> 18).filter(build_pipeline.group_id <> 1034).filter(build_pipeline.group_id <> 332).filter(build_pipeline.group_id <> 1040).filter(build_pipeline.group_id <> 429).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id').order_by('material').all()
-
-            for component1 in tech1_pipeline:
-                if component1.build_or_buy == 1 and component1.material_cost > 0:
-                    comp = db.session.query(build_pipeline).filter_by(id=component1.id).one()
-                    comp.material_cost = 0.0
+                newcost_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],blueprint_id=comp_blueprint_id).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').all()
+                materialCost = build_pipeline_rollup_cost(newcost_pipeline)
+                for item in newcost_pipeline:
+                    comp = db.session.query(build_pipeline).filter_by(id=item.id).one()
+                    comp.build_cost = materialCost / comp.runs
                     db.session.add(comp)
                     db.session.commit()
 
-                    myBuildComponents = db.session.query(v_build_components).filter_by(id = component1.material_id).with_entities('id','material','material_id','quantity').all()
+        component_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=334,status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').order_by('material').all()
 
-                    for requirements in myBuildComponents:
-                        myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * component1.material_qty
+        material_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=429,status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').order_by('material').all()
 
-                        pipeline = build_pipeline(session['myUser_id'],  component1.product_id, component1.blueprint_id, component1.runs, requirements.material_id, requirements.quantity * component1.material_qty, myCost, component1.product_name, requirements.material, 18, 0, component.jita_sell_price, component.local_sell_price, component.build_cost, component.product_id)
+        tech1_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id']).filter(build_pipeline.group_id <> 334).filter(build_pipeline.group_id <> 18).filter(build_pipeline.group_id <> 1034).filter(build_pipeline.group_id <> 332).filter(build_pipeline.group_id <> 1040).filter(build_pipeline.group_id <> 429).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').order_by('material').all()
 
-                        db.session.add(pipeline)
-                        db.session.commit()
+        for component1 in tech1_pipeline:
+            if component1.build_or_buy == 1 and component1.material_cost > 0:
+                comp = db.session.query(build_pipeline).filter_by(id=component1.id).one()
+                comp.material_cost = 0.0
+                db.session.add(comp)
+                db.session.commit()
 
-                elif component1.build_or_buy == 0 and component1.material_cost == 0:
-                    comp = db.session.query(build_pipeline).filter_by(id=component1.id).one()
-                    comp.material_cost = get_marketValue(component1.material_id, 'sell') * component1.material_qty
-                    db.session.add(comp)
-                    db.session.commit()
-                    mat_id = comp.product_id
+                myBuildComponents = db.session.query(v_build_components).filter_by(id = component1.material_id).with_entities('id','material','material_id','quantity').all()
+                comp_blueprint_id = component1.blueprint_id
 
-                    mats = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'], group_id=18, material_comp_id=mat_id).all()
-                    for mat in mats:
-                        db.session.delete(mat)
-                        db.session.commit()
+                for requirements in myBuildComponents:
+                    myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * component1.material_qty
 
-            tech1_pipeline = db.session.query(build_pipeline).filter(build_pipeline.user_id == session['myUser_id']).filter(build_pipeline.group_id <> 334).filter(build_pipeline.group_id <> 18).filter(build_pipeline.group_id <> 1034).filter(build_pipeline.group_id <> 332).filter(build_pipeline.group_id <> 1040).filter(build_pipeline.group_id <> 429).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id').order_by('material').all()
+                    pipeline = build_pipeline(session['myUser_id'],  component1.product_id, component1.blueprint_id, component1.runs, requirements.material_id, requirements.quantity * component1.material_qty, myCost, component1.product_name, requirements.material, 18, 0, component1.jita_sell_price, component1.local_sell_price, component1.build_cost, component1.product_id, component1.status)
 
-            ram_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=332).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id').order_by('material').all()
-
-            for component2 in ram_pipeline:
-                if component2.build_or_buy == 1 and component2.material_cost > 0:
-                    comp = db.session.query(build_pipeline).filter_by(id=component2.id).one()
-                    comp.material_cost = 0.0
-                    db.session.add(comp)
+                    db.session.add(pipeline)
                     db.session.commit()
 
-                    myBuildComponents = db.session.query(v_build_components).filter_by(id = component2.material_id).with_entities('id','material','material_id','quantity').all()
-
-                    for requirements in myBuildComponents:
-                        myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * component2.material_qty
-
-                        pipeline = build_pipeline(session['myUser_id'],  component2.product_id, component2.blueprint_id, component2.runs, requirements.material_id, requirements.quantity * component2.material_qty, myCost, component2.product_name, requirements.material, 18, 0, component.jita_sell_price, component.local_sell_price, component.build_cost, component.product_id)
-
-                        db.session.add(pipeline)
-                        db.session.commit()
-
-                elif component2.build_or_buy == 0 and component2.material_cost == 0:
-                    comp = db.session.query(build_pipeline).filter_by(id=component2.id).one()
-                    comp.material_cost = get_marketValue(component2.material_id, 'sell') * component2.material_qty
+                newcost_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],blueprint_id=comp_blueprint_id).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').all()
+                materialCost = build_pipeline_rollup_cost(newcost_pipeline)
+                for item in newcost_pipeline:
+                    comp = db.session.query(build_pipeline).filter_by(id=item.id).one()
+                    comp.build_cost = materialCost / comp.runs
                     db.session.add(comp)
                     db.session.commit()
-                    mat_id = comp.product_id
 
-                    mats = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'], group_id=18, material_comp_id=mat_id).all()
-                    for mat in mats:
-                        db.session.delete(mat)
-                        db.session.commit()
+            elif component1.build_or_buy == 0 and component1.material_cost == 0:
+                comp = db.session.query(build_pipeline).filter_by(id=component1.id).one()
+                comp.material_cost = get_marketValue(component1.material_id, 'sell') * component1.material_qty
+                db.session.add(comp)
+                db.session.commit()
+                mat_id = comp.product_id
+                comp_blueprint_id = component1.blueprint_id
 
-            ram_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=332).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id').order_by('material').all()
+                mats = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'], group_id=18, material_comp_id=mat_id, status=2).all()
+                for mat in mats:
+                    db.session.delete(mat)
+                    db.session.commit()
 
-            mineral_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=18).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id').order_by('material_id').all()
+                newcost_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],blueprint_id=comp_blueprint_id).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').all()
+                materialCost = build_pipeline_rollup_cost(newcost_pipeline)
+                for item in newcost_pipeline:
+                    comp = db.session.query(build_pipeline).filter_by(id=item.id).one()
+                    comp.build_cost = materialCost / comp.runs
+                    db.session.add(comp)
+                    db.session.commit()
 
-            datacoresInPipeline = invent_pipeline_rollup_qty(inv_pipeline)
-            dc_total = invent_pipeline_rollup_cost(inv_pipeline)
-            planetaryInPipeline = build_pipeline_rollup_qty(planetary_pipeline)
-            planet_total = build_pipeline_rollup_cost(planetary_pipeline)
-            componentInPipeline = build_pipeline_rollup_qty(component_pipeline)
-            component_total = build_pipeline_rollup_cost(component_pipeline)
-            materialInPipeline = build_pipeline_rollup_qty(material_pipeline)
-            material_total = build_pipeline_rollup_cost(material_pipeline)
-            tech1InPipeline = build_pipeline_rollup_qty(tech1_pipeline)
-            tech1_total = build_pipeline_rollup_cost(tech1_pipeline)
-            ramInPipeline = build_pipeline_rollup_qty(ram_pipeline)
-            ram_total = build_pipeline_rollup_cost(ram_pipeline)
-            mineralInPipeline = build_pipeline_rollup_qty(mineral_pipeline)
-            mineral_total = build_pipeline_rollup_cost(mineral_pipeline)
+        tech1_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id']).filter(build_pipeline.group_id <> 334).filter(build_pipeline.group_id <> 18).filter(build_pipeline.group_id <> 1034).filter(build_pipeline.group_id <> 332).filter(build_pipeline.group_id <> 1040).filter(build_pipeline.group_id <> 429).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').order_by('material').all()
 
-            bom_total = 0
-            bom_total += dc_total
-            bom_total += planet_total
-            bom_total += component_total
-            bom_total += material_total
-            bom_total += tech1_total
-            bom_total += ram_total
-            bom_total += mineral_total
+        ram_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=332,status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').order_by('material').all()
 
-            return render_template('shopping_list.html', form=form, datacoresInPipeline=datacoresInPipeline, planetaryInPipeline=planetaryInPipeline, componentInPipeline=componentInPipeline, materialInPipeline=materialInPipeline, tech1InPipeline=tech1InPipeline, ramInPipeline=ramInPipeline, mineralInPipeline=mineralInPipeline, bom_total=bom_total, dc_total=dc_total, planet_total=planet_total, component_total=component_total, material_total=material_total, tech1_total=tech1_total, ram_total=ram_total, mineral_total=mineral_total)
+        for component2 in ram_pipeline:
+            if component2.build_or_buy == 1 and component2.material_cost > 0:
+                comp = db.session.query(build_pipeline).filter_by(id=component2.id).one()
+                comp.material_cost = 0.0
+                db.session.add(comp)
+                db.session.commit()
 
-        except Exception as e:
-            flash('Problem with B.o.M. - see log.', 'danger')
-            app.logger.info(str(e))
-            return redirect(url_for('bom'))
+                myBuildComponents = db.session.query(v_build_components).filter_by(id = component2.material_id).with_entities('id','material','material_id','quantity').all()
+
+                for requirements in myBuildComponents:
+                    myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * component2.material_qty
+
+                    pipeline = build_pipeline(session['myUser_id'],  component2.product_id, component2.blueprint_id, component2.runs, requirements.material_id, requirements.quantity * component2.material_qty, myCost, component2.product_name, requirements.material, 18, 0, component2.jita_sell_price, component2.local_sell_price, component2.build_cost, component2.product_id,component2.status)
+
+                    db.session.add(pipeline)
+                    db.session.commit()
+
+            elif component2.build_or_buy == 0 and component2.material_cost == 0:
+                comp = db.session.query(build_pipeline).filter_by(id=component2.id).one()
+                comp.material_cost = get_marketValue(component2.material_id, 'sell') * component2.material_qty
+                db.session.add(comp)
+                db.session.commit()
+                mat_id = comp.product_id
+
+                mats = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'], group_id=18, material_comp_id=mat_id,status=2).all()
+                for mat in mats:
+                    db.session.delete(mat)
+                    db.session.commit()
+
+        ram_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=332, status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').order_by('material').all()
+
+        mineral_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=18, status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').order_by('material_id').all()
+
+
+
+        datacoresInPipeline = invent_pipeline_rollup_qty(inv_pipeline)
+        dc_total = invent_pipeline_rollup_cost(inv_pipeline)
+        planetaryInPipeline = build_pipeline_rollup_qty(planetary_pipeline)
+        planet_total = build_pipeline_rollup_cost(planetary_pipeline)
+        componentInPipeline = build_pipeline_rollup_qty(component_pipeline)
+        component_total = build_pipeline_rollup_cost(component_pipeline)
+        materialInPipeline = build_pipeline_rollup_qty(material_pipeline)
+        material_total = build_pipeline_rollup_cost(material_pipeline)
+        tech1InPipeline = build_pipeline_rollup_qty(tech1_pipeline)
+        tech1_total = build_pipeline_rollup_cost(tech1_pipeline)
+        ramInPipeline = build_pipeline_rollup_qty(ram_pipeline)
+        ram_total = build_pipeline_rollup_cost(ram_pipeline)
+        mineralInPipeline = build_pipeline_rollup_qty(mineral_pipeline)
+        mineral_total = build_pipeline_rollup_cost(mineral_pipeline)
+
+        bom_total = 0
+        bom_total += dc_total
+        bom_total += planet_total
+        bom_total += component_total
+        bom_total += material_total
+        bom_total += tech1_total
+        bom_total += ram_total
+        bom_total += mineral_total
+
+        return render_template('shopping_list.html', form=form, datacoresInPipeline=datacoresInPipeline, planetaryInPipeline=planetaryInPipeline, componentInPipeline=componentInPipeline, materialInPipeline=materialInPipeline, tech1InPipeline=tech1InPipeline, ramInPipeline=ramInPipeline, mineralInPipeline=mineralInPipeline, bom_total=bom_total, dc_total=dc_total, planet_total=planet_total, component_total=component_total, material_total=material_total, tech1_total=tech1_total, ram_total=ram_total, mineral_total=mineral_total)
+
+        #except Exception as e:
+        #    flash('Problem with B.o.M. - see log.', 'danger')
+        #    app.logger.info(str(e))
+        #    return redirect(url_for('bom'))
     else:
         flash('You must be logged in to view B.O.M.', 'danger')
         return redirect(url_for('index'))
@@ -471,9 +629,9 @@ def build():
                     flash('Successfully deleted pipeline product.', 'success')
 
         if 'myUser_id' in session:
-            pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id').order_by('material').all()
+            pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').order_by('material').all()
 
-            pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id', 'runs', 'jita_sell_price','local_sell_price','build_cost')
+            pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id', 'runs', 'jita_sell_price','local_sell_price','build_cost','status')
 
             materialInPipeline = build_pipeline_rollup_qty(pipeline)
             materialCost = build_pipeline_rollup_cost(pipeline)
@@ -518,9 +676,9 @@ def build_selected():
             myBuildCost = myBuildCost + cost
 
         if 'myUser_id' in session:
-            pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material', 'group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost').order_by('material').all()
+            pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material', 'group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','status').order_by('material').all()
 
-            pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost')
+            pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost','status')
 
             materialInPipeline = build_pipeline_rollup_qty(pipeline)
             materialCost = build_pipeline_rollup_cost(pipeline)
@@ -557,9 +715,9 @@ def build_add_pipeline():
                 for cost in myMaterialCost:
                     myBuildCost = myBuildCost + cost
 
-                pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material', 'group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id').order_by('material').all()
+                pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material', 'group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').order_by('material').all()
 
-                pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost')
+                pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost','status')
 
                 materialInPipeline = build_pipeline_rollup_qty(pipeline)
                 materialCost = build_pipeline_rollup_cost(pipeline)
@@ -568,7 +726,7 @@ def build_add_pipeline():
                     for requirements in myBuildRequirements:
                         myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty
 
-                        pipeline = build_pipeline(session['myUser_id'],  myProduct.typeID, id, request.form.get('job_runs'), requirements.material_id, requirements.qty, myCost, myProduct.typeName, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0)
+                        pipeline = build_pipeline(session['myUser_id'],  myProduct.typeID, id, request.form.get('job_runs'), requirements.material_id, requirements.qty, myCost, myProduct.typeName, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2)
 
                         db.session.add(pipeline)
                         db.session.commit()
@@ -621,9 +779,9 @@ def invent():
                     flash('Successfully deleted pipeline product.', 'success')
 
         if 'myUser_id' in session:
-            pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore').order_by('datacore').all()
+            pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','status').order_by('datacore').all()
 
-            pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name', 'user_id', 'runs')
+            pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status')
 
             materialInPipeline = invent_pipeline_rollup_qty(pipeline)
             materialCost = invent_pipeline_rollup_cost(pipeline)
@@ -673,9 +831,9 @@ def invent_selected():
 
         if 'myUser_id' in session:
 
-            pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore').order_by('datacore').all()
+            pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','status').order_by('datacore').all()
 
-            pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name', 'user_id', 'runs')
+            pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status')
 
             materialInPipeline = invent_pipeline_rollup_qty(pipeline)
             materialCost = invent_pipeline_rollup_cost(pipeline)
@@ -714,9 +872,9 @@ def invent_add_pipeline():
                 for cost in myDatacoreCost:
                     myInventCost += cost
 
-                pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id']).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore').order_by('datacore').all()
+                pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','status').order_by('datacore').all()
 
-                pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name', 'user_id', 'runs')
+                pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status')
 
                 materialInPipeline = invent_pipeline_rollup_qty(pipeline)
                 materialCost = invent_pipeline_rollup_cost(pipeline)
@@ -725,7 +883,7 @@ def invent_add_pipeline():
                     for requirements in myDatacoreRequirements:
                         myCost = get_marketValue(requirements.dc_id, 'sell') * requirements.quantity
 
-                        pipeline = invent_pipeline(session['myUser_id'],  myProduct.typeID, id, request.form.get('job_runs'), selected_bp.t2_blueprint, requirements.dc_id, requirements.quantity, myCost, requirements.datacore)
+                        pipeline = invent_pipeline(session['myUser_id'],  myProduct.typeID, id, request.form.get('job_runs'), selected_bp.t2_blueprint, requirements.dc_id, requirements.quantity, myCost, requirements.datacore, 3)
 
                         db.session.add(pipeline)
                         db.session.commit()
