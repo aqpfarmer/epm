@@ -117,6 +117,43 @@ class invent_pipeline(db.Model):
         self.datacore = datacore
         self.status = status
 
+class mining_calc(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.Integer())
+    m3_per_cycle = db.Column(db.Integer())
+    cycle_time = db.Column(db.Integer())
+    num_cycles = db.Column(db.Integer())
+    trit_required = db.Column(db.Integer())
+    pye_required = db.Column(db.Integer())
+    mex_required = db.Column(db.Integer())
+    iso_required = db.Column(db.Integer())
+    nox_required = db.Column(db.Integer())
+    zyd_required = db.Column(db.Integer())
+    meg_required = db.Column(db.Integer())
+    morph_required = db.Column(db.Integer())
+    asteroid1_id = db.Column(db.Integer())
+    asteroid2_id = db.Column(db.Integer())
+    asteroid3_id = db.Column(db.Integer())
+    asteroid4_id = db.Column(db.Integer())
+
+    def __init__(self, user_id, m3_per_cycle, cycle_time, num_cycles, trit_required, pye_required, mex_required, iso_required, nox_required, zyd_required, meg_required, morph_required, asteroid1_id, asteroid2_id, asteroid3_id, asteroid4_id):
+        self.user_id = user_id
+        self.m3_per_cycle = m3_per_cycle
+        self.cycle_time = cycle_time
+        self.num_cycles = num_cycles
+        self.trit_required = trit_required
+        self.pye_required = pye_required
+        self.mex_required = mex_required
+        self.iso_required = iso_required
+        self.nox_required = nox_required
+        self.zyd_required = zyd_required
+        self.meg_required = meg_required
+        self.morph_required = morph_required
+        self.asteroid1_id = asteroid1_id
+        self.asteroid2_id = asteroid2_id
+        self.asteroid3_id = asteroid3_id
+        self.asteroid4_id = asteroid4_id
+
 class v_build_requirements(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     material = db.Column(db.String(100))
@@ -236,6 +273,26 @@ class v_build_time(db.Model):
     def __init__(time):
         self.time = time
 
+class v_asteroids(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    group_id = db.Column(db.Integer())
+    asteroid = db.Column(db.String())
+    vol = db.Column(db.Numeric())
+    portion = db.Column(db.Integer())
+
+    def __init__(group_id, asteroid, vol, portion):
+        self.group_id = group_id
+        self.asteroid = asteroid
+        self.vol = vol
+        self.portion = portion
+
+class v_asteroid_groups(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    group = db.Column(db.String())
+
+    def __init__(group):
+        self.group = group
+
 class RegisterForm(Form):
     name = StringField('Name', [validators.Length(min=1, max=50)])
     email = StringField('Email', [validators.Length(min=6, max=50)])
@@ -272,6 +329,64 @@ class BomMaterial():
 def index():
     form = LoginForm(request.form)
     return render_template('home.html', form=form)
+
+@app.route("/fittings")
+def fittings():
+    form = LoginForm(request.form)
+    return render_template('fittings.html', form=form)
+
+@app.route("/financial")
+def financial():
+    form = LoginForm(request.form)
+    return render_template('financial.html', form=form)
+
+@app.route("/mining", methods=['GET','POST'])
+def mining():
+    form = LoginForm(request.form)
+    asteroid_groups = db.session.query(v_asteroid_groups).all()
+    calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
+    if not calcs:
+        calc = mining_calc(session['myUser_id'],  300, 120, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        db.session.add(calc)
+        db.session.commit()
+
+    if request.method == 'POST':
+        if request.form.get('m3_per_cycle'):
+            for calc in calcs:
+                calc.m3_per_cycle = request.form.get('m3_per_cycle',type=int)
+                print calc.m3_per_cycle
+                calc.cycle_time = request.form.get('cycle_time',type=int)
+                print calc.cycle_time
+                calc.num_cycles = request.form.get('num_cycles')
+                print calc.num_cycles
+                db.session.add(calc)
+                db.session.commit()
+
+        if request.form.get('asteroid'):
+            print request.form.get('asteroid')
+            min_id = request.form.get('asteroid')
+            asteroid = db.session.query(invtypes).filter_by(typeID=min_id).one()
+            asteroid_mins = db.session.query(v_build_components).filter_by(id=min_id).with_entities('id','material','material_id','quantity').all()
+            print asteroid.typeName
+            yield1 = calcs[0].m3_per_cycle * (3600 / calcs[0].cycle_time)
+            print ' m3 yield for 1 hour = ' +str(yield1)
+
+            for mins in asteroid_mins:
+
+                print 'mineral - ' + str(mins.material)
+
+
+
+    calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
+
+    return render_template('mining.html', form=form, asteroid_groups=asteroid_groups, calcs=calcs)
+
+@app.context_processor
+def utility_processor():
+    def getAsteroids(group_id):
+        asteroids = db.session.query(v_asteroids).filter_by(group_id=group_id).all()
+        return asteroids
+    return dict(getAsteroids=getAsteroids)
 
 @app.route("/pipeline", methods=['GET','POST'])
 def pipeline():
@@ -564,8 +679,56 @@ def bom():
 
         mineral_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=18, status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').order_by('material_id').all()
 
+        calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
+        if request.form.get('add_mining'):
+            trit_required = 0
+            pye_required = 0
+            mex_required = 0
+            iso_required = 0
+            nox_required = 0
+            zyd_required = 0
+            meg_required = 0
+            morph_required = 0
+            upd_or_add = 0;
+            for mins in mineral_pipeline:
+                if mins.material_id == 34:
+                    trit_required += mins.material_qty * mins.runs
+                elif mins.material_id == 35:
+                    pye_required += mins.material_qty * mins.runs
+                elif mins.material_id == 36:
+                    mex_required += mins.material_qty * mins.runs
+                elif mins.material_id == 37:
+                    iso_required += mins.material_qty * mins.runs
+                elif mins.material_id == 38:
+                    nox_required += mins.material_qty * mins.runs
+                elif mins.material_id == 39:
+                    zyd_required += mins.material_qty * mins.runs
+                elif mins.material_id == 40:
+                    meg_required += mins.material_qty * mins.runs
+                elif mins.material_id == 11399:
+                    morph_required += mins.material_qty * mins.runs
 
+            for calc in calcs:
+                upd_or_add = 1
+                calc.trit_required = trit_required
+                calc.pye_required = pye_required
+                calc.mex_required = mex_required
+                calc.iso_required = iso_required
+                calc.nox_required = nox_required
+                calc.zyd_required = zyd_required
+                calc.meg_required = meg_required
+                calc.morph_required = morph_required
+                db.session.add(calc)
+                db.session.commit()
+                flash('Successfully updated mining calculations.','success')
 
+            if upd_or_add == 0:
+                calc = mining_calc(session['myUser_id'],  300, 120, 30, trit_required, pye_required, mex_required, iso_required, nox_required, zyd_required, meg_required, morph_required, 0, 0, 0, 0)
+                db.session.add(calc)
+                db.session.commit()
+                flash('Successfully sent mineral requirements to mining calculator.','success')
+
+        calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
         datacoresInPipeline = invent_pipeline_rollup_qty(inv_pipeline)
         dc_total = invent_pipeline_rollup_cost(inv_pipeline)
         planetaryInPipeline = build_pipeline_rollup_qty(planetary_pipeline)
@@ -590,7 +753,7 @@ def bom():
         bom_total += ram_total
         bom_total += mineral_total
 
-        return render_template('shopping_list.html', form=form, datacoresInPipeline=datacoresInPipeline, planetaryInPipeline=planetaryInPipeline, componentInPipeline=componentInPipeline, materialInPipeline=materialInPipeline, tech1InPipeline=tech1InPipeline, ramInPipeline=ramInPipeline, mineralInPipeline=mineralInPipeline, bom_total=bom_total, dc_total=dc_total, planet_total=planet_total, component_total=component_total, material_total=material_total, tech1_total=tech1_total, ram_total=ram_total, mineral_total=mineral_total)
+        return render_template('shopping_list.html', form=form, datacoresInPipeline=datacoresInPipeline, planetaryInPipeline=planetaryInPipeline, componentInPipeline=componentInPipeline, materialInPipeline=materialInPipeline, tech1InPipeline=tech1InPipeline, ramInPipeline=ramInPipeline, mineralInPipeline=mineralInPipeline, bom_total=bom_total, dc_total=dc_total, planet_total=planet_total, component_total=component_total, material_total=material_total, tech1_total=tech1_total, ram_total=ram_total, mineral_total=mineral_total,calcs=calcs)
 
         #except Exception as e:
         #    flash('Problem with B.o.M. - see log.', 'danger')
@@ -686,7 +849,7 @@ def build_selected():
             return render_template('build.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, runs=runs)
 
         else:
-            return render_template('build.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost)
+            return render_template('build.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, runs=runs)
 
     except Exception as e:
         flash('Problem querying blueprint. See log', 'danger')
@@ -841,7 +1004,7 @@ def invent_selected():
             return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacoreRequirements = myDatacoreRequirements, datacoresCost=myDatacoresCost, baseProduct = myBaseProduct.material, pipeline=pipeline, materialInPipeline=materialInPipeline, materialCost=materialCost, pipeline_products=pipeline_products, runs=runs)
 
         else:
-            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacoreRequirements=myDatacoreRequirements, datacoresCost = myDatacoresCost, baseProduct = myBaseProduct.material)
+            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacoreRequirements=myDatacoreRequirements, datacoresCost = myDatacoresCost, baseProduct = myBaseProduct.material, runs=runs)
 
     except Exception as e:
         flash('Problem querying blueprint. See log', 'danger')
@@ -969,11 +1132,11 @@ def login():
                 return redirect(url_for('index'))
             else:
                 flash('Login denied. Wrong password. Try again', 'danger')
-                return render_template('login.html', form=form, error=error)
+                return render_template('login.html', form=form)
         except Exception as e:
             app.logger.info(str(e))
             flash('Problem logging in. See log', 'danger')
-            return render_template('login.html', form=form, error=error)
+            return render_template('login.html', form=form)
     else:
         return render_template('login.html', form=form)
 

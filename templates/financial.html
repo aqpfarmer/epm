@@ -1,206 +1,84 @@
-<!DOCTYPE html>
-<html class="no-js" lang="en">
-<head>
-  <title>EVE Production Manager - By Frikkin Genius</title>
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% extends 'layout.html' %}
+{% block body %}
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800">
-  <link rel='stylesheet' href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="/css/bootstrap.css">
-  <link rel="stylesheet" href="/css/styles.css">
-  <link href="/css/carousel.css" rel="stylesheet">
-
-  <style>
-  body {
-    background-image: url("img/29917.png");
-    background-color: #cccccc;
-  }
-  </style>
-<link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
-</head>
-<body>
-  <div class="container" id = "main">
-    <div class="container" id="upperNav">
-      <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <a class="navbar-brand" href="/index.html">EVE Production Manager</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
-          <!-- Button trigger modal -->
-          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#builderModal">
-            Builder
-          </button>
-          <img class="img-fluid" width=40 src="img/74_64_13.png"></img>
-
-          <!-- End Button trigger modal -->
-          <!-- Modal -->
-          <div class="modal fade" id="builderModal" tabindex="-1" role="dialog" aria-labelledby="builderModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="builderModalLabel">Builder Details</h5>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div class="modal-body">
-                  ...
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- End Modal -->
-
-          <ul class="navbar-nav ml-auto">
-            <!-- Button trigger modal -->
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#optionModal">
-              Options
-            </button>
-            <!-- End Button trigger modal -->
-            <!-- Modal -->
-            <div class="modal fade" id="optionModal" tabindex="-1" role="dialog" aria-labelledby="optionModalLabel" aria-hidden="true">
-              <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="optionModalLabel">Options</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                  <div class="modal-body">
-                    ...
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- End Modal -->
-
-            <li class="nav-item"><a class="nav-link" href="#">Login</a></li>
-          </ul>
+<div class="row px-0" id="row1">
+  <div class="col-sm-12">
+    <ul class="list-group mb-auto">
+      <li class="list-group-item d-flex justify-content-between lh-condensed bg-success">
+        <h3 class="mx-auto text-white">Financial Report</h3>
+      </li>
+      <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
+        <div class="col-12">
+          <form>
+            <table class="table table-striped">
+              <tbody>
+                <tr>
+                  <td class="text-right noBorder" colspan="2">Date Range:</td>
+                  <td class="noBorder"><strong>3/1/2018</strong> to <strong>3/31/2018</strong>
+                    <a href="#"><</a> - <a href="#">></a>
+                  </td>
+                  <td class="noBorder"><input name="fetch" class="btn-sm btn-primary" type="button" value="Fetch Journal Transactions"></td>
+                </tr>
+                <tr>
+                  <td class="text-center noBorder py-0" colspan="2"><h5>Total Expenses</h5></td>
+                  <td class="text-center noBorder py-0" colspan="2"><h5>Total Income</h5></td>
+                </tr>
+                <tr>
+                  <td class="text-right noBorder py-0">Transaction Taxes</td>
+                  <td class="noBorder py-0">24,828,554</td>
+                  <td class="text-right noBorder py-0">Money Received</td>
+                  <td class="noBorder py-0">800,000,000</td>
+                </tr>
+                <tr>
+                  <td class="text-right noBorder py-0">Broker Fees</td>
+                  <td class="noBorder py-0">67,408,729</td>
+                  <td class="text-right noBorder py-0">Sales</td>
+                  <td class="noBorder py-0">1,904,976,123</td>
+                </tr>
+                <tr>
+                  <td class="text-right noBorder py-0">Planetary Interaction Taxes</td>
+                  <td class="noBorder py-0">0</td>
+                  <td class="text-right noBorder py-0">Bounties</td>
+                  <td class="noBorder py-0">1,556,700</td>
+                </tr>
+                <tr>
+                  <td class="text-right noBorder py-0">Money Donated</td>
+                  <td class="noBorder py-0">400,000,000</td>
+                  <td class="text-right noBorder py-0">Contract Sales</td>
+                  <td class="noBorder py-0">30,000,000</td>
+                </tr>
+                <tr>
+                  <td class="text-right noBorder py-0">Purchases</td>
+                  <td class="noBorder py-0">468,880,099</td>
+                  <td class="text-right noBorder py-0">Insurance Payout</td>
+                  <td class="noBorder py-0">0</td>
+                </tr>
+                <tr>
+                  <td class="text-right noBorder py-0">Contract Buys</td>
+                  <td class="noBorder py-0">0</td>
+                  <td class="text-right noBorder py-0"></td>
+                  <td class="noBorder py-0"></td>
+                </tr>
+                <tr>
+                  <td class="text-right noBorder py-0">Insurance Fees</td>
+                  <td class="noBorder py-0">0</td>
+                  <td class="text-right noBorder py-0"></td>
+                  <td class="noBorder py-0"></td>
+                </tr>
+              </tbody>
+            </table>
+          </form>
         </div>
-      </div> <!-- upper nav -->
-
-      <div class="container" id="mainMenu">
-        <span class="border border-dark">
-          <nav class="navbar navbar-expand-lg navbar-light">
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMainMenu">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarMainMenu">
-              <ul class="navbar-nav ml-auto">
-                <li class="nav-item"><a class="btn btn-secondary" href="invent.html">Invent</a></li>
-                <li>..</li>
-                <li class="nav-item"><a class="btn btn-secondary" href="build.html">Build</a></li>
-                <li>..</li>
-                <li class="nav-item"><a class="btn btn-secondary" href="shopping_list.html">B.O.M.
-                  <span class="badge badge-light">14</span></a></li>
-                  <li>..</li>
-                <li class="nav-item"><a class="btn btn-secondary" href="pipeline.html">Pipeline
-                  <span class="badge badge-light">4</span></a></li>
-                    <li>..</li>
-                    <li class="nav-item"><a class="btn btn-success" href="financial.html">Financial Report</a></li>
-                    <li>..</li>
-                    <li class="nav-item"><a class="btn btn-danger" href="mining.html">Mining Calculator</a></li>
-                    <li>..</li>
-                    <li class="nav-item"><a class="btn btn-info" href="fittings.html">Ship Fittings</a></li>
-                  </ul>
-                </div>
-              </nav>
-            </div> <!-- Mian Menu -->
-
-            <div class="row px-0" id="row1">
-              <div class="col-sm-12">
-                <ul class="list-group mb-auto">
-                  <li class="list-group-item d-flex justify-content-between lh-condensed bg-success">
-                    <h3 class="mx-auto text-white">Financial Report</h3>
-                  </li>
-                  <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
-                    <div class="col-12">
-                      <form>
-                        <table class="table table-striped">
-                          <tbody>
-                            <tr>
-                              <td class="text-right noBorder" colspan="2">Date Range:</td>
-                              <td class="noBorder"><strong>3/1/2018</strong> to <strong>3/31/2018</strong>
-                                <a href="#"><</a> - <a href="#">></a>
-                              </td>
-                              <td class="noBorder"><input name="fetch" class="btn-sm btn-primary" type="button" value="Fetch Journal Transactions"></td>
-                            </tr>
-                            <tr>
-                              <td class="text-center noBorder py-0" colspan="2"><h5>Total Expenses</h5></td>
-                              <td class="text-center noBorder py-0" colspan="2"><h5>Total Income</h5></td>
-                            </tr>
-                            <tr>
-                              <td class="text-right noBorder py-0">Transaction Taxes</td>
-                              <td class="noBorder py-0">24,828,554</td>
-                              <td class="text-right noBorder py-0">Money Received</td>
-                              <td class="noBorder py-0">800,000,000</td>
-                            </tr>
-                            <tr>
-                              <td class="text-right noBorder py-0">Broker Fees</td>
-                              <td class="noBorder py-0">67,408,729</td>
-                              <td class="text-right noBorder py-0">Sales</td>
-                              <td class="noBorder py-0">1,904,976,123</td>
-                            </tr>
-                            <tr>
-                              <td class="text-right noBorder py-0">Planetary Interaction Taxes</td>
-                              <td class="noBorder py-0">0</td>
-                              <td class="text-right noBorder py-0">Bounties</td>
-                              <td class="noBorder py-0">1,556,700</td>
-                            </tr>
-                            <tr>
-                              <td class="text-right noBorder py-0">Money Donated</td>
-                              <td class="noBorder py-0">400,000,000</td>
-                              <td class="text-right noBorder py-0">Contract Sales</td>
-                              <td class="noBorder py-0">30,000,000</td>
-                            </tr>
-                            <tr>
-                              <td class="text-right noBorder py-0">Purchases</td>
-                              <td class="noBorder py-0">468,880,099</td>
-                              <td class="text-right noBorder py-0">Insurance Payout</td>
-                              <td class="noBorder py-0">0</td>
-                            </tr>
-                            <tr>
-                              <td class="text-right noBorder py-0">Contract Buys</td>
-                              <td class="noBorder py-0">0</td>
-                              <td class="text-right noBorder py-0"></td>
-                              <td class="noBorder py-0"></td>
-                            </tr>
-                            <tr>
-                              <td class="text-right noBorder py-0">Insurance Fees</td>
-                              <td class="noBorder py-0">0</td>
-                              <td class="text-right noBorder py-0"></td>
-                              <td class="noBorder py-0"></td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </form>
-                    </div>
-                  </li>
-                  <li class="list-group-item d-flex justify-content-between lh-condensed">
-                      <h5 class="text-center col-sm-12 text-success">
-                        Profit/Loss: +1,919,800,101 ISK
-                      </h5>
-                  </li>
-                </ul>
-              </div>
-            </div>
+      </li>
+      <li class="list-group-item d-flex justify-content-between lh-condensed">
+          <h5 class="text-center col-sm-12 text-success">
+            Profit/Loss: +1,919,800,101 ISK
+          </h5>
+      </li>
+    </ul>
+  </div>
+</div>
 
 
-            </div> <!-- main -->
-
-            <script src="/js/jquery.min.js"></script>
-            <script src="/js/popper.min.js"></script>
-            <script src="/js/bootstrap.min.js"></script>
-          </body>
-          </html>
+</div> <!-- main -->
+{% endblock %}

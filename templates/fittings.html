@@ -1,717 +1,595 @@
-<!DOCTYPE html>
-<html class="no-js" lang="en">
-<head>
-  <title>EVE Production Manager - By Frikkin Genius</title>
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% extends 'layout.html' %}
+{% block body %}
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800">
-  <link rel='stylesheet' href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="/css/bootstrap.css">
-  <link rel="stylesheet" href="/css/styles.css">
-  <link href="/css/carousel.css" rel="stylesheet">
+<div class="row px-0" id="row0">
+  <div class="col-sm-12">
+    <ul class="list-group mb-auto">
+      <li class="list-group-item d-flex justify-content-between lh-condensed bg-secondary">
+        <h3 class="mx-auto text-white">Fitted Ship Builder</h3>
+        <input name="fetch" class="btn-sm btn-info mt-0" type="button" value="<">
+        <input name="fetch" class="btn-sm btn-info mt-0" type="button" value=">">
+      </li>
+      <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
+        <div class="col-12">
+          <form>
+            <div class="form-inline" id="row1">
 
-  <style>
-  body {
-    background-image: url("img/29917.png");
-    background-color: #cccccc;
-  }
-  </style>
-<link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
-</head>
-<body>
-  <div class="container" id = "main">
-    <div class="container" id="upperNav">
-      <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <a class="navbar-brand" href="/index.html">EVE Production Manager</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
-          <!-- Button trigger modal -->
-          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#builderModal">
-            Builder
-          </button>
-          <img class="img-fluid" width=40 src="img/74_64_13.png"></img>
-
-          <!-- End Button trigger modal -->
-          <!-- Modal -->
-          <div class="modal fade" id="builderModal" tabindex="-1" role="dialog" aria-labelledby="builderModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="builderModalLabel">Builder Details</h5>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div class="modal-body">
-                  ...
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
+              <div class="form-group pr-1">
+                <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/Render/11993_128.png">
               </div>
-            </div>
-          </div>
-          <!-- End Modal -->
-
-          <ul class="navbar-nav ml-auto">
-            <!-- Button trigger modal -->
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#optionModal">
-              Options
-            </button>
-            <!-- End Button trigger modal -->
-            <!-- Modal -->
-            <div class="modal fade" id="optionModal" tabindex="-1" role="dialog" aria-labelledby="optionModalLabel" aria-hidden="true">
-              <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="optionModalLabel">Options</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                  <div class="modal-body">
-                    ...
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
-                  </div>
-                </div>
+              <label class="px-1" for="ship">Ship to Build:</label>
+              <div class="form-group">
+                <select name="ship" id="ship" class="form-control" style="max-width: 300px;">
+                  <option selected>Choose...</option>
+                  <option>Ares</option>
+                  <option>Crow</option>
+                  <option>Merlin</option>
+                  <option>Rifter</option>
+                  <option>Cerberus</option>
+                  <option>Chumnumsky Mark VII Ranger</option>
+                </select>
               </div>
-            </div>
-            <!-- End Modal -->
-
-            <li class="nav-item"><a class="nav-link" href="#">Login</a></li>
-          </ul>
-        </div>
-      </div> <!-- upper nav -->
-
-      <div class="container" id="mainMenu">
-        <span class="border border-dark">
-          <nav class="navbar navbar-expand-lg navbar-light">
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMainMenu">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarMainMenu">
-              <ul class="navbar-nav ml-auto">
-                <li class="nav-item"><a class="btn btn-secondary" href="invent.html">Invent</a></li>
-                <li>..</li>
-                <li class="nav-item"><a class="btn btn-secondary" href="build.html">Build</a></li>
-                <li>..</li>
-                <li class="nav-item"><a class="btn btn-secondary" href="shopping_list.html">B.O.M.
-                  <span class="badge badge-light">14</span></a></li>
-                  <li>..</li>
-                <li class="nav-item"><a class="btn btn-secondary" href="pipeline.html">Pipeline
-                  <span class="badge badge-light">4</span></a></li>
-                    <li>..</li>
-                    <li class="nav-item"><a class="btn btn-success" href="financial.html">Financial Report</a></li>
-                    <li>..</li>
-                    <li class="nav-item"><a class="btn btn-danger" href="mining.html">Mining Calculator</a></li>
-                    <li>..</li>
-                    <li class="nav-item"><a class="btn btn-info" href="fittings.html">Ship Fittings</a></li>
-                  </ul>
-                </div>
-              </nav>
-            </div> <!-- Mian Menu -->
-
-            <div class="row px-0" id="row0">
-              <div class="col-sm-12">
-                <ul class="list-group mb-auto">
-                  <li class="list-group-item d-flex justify-content-between lh-condensed bg-secondary">
-                    <h3 class="mx-auto text-white">Fitted Ship Builder</h3>
-                    <input name="fetch" class="btn-sm btn-info mt-0" type="button" value="<">
-                    <input name="fetch" class="btn-sm btn-info mt-0" type="button" value=">">
-                  </li>
-                  <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
-                    <div class="col-12">
-                      <form>
-                        <div class="form-inline" id="row1">
-
-                          <div class="form-group pr-1">
-                            <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/Render/11993_128.png">
-                          </div>
-                          <label class="px-1" for="ship">Ship to Build:</label>
-                          <div class="form-group">
-                            <select name="ship" id="ship" class="form-control" style="max-width: 300px;">
-                              <option selected>Choose...</option>
-                              <option>Ares</option>
-                              <option>Crow</option>
-                              <option>Merlin</option>
-                              <option>Rifter</option>
-                              <option>Cerberus</option>
-                              <option>Chumnumsky Mark VII Ranger</option>
-                            </select>
-                          </div>
-                          <label class="px-1" for="qty">QTY:</label>
-                          <div class="form-group">
-                            <input type="text" class="form-control" id="qty" value="1" size="1">
-                          </div>
-                          <label class="px-1" for="contract">Contract Price:</label>
-                          <div class="form-group pr-1">
-                            <input type="text" class="form-control" id="contract" value="200,000,000" size="7">
-                          </div>
-                          <div class="form-check px-1">
-                            <input class="form-check-input" type="checkbox" id="rollup">
-                            <label class="form-check-label" for"rollup">Rollup?</label>
-                          </div>
-                        </div><!-- row1 -->
-
-                        <div class="form" id="row2">
-                          <table class="table table-light">
-                            <tbody>
-                              <tr>
-                                <td class="noBorder text-center"><strong>High Slots</td>
-                                <td class="noBorder text-center"><strong>Medium Slots</td>
-                                <td class="noBorder text-center"><strong>Low Slots</td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Medium Netron Samrt Bomb</option>
-                                    <option>Heavy Beam Laser II</option>
-                                    <option>Heavy Missile Launcher II</option>
-                                    <option>425mm Autocannon II</option>
-                                    <option>Covert Ops Cloaking Device II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II/option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II</option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Medium Netron Samrt Bomb</option>
-                                    <option>Heavy Beam Laser II</option>
-                                    <option>Heavy Missile Launcher II</option>
-                                    <option>425mm Autocannon II</option>
-                                    <option>Covert Ops Cloaking Device II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II/option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II</option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Medium Netron Samrt Bomb</option>
-                                    <option>Heavy Beam Laser II</option>
-                                    <option>Heavy Missile Launcher II</option>
-                                    <option>425mm Autocannon II</option>
-                                    <option>Covert Ops Cloaking Device II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II/option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II</option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                              </tr><tr>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Medium Netron Samrt Bomb</option>
-                                    <option>Heavy Beam Laser II</option>
-                                    <option>Heavy Missile Launcher II</option>
-                                    <option>425mm Autocannon II</option>
-                                    <option>Covert Ops Cloaking Device II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II/option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II</option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                              </tr><tr>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Medium Netron Samrt Bomb</option>
-                                    <option>Heavy Beam Laser II</option>
-                                    <option>Heavy Missile Launcher II</option>
-                                    <option>425mm Autocannon II</option>
-                                    <option>Covert Ops Cloaking Device II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II/option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II</option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                              </tr><tr>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Medium Netron Samrt Bomb</option>
-                                    <option>Heavy Beam Laser II</option>
-                                    <option>Heavy Missile Launcher II</option>
-                                    <option>425mm Autocannon II</option>
-                                    <option>Covert Ops Cloaking Device II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II/option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II</option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                              </tr><tr>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Medium Netron Samrt Bomb</option>
-                                    <option>Heavy Beam Laser II</option>
-                                    <option>Heavy Missile Launcher II</option>
-                                    <option>425mm Autocannon II</option>
-                                    <option>Covert Ops Cloaking Device II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II/option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II</option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                              </tr><tr>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Medium Netron Samrt Bomb</option>
-                                    <option>Heavy Beam Laser II</option>
-                                    <option>Heavy Missile Launcher II</option>
-                                    <option>425mm Autocannon II</option>
-                                    <option>Covert Ops Cloaking Device II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II/option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II</option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="text-center"><strong>Module Slots</td>
-                                <td class="text-center"><strong>Rig Slots</td>
-                                <td class="text-center"><strong>Drones & Ammo</td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Medium Netron Samrt Bomb</option>
-                                    <option>Heavy Beam Laser II</option>
-                                    <option>Heavy Missile Launcher II</option>
-                                    <option>425mm Autocannon II</option>
-                                    <option>Covert Ops Cloaking Device II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II/option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II</option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Medium Netron Samrt Bomb</option>
-                                    <option>Heavy Beam Laser II</option>
-                                    <option>Heavy Missile Launcher II</option>
-                                    <option>425mm Autocannon II</option>
-                                    <option>Covert Ops Cloaking Device II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II/option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II</option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                              </tr><tr>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Medium Netron Samrt Bomb</option>
-                                    <option>Heavy Beam Laser II</option>
-                                    <option>Heavy Missile Launcher II</option>
-                                    <option>425mm Autocannon II</option>
-                                    <option>Covert Ops Cloaking Device II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II/option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II</option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                              </tr><tr>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Medium Netron Samrt Bomb</option>
-                                    <option>Heavy Beam Laser II</option>
-                                    <option>Heavy Missile Launcher II</option>
-                                    <option>425mm Autocannon II</option>
-                                    <option>Covert Ops Cloaking Device II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0"> -  </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II</option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Medium Netron Samrt Bomb</option>
-                                    <option>Heavy Beam Laser II</option>
-                                    <option>Heavy Missile Launcher II</option>
-                                    <option>425mm Autocannon II</option>
-                                    <option>Covert Ops Cloaking Device II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                  </select>
-                                </td>
-                                <td class="noBorder py-0"> - </td>
-                                <td class="noBorder py-0">
-                                  <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
-                                    <option selected>Choose...</option>
-                                    <option>Adaptive Invulnerability Field II</option>
-                                    <option>Large Shield Extender II</option>
-                                    <option>Tracking Enhancer II</option>
-                                    <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
-                                    <option>Em Ward Field II</option>
-                                  </select>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="text-center"><h4 class="text-danger"><strong>Total Cost of Production:</h4><h5>397,869,595</td>
-                                <td class="text-center"><h4 class="text-success"><strong>Total Contract Value:</h4><h5> 1,000,000,000</td>
-                                <td class="text-center"><h4 class="text-secondary"><strong>Total Profit Margin:</h4><h5> 60%</td>
-                              </tr>
-                            </tbody>
-                          </table>
-
-                          <table class="table table-sm">
-                            <tbody>
-                              <tr>
-                                <td class="text-center noBorder py-0" colspan="6">
-                                  <h4 class="bg-secondary text-white">Production Rollup</h4>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="text-center noBorder py-0" colspan="6">
-                                  <h5 class="bg-info text-white">Commodities to Purchase</h5>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0"><strong>Material</td>
-                                <td class="noBorder py-0"><strong>QTY</td>
-                                <td class="noBorder py-0"><strong>Jita Buy</td>
-                                <td class="noBorder py-0"><strong>Material</td>
-                                <td class="noBorder py-0"><strong>QTY</td>
-                                <td class="noBorder py-0"><strong>Jita Buy</td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0">Vortex Compact Magnetic Field Stabilizer</td>
-                                <td class="noBorder py-0">100</td>
-                                <td class="noBorder py-0">26,442,419</td>
-                                <td class="noBorder py-0">5MN Cold-Gas Enduring Microwarpdrive</td>
-                                <td class="noBorder py-0">50</td>
-                                <td class="noBorder py-0">616,114</td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0">Vortex Compact Magnetic Field Stabilizer</td>
-                                <td class="noBorder py-0">100</td>
-                                <td class="noBorder py-0">26,442,419</td>
-                                <td class="noBorder py-0">5MN Cold-Gas Enduring Microwarpdrive</td>
-                                <td class="noBorder py-0">50</td>
-                                <td class="noBorder py-0">616,114</td>
-                              </tr><tr>
-                                <td class="noBorder py-0">VF-90 Compact Sensor Booster</td>
-                                <td class="noBorder py-0">100</td>
-                                <td class="noBorder py-0">24,621,034</td>
-                                <td class="noBorder py-0">Caldari Navy Antimatter Charge S</td>
-                                <td class="noBorder py-0">50,000</td>
-                                <td class="noBorder py-0">17,187,500</td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0">Caldari Navy Lead Charge S</td>
-                                <td class="noBorder py-0">50000</td>
-                                <td class="noBorder py-0">14,196,000</td>
-                                <td class="noBorder py-0">-</td>
-                                <td class="noBorder py-0">-</td>
-                                <td class="noBorder py-0">-</td>
-                              </tr>
-
-                              <tr>
-                                <td class="text-center noBorder py-0" colspan="6">
-                                  <h5 class="bg-info text-white">Buildable Products</h5>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0"><strong>Material</td>
-                                <td class="noBorder py-0"><strong>QTY</td>
-                                <td class="noBorder py-0"><strong>Production Cost</td>
-                                <td class="noBorder py-0"><strong>Material</td>
-                                <td class="noBorder py-0"><strong>QTY</td>
-                                <td class="noBorder py-0"><strong>Production Cost</td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0">Cerberus</td>
-                                <td class="noBorder py-0">10</td>
-                                <td class="noBorder py-0">260,442,419</td>
-                                <td class="noBorder py-0">Cormorant</td>
-                                <td class="noBorder py-0">50</td>
-                                <td class="noBorder py-0">61,616,114</td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0">Damage Control II</td>
-                                <td class="noBorder py-0">100</td>
-                                <td class="noBorder py-0">26,442,419</td>
-                                <td class="noBorder py-0">Ballistic Control System II</td>
-                                <td class="noBorder py-0">50</td>
-                                <td class="noBorder py-0">616,114</td>
-                              </tr><tr>
-                                <td class="noBorder py-0">Capacitor Power Relay II</td>
-                                <td class="noBorder py-0">100</td>
-                                <td class="noBorder py-0">24,621,034</td>
-                                <td class="noBorder py-0">Large Shield Extender II</td>
-                                <td class="noBorder py-0">50,000</td>
-                                <td class="noBorder py-0">17,187,500</td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0">CAdaptive Invulnerability Field II</td>
-                                <td class="noBorder py-0">50000</td>
-                                <td class="noBorder py-0">14,196,000</td>
-                                <td class="noBorder py-0">EM Ward Field II</td>
-                                <td class="noBorder py-0">10</td>
-                                <td class="noBorder py-0">-</td>
-                              </tr>
-                              <tr>
-                                <td class="noBorder py-0">150mm Railgun II</td>
-                                <td class="noBorder py-0">50000</td>
-                                <td class="noBorder py-0">14,196,000</td>
-                                <td class="noBorder py-0">Heavy Missile Launcher II</td>
-                                <td class="noBorder py-0">60</td>
-                                <td class="noBorder py-0">50,394,774</td>
-                              </tr>
-                              <tr align="center">
-                                <td class="noBorder py-0" colspan="6">
-                                  <input name="addbom" class="btn-sm btn-info" type="button" value="Add to B.O.M.">
-                                </td>
-                              </tr>
-
-                            </tbody>
-                          </table>
-
-                        </div><!-- row2 -->
-
-                      </form>
-                    </div> <!-- col-12 -->
-                  </li>
-                </ul>
+              <label class="px-1" for="qty">QTY:</label>
+              <div class="form-group">
+                <input type="text" class="form-control" id="qty" value="1" size="1">
               </div>
-            </div>
+              <label class="px-1" for="contract">Contract Price:</label>
+              <div class="form-group pr-1">
+                <input type="text" class="form-control" id="contract" value="200,000,000" size="7">
+              </div>
+              <div class="form-check px-1">
+                <input class="form-check-input" type="checkbox" id="rollup">
+                <label class="form-check-label" for"rollup">Rollup?</label>
+              </div>
+            </div><!-- row1 -->
+
+            <div class="form" id="row2">
+              <table class="table table-light">
+                <tbody>
+                  <tr>
+                    <td class="noBorder text-center"><strong>High Slots</td>
+                    <td class="noBorder text-center"><strong>Medium Slots</td>
+                    <td class="noBorder text-center"><strong>Low Slots</td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Medium Netron Samrt Bomb</option>
+                        <option>Heavy Beam Laser II</option>
+                        <option>Heavy Missile Launcher II</option>
+                        <option>425mm Autocannon II</option>
+                        <option>Covert Ops Cloaking Device II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II/option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II</option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Medium Netron Samrt Bomb</option>
+                        <option>Heavy Beam Laser II</option>
+                        <option>Heavy Missile Launcher II</option>
+                        <option>425mm Autocannon II</option>
+                        <option>Covert Ops Cloaking Device II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II/option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II</option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Medium Netron Samrt Bomb</option>
+                        <option>Heavy Beam Laser II</option>
+                        <option>Heavy Missile Launcher II</option>
+                        <option>425mm Autocannon II</option>
+                        <option>Covert Ops Cloaking Device II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II/option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II</option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                  </tr><tr>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Medium Netron Samrt Bomb</option>
+                        <option>Heavy Beam Laser II</option>
+                        <option>Heavy Missile Launcher II</option>
+                        <option>425mm Autocannon II</option>
+                        <option>Covert Ops Cloaking Device II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II/option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II</option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                  </tr><tr>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Medium Netron Samrt Bomb</option>
+                        <option>Heavy Beam Laser II</option>
+                        <option>Heavy Missile Launcher II</option>
+                        <option>425mm Autocannon II</option>
+                        <option>Covert Ops Cloaking Device II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II/option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II</option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                  </tr><tr>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Medium Netron Samrt Bomb</option>
+                        <option>Heavy Beam Laser II</option>
+                        <option>Heavy Missile Launcher II</option>
+                        <option>425mm Autocannon II</option>
+                        <option>Covert Ops Cloaking Device II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II/option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II</option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                  </tr><tr>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Medium Netron Samrt Bomb</option>
+                        <option>Heavy Beam Laser II</option>
+                        <option>Heavy Missile Launcher II</option>
+                        <option>425mm Autocannon II</option>
+                        <option>Covert Ops Cloaking Device II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II/option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II</option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                  </tr><tr>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Medium Netron Samrt Bomb</option>
+                        <option>Heavy Beam Laser II</option>
+                        <option>Heavy Missile Launcher II</option>
+                        <option>425mm Autocannon II</option>
+                        <option>Covert Ops Cloaking Device II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II/option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II</option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="text-center"><strong>Module Slots</td>
+                    <td class="text-center"><strong>Rig Slots</td>
+                    <td class="text-center"><strong>Drones & Ammo</td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Medium Netron Samrt Bomb</option>
+                        <option>Heavy Beam Laser II</option>
+                        <option>Heavy Missile Launcher II</option>
+                        <option>425mm Autocannon II</option>
+                        <option>Covert Ops Cloaking Device II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II/option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II</option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Medium Netron Samrt Bomb</option>
+                        <option>Heavy Beam Laser II</option>
+                        <option>Heavy Missile Launcher II</option>
+                        <option>425mm Autocannon II</option>
+                        <option>Covert Ops Cloaking Device II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II/option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II</option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                  </tr><tr>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Medium Netron Samrt Bomb</option>
+                        <option>Heavy Beam Laser II</option>
+                        <option>Heavy Missile Launcher II</option>
+                        <option>425mm Autocannon II</option>
+                        <option>Covert Ops Cloaking Device II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="med1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II/option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II</option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                  </tr><tr>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Medium Netron Samrt Bomb</option>
+                        <option>Heavy Beam Laser II</option>
+                        <option>Heavy Missile Launcher II</option>
+                        <option>425mm Autocannon II</option>
+                        <option>Covert Ops Cloaking Device II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0"> -  </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II</option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="hi1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Medium Netron Samrt Bomb</option>
+                        <option>Heavy Beam Laser II</option>
+                        <option>Heavy Missile Launcher II</option>
+                        <option>425mm Autocannon II</option>
+                        <option>Covert Ops Cloaking Device II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                      </select>
+                    </td>
+                    <td class="noBorder py-0"> - </td>
+                    <td class="noBorder py-0">
+                      <select name="slots" id="low1" class="form-control form-control-sm" style="max-width: 400px;">
+                        <option selected>Choose...</option>
+                        <option>Adaptive Invulnerability Field II</option>
+                        <option>Large Shield Extender II</option>
+                        <option>Tracking Enhancer II</option>
+                        <option>50mn Quad Lif Fueled Residual Microwarpdrive</option>
+                        <option>Em Ward Field II</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="text-center"><h4 class="text-danger"><strong>Total Cost of Production:</h4><h5>397,869,595</td>
+                    <td class="text-center"><h4 class="text-success"><strong>Total Contract Value:</h4><h5> 1,000,000,000</td>
+                    <td class="text-center"><h4 class="text-secondary"><strong>Total Profit Margin:</h4><h5> 60%</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <table class="table table-sm">
+                <tbody>
+                  <tr>
+                    <td class="text-center noBorder py-0" colspan="6">
+                      <h4 class="bg-secondary text-white">Production Rollup</h4>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="text-center noBorder py-0" colspan="6">
+                      <h5 class="bg-info text-white">Commodities to Purchase</h5>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0"><strong>Material</td>
+                    <td class="noBorder py-0"><strong>QTY</td>
+                    <td class="noBorder py-0"><strong>Jita Buy</td>
+                    <td class="noBorder py-0"><strong>Material</td>
+                    <td class="noBorder py-0"><strong>QTY</td>
+                    <td class="noBorder py-0"><strong>Jita Buy</td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0">Vortex Compact Magnetic Field Stabilizer</td>
+                    <td class="noBorder py-0">100</td>
+                    <td class="noBorder py-0">26,442,419</td>
+                    <td class="noBorder py-0">5MN Cold-Gas Enduring Microwarpdrive</td>
+                    <td class="noBorder py-0">50</td>
+                    <td class="noBorder py-0">616,114</td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0">Vortex Compact Magnetic Field Stabilizer</td>
+                    <td class="noBorder py-0">100</td>
+                    <td class="noBorder py-0">26,442,419</td>
+                    <td class="noBorder py-0">5MN Cold-Gas Enduring Microwarpdrive</td>
+                    <td class="noBorder py-0">50</td>
+                    <td class="noBorder py-0">616,114</td>
+                  </tr><tr>
+                    <td class="noBorder py-0">VF-90 Compact Sensor Booster</td>
+                    <td class="noBorder py-0">100</td>
+                    <td class="noBorder py-0">24,621,034</td>
+                    <td class="noBorder py-0">Caldari Navy Antimatter Charge S</td>
+                    <td class="noBorder py-0">50,000</td>
+                    <td class="noBorder py-0">17,187,500</td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0">Caldari Navy Lead Charge S</td>
+                    <td class="noBorder py-0">50000</td>
+                    <td class="noBorder py-0">14,196,000</td>
+                    <td class="noBorder py-0">-</td>
+                    <td class="noBorder py-0">-</td>
+                    <td class="noBorder py-0">-</td>
+                  </tr>
+
+                  <tr>
+                    <td class="text-center noBorder py-0" colspan="6">
+                      <h5 class="bg-info text-white">Buildable Products</h5>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0"><strong>Material</td>
+                    <td class="noBorder py-0"><strong>QTY</td>
+                    <td class="noBorder py-0"><strong>Production Cost</td>
+                    <td class="noBorder py-0"><strong>Material</td>
+                    <td class="noBorder py-0"><strong>QTY</td>
+                    <td class="noBorder py-0"><strong>Production Cost</td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0">Cerberus</td>
+                    <td class="noBorder py-0">10</td>
+                    <td class="noBorder py-0">260,442,419</td>
+                    <td class="noBorder py-0">Cormorant</td>
+                    <td class="noBorder py-0">50</td>
+                    <td class="noBorder py-0">61,616,114</td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0">Damage Control II</td>
+                    <td class="noBorder py-0">100</td>
+                    <td class="noBorder py-0">26,442,419</td>
+                    <td class="noBorder py-0">Ballistic Control System II</td>
+                    <td class="noBorder py-0">50</td>
+                    <td class="noBorder py-0">616,114</td>
+                  </tr><tr>
+                    <td class="noBorder py-0">Capacitor Power Relay II</td>
+                    <td class="noBorder py-0">100</td>
+                    <td class="noBorder py-0">24,621,034</td>
+                    <td class="noBorder py-0">Large Shield Extender II</td>
+                    <td class="noBorder py-0">50,000</td>
+                    <td class="noBorder py-0">17,187,500</td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0">CAdaptive Invulnerability Field II</td>
+                    <td class="noBorder py-0">50000</td>
+                    <td class="noBorder py-0">14,196,000</td>
+                    <td class="noBorder py-0">EM Ward Field II</td>
+                    <td class="noBorder py-0">10</td>
+                    <td class="noBorder py-0">-</td>
+                  </tr>
+                  <tr>
+                    <td class="noBorder py-0">150mm Railgun II</td>
+                    <td class="noBorder py-0">50000</td>
+                    <td class="noBorder py-0">14,196,000</td>
+                    <td class="noBorder py-0">Heavy Missile Launcher II</td>
+                    <td class="noBorder py-0">60</td>
+                    <td class="noBorder py-0">50,394,774</td>
+                  </tr>
+                  <tr align="center">
+                    <td class="noBorder py-0" colspan="6">
+                      <input name="addbom" class="btn-sm btn-info" type="button" value="Add to B.O.M.">
+                    </td>
+                  </tr>
+
+                </tbody>
+              </table>
+
+            </div><!-- row2 -->
+
+          </form>
+        </div> <!-- col-12 -->
+      </li>
+    </ul>
+  </div>
+</div>
 
 
-            </div> <!-- main -->
-
-            <script src="/js/jquery.min.js"></script>
-            <script src="/js/popper.min.js"></script>
-            <script src="/js/bootstrap.min.js"></script>
-          </body>
-          </html>
+</div> <!-- main -->
+{% endblock %}

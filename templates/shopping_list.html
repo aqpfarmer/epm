@@ -71,10 +71,10 @@
                 <tr>
                   <th scope="col"></th>
                   <th scope="col"></th>
-                  <th scope="col"></th>
-                  <th scope="col">Material</th>
+                  <th scope="col" colspan="2">Material</th>
                   <th scope="col">QTY</th>
                   <th scope="col"><center>Jita Buy Price</th>
+                  <th class="text-white" scope="col"><center>Option</th>
                 </tr>
               </thead>
               <tbody>
@@ -85,10 +85,11 @@
                   <td colspan="3"><p class="mt-1">{{ item.material }}</p></td>
                   <td><p class="mt-1 text-center">{{ item.material_qty  }}</p></td>
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
+                  <td><p class="mt-1 text-white">filler filler filler</p></td>
                 </tr>
                 {% endfor %}
                 <tr align="center">
-                  <td class="table-active" colspan="6"><h5>Planetary Commodities Total: {{ "{:,.0f}".format(planet_total) }}</h5></td>
+                  <td class="table-active" colspan="7"><h5>Planetary Commodities Total: {{ "{:,.0f}".format(planet_total) }}</h5></td>
                 </tr>
                 {% endif %}
               </tbody>
@@ -181,7 +182,7 @@
                       <td colspan="3"><p class="mt-1">{{ item.material }}</p></td>
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
-                      <td colspan="3"><p class="mt-1 text-white">filler filler filler</p></td>
+                      <td><p class="mt-1 text-white">filler filler filler</p></td>
                     </tr>
                     {% endfor %}
                     <tr align="center">
@@ -401,12 +402,12 @@
                                   <label class="form-check-label" for="mine">Mine my own Minerals</label>
                                 </div>
                             {% endif %}
-                          </form>
                       </td>
                     </tr>
-                    <tr align="center">
-                      <td colspan="16"><input name="add_mining" class="btn-sm btn-info" type="button" value="Send to Mining Calculator"></td>
-                    </tr>
+                      <tr align="center">
+                        <td colspan="16"><input name="add_mining" class="btn-sm btn-info" type="submit" value="Send to Mining Calculator"></td>
+                      </tr>
+                    </form>
                     <tr align="center">
                       <td class="table-active" colspan="16"><h5>Mineral Jita Buy Value Total: {{ "{:,.0f}".format(mineral_total) }}</h5></td>
                     </tr>
