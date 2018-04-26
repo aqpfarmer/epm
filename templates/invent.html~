@@ -94,7 +94,7 @@
 pr-1"><strong>Runs:</strong></label>
                   <input type="text" class="form-control
 text-center" id="job_runs" name="job_runs" value="{{runs}}"
-style="width: 75px;">
+style="width: 50px;">
                 <!-- <div class="col pt-1 mr-4"> -->
                   {% if bp_id > 0 %}
                     <input name="add" class="btn-sm btn-info" type="submit" value="Add to Invention Pipeline">
