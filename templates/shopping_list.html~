@@ -321,10 +321,10 @@
               <h4 class="mx-auto">Minerals</h4>
             </li>
             <li class="list-group-item py-0">
-                <table class="table table-hover table-xlg pl-1">
+                <table class="table table-hover table-responsive pl-1">
                   <thead>
                     <tr>
-		                  <th></th>
+		      <th></th>
                       <th colspan="2" scope="col">Tritanium</th>
                       <th colspan="2" scope="col">Pyerite</th>
                       <th colspan="2" scope="col">Mexallon</th>
@@ -334,11 +334,11 @@
                       <th colspan="2" scope="col">Megacyte</th>
                       <th colspan="2" scope="col">Morphite</th>
                       <th></th>
-		                </tr>
+		    </tr>
                   </thead>
                   <tbody>
                     <tr>
-		                  <th></th>
+		      <th></th>
                       <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/34_64.png"></th>
                       <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/35_64.png"></th>
                       <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/36_64.png"></th>
@@ -348,9 +348,8 @@
                       <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/40_64.png"></th>
                       <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/11399_64.png"></th>
                       <th></th>
-		                </tr>
+		    </tr>
                     <tr>
-                      <th></th>
                     {% if 'myUser_id' in session %}
                     {% set mine_or_buy = namespace(c=0) %}
                       {% for index in range(0,8,1) %}
@@ -383,11 +382,10 @@
                            {% endif %}
                         {% endfor %}
                       {% endfor %}
-                    </td>
-                      <th></th>
+                      </td>
                     </tr>
                     <tr>
-                      <td colspan="18"><center>
+                      <td colspan="16"><center>
                         <form action="{{ url_for('bom')}}" method="POST">
                               {% if mine_or_buy.c == 1%}
                                 <div class="form-check form-check-inline">
@@ -411,7 +409,7 @@
                       </td>
                     </tr>
                       <tr align="center">
-                        <td colspan="18"><input name="add_mining" class="btn-sm btn-info" type="submit" value="Send to Mining Calculator"></td>
+                        <td colspan="16"><input name="add_mining" class="btn-sm btn-info" type="submit" value="Send to Mining Calculator"></td>
                       </tr>
                     </form>
                     <tr align="center">

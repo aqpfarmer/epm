@@ -68,10 +68,10 @@
 
 
   <div class="col-sm-4">
+    <div class="col">
       <ul class="list-group mb-auto">
         <li class="list-group-item d-flex justify-content-between lh-condensed">
-        <div class="col"> 
-	 <div>
+          <div>
             {% if bp_id > 0 %}
               <img class="img-fluid max-width:auto pr-1" src="https://imageserver.eveonline.com/type/{{selected_bp.id}}_64.png">
             {% else %}

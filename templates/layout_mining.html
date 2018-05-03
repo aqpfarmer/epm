@@ -68,6 +68,111 @@
         }
       }
     };
+    function groupChange1(selectObj) {
+      //alert("change triggered")
+      var idx = selectObj.selectedIndex;
+      var which = selectObj.options[idx].value;
+      aList = asteroidGroups[which];
+      idList = asteroidIDs[which];
+      var aSelect = document.getElementById("asteroid1");
+      var len = aSelect.options.length;
+      while (aSelect.options.length > 0) {
+        aSelect.remove(0);
+      }
+      var newOption;
+      var firstOption;
+      firstOption = document.createElement("option");
+      firstOption.value = 0
+      firstOption.text = "Asteroid..."
+      try {
+        aSelect.add(firstOption);
+      }
+      catch (e) {
+        aSelect.appendChild(firstOption);
+      }
+      for (var i = 0; i < aList.length; i++) {
+        newOption = document.createElement("option");
+        newOption.value = idList[i];
+        newOption.text = aList[i];
+
+        try {
+          aSelect.add(newOption);
+        }
+        catch (e) {
+          aSelect.appendChild(newOption);
+        }
+      }
+    };
+    function groupChange2(selectObj) {
+      //alert("change triggered")
+      var idx = selectObj.selectedIndex;
+      var which = selectObj.options[idx].value;
+      aList = asteroidGroups[which];
+      idList = asteroidIDs[which];
+      var aSelect = document.getElementById("asteroid2");
+      var len = aSelect.options.length;
+      while (aSelect.options.length > 0) {
+        aSelect.remove(0);
+      }
+      var newOption;
+      var firstOption;
+      firstOption = document.createElement("option");
+      firstOption.value = 0
+      firstOption.text = "Asteroid..."
+      try {
+        aSelect.add(firstOption);
+      }
+      catch (e) {
+        aSelect.appendChild(firstOption);
+      }
+      for (var i = 0; i < aList.length; i++) {
+        newOption = document.createElement("option");
+        newOption.value = idList[i];
+        newOption.text = aList[i];
+
+        try {
+          aSelect.add(newOption);
+        }
+        catch (e) {
+          aSelect.appendChild(newOption);
+        }
+      }
+    };
+    function groupChange3(selectObj) {
+      //alert("change triggered")
+      var idx = selectObj.selectedIndex;
+      var which = selectObj.options[idx].value;
+      aList = asteroidGroups[which];
+      idList = asteroidIDs[which];
+      var aSelect = document.getElementById("asteroid3");
+      var len = aSelect.options.length;
+      while (aSelect.options.length > 0) {
+        aSelect.remove(0);
+      }
+      var newOption;
+      var firstOption;
+      firstOption = document.createElement("option");
+      firstOption.value = 0
+      firstOption.text = "Asteroid..."
+      try {
+        aSelect.add(firstOption);
+      }
+      catch (e) {
+        aSelect.appendChild(firstOption);
+      }
+      for (var i = 0; i < aList.length; i++) {
+        newOption = document.createElement("option");
+        newOption.value = idList[i];
+        newOption.text = aList[i];
+
+        try {
+          aSelect.add(newOption);
+        }
+        catch (e) {
+          aSelect.appendChild(newOption);
+        }
+      }
+    };
     </script>
 
 </head>

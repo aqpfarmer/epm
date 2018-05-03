@@ -123,6 +123,7 @@ class mining_calc(db.Model):
     m3_per_cycle = db.Column(db.Integer())
     cycle_time = db.Column(db.Integer())
     num_cycles = db.Column(db.Integer())
+    refinery = db.Column(db.Numeric())
     trit_required = db.Column(db.Integer())
     pye_required = db.Column(db.Integer())
     mex_required = db.Column(db.Integer())
@@ -136,11 +137,12 @@ class mining_calc(db.Model):
     asteroid3_id = db.Column(db.Integer())
     asteroid4_id = db.Column(db.Integer())
 
-    def __init__(self, user_id, m3_per_cycle, cycle_time, num_cycles, trit_required, pye_required, mex_required, iso_required, nox_required, zyd_required, meg_required, morph_required, asteroid1_id, asteroid2_id, asteroid3_id, asteroid4_id):
+    def __init__(self, user_id, m3_per_cycle, cycle_time, num_cycles, refinery, trit_required, pye_required, mex_required, iso_required, nox_required, zyd_required, meg_required, morph_required, asteroid1_id, asteroid2_id, asteroid3_id, asteroid4_id):
         self.user_id = user_id
         self.m3_per_cycle = m3_per_cycle
         self.cycle_time = cycle_time
         self.num_cycles = num_cycles
+        self.refinery = refinery
         self.trit_required = trit_required
         self.pye_required = pye_required
         self.mex_required = mex_required
@@ -325,6 +327,17 @@ class BomMaterial():
         self.build_or_buy = build_or_buy
         self.blueprint_id = blueprint_id
 
+class MinedMinerals():
+    def __init__(self, trit, pye, mex, iso, nox, zyd, meg, morph):
+        self.trit = trit
+        self.pye = pye
+        self.mex = mex
+        self.iso = iso
+        self.nox = nox
+        self.zyd = zyd
+        self.meg = meg
+        self.morph = morph
+
 @app.route("/")
 def index():
     form = LoginForm(request.form)
@@ -344,48 +357,103 @@ def financial():
 def mining():
     form = LoginForm(request.form)
     asteroid_groups = db.session.query(v_asteroid_groups).all()
-    calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
-    if not calcs:
-        calc = mining_calc(session['myUser_id'],  300, 120, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        db.session.add(calc)
-        db.session.commit()
+    if 'myUser_id' in session:
+        calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
+        if not calcs:
+            calc = mining_calc(session['myUser_id'],  300, 120, 30, .5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+            db.session.add(calc)
+            db.session.commit()
 
-    if request.method == 'POST':
-        if request.form.get('m3_per_cycle'):
-            for calc in calcs:
-                calc.m3_per_cycle = request.form.get('m3_per_cycle',type=int)
-                print calc.m3_per_cycle
-                calc.cycle_time = request.form.get('cycle_time',type=int)
-                print calc.cycle_time
-                calc.num_cycles = request.form.get('num_cycles')
-                print calc.num_cycles
-                db.session.add(calc)
-                db.session.commit()
+        if request.method == 'POST':
+            if request.form.get('m3_per_cycle'):
+                for calc in calcs:
+                    calc.m3_per_cycle = request.form.get('m3_per_cycle',type=int)
+                    calc.cycle_time = request.form.get('cycle_time',type=int)
+                    calc.num_cycles = request.form.get('num_cycles')
+                    calc.refinery = float(request.form.get('refinery'))/100
+                    db.session.add(calc)
+                    db.session.commit()
 
-        if request.form.get('asteroid'):
-            print request.form.get('asteroid')
-            min_id = request.form.get('asteroid')
-            asteroid = db.session.query(invtypes).filter_by(typeID=min_id).one()
-            asteroid_mins = db.session.query(v_build_components).filter_by(id=min_id).with_entities('id','material','material_id','quantity').all()
-            print asteroid.typeName
-            yield1 = calcs[0].m3_per_cycle * (3600 / calcs[0].cycle_time)
-            print ' m3 yield for 1 hour = ' +str(yield1)
+            if request.form.get('clear'):
+                for calc in calcs:
+                    calc.trit_required = 0
+                    calc.pye_required = 0
+                    calc.mex_required = 0
+                    calc.iso_required = 0
+                    calc.nox_required = 0
+                    calc.zyd_required = 0
+                    calc.meg_required = 0
+                    calc.morph_required = 0
+                    db.session.add(calc)
+                    db.session.commit()
 
-            for mins in asteroid_mins:
+            mined_mins1 = MinedMinerals(0,0,0,0,0,0,0,0)
+            mined_mins2 = MinedMinerals(0,0,0,0,0,0,0,0)
+            mined_mins3 = MinedMinerals(0,0,0,0,0,0,0,0)
+            mined_mins4 = MinedMinerals(0,0,0,0,0,0,0,0)
+            min_id1 = 0
+            min_id2 = 0
+            min_id3 = 0
+            min_id4 = 0
+            group_id1 = 0
+            group_id2 = 0
+            group_id3 = 0
+            group_id4 = 0
+            asteroid_name1 = ''
+            asteroid_name2 = ''
+            asteroid_name3 = ''
+            asteroid_name4 = ''
 
-                print 'mineral - ' + str(mins.material)
+            if request.form.get('asteroid'):
+                if int(request.form.get('asteroid')) > 0:
+                    min_id1 = request.form.get('asteroid')
+                    asteroid_stats1 = db.session.query(v_asteroids).filter_by(id=min_id1).one()
+                    mined_mins1 = refine_asteroid(min_id1, calcs, asteroid_stats1)
+                    group_id1 = asteroid_stats1.group_id
+                    asteroid_name1 = asteroid_stats1.asteroid
 
+            if request.form.get('asteroid1'):
+                if int(request.form.get('asteroid1')) > 0:
+                    min_id2 = request.form.get('asteroid1')
+                    asteroid_stats2 = db.session.query(v_asteroids).filter_by(id=min_id2).one()
+                    mined_mins2 = refine_asteroid(min_id2, calcs, asteroid_stats2)
+                    group_id2 = asteroid_stats2.group_id
+                    asteroid_name2 = asteroid_stats2.asteroid
 
+            if request.form.get('asteroid2'):
+                if int(request.form.get('asteroid2')) > 0:
+                    min_id3 = request.form.get('asteroid2')
+                    asteroid_stats3 = db.session.query(v_asteroids).filter_by(id=min_id3).one()
+                    mined_mins3 = refine_asteroid(min_id3, calcs, asteroid_stats3)
+                    group_id3 = asteroid_stats3.group_id
+                    asteroid_name3 = asteroid_stats3.asteroid
 
-    calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
+            if request.form.get('asteroid3'):
+                if int(request.form.get('asteroid3')) > 0:
+                    min_id4 = request.form.get('asteroid3')
+                    asteroid_stats4 = db.session.query(v_asteroids).filter_by(id=min_id4).one()
+                    mined_mins4 = refine_asteroid(min_id4, calcs, asteroid_stats4)
+                    group_id4 = asteroid_stats4.group_id
+                    asteroid_name4 = asteroid_stats4.asteroid
 
-    return render_template('mining.html', form=form, asteroid_groups=asteroid_groups, calcs=calcs)
+            mined_mins = MinedMinerals(mined_mins1.trit +mined_mins2.trit +mined_mins3.trit +mined_mins4.trit, mined_mins1.pye +mined_mins2.pye +mined_mins3.pye +mined_mins4.pye, mined_mins1.mex +mined_mins2.mex +mined_mins3.mex +mined_mins4.mex, mined_mins1.iso +mined_mins2.iso +mined_mins3.iso +mined_mins4.iso, mined_mins1.nox +mined_mins2.nox +mined_mins3.nox +mined_mins4.nox, mined_mins1.zyd +mined_mins2.zyd +mined_mins3.zyd +mined_mins4.zyd, mined_mins1.meg +mined_mins2.meg +mined_mins3.meg +mined_mins4.meg, mined_mins1.morph +mined_mins2.morph +mined_mins3.morph +mined_mins4.morph)
+            #print group_id1
+
+            return render_template('mining.html', form=form, asteroid_groups=asteroid_groups, calcs=calcs, min_id1=min_id1, min_id2=min_id2, min_id3=min_id3, min_id4=min_id4, group_id1=group_id1, group_id2=group_id2, group_id3=group_id3, group_id4=group_id4, asteroid_name1=asteroid_name1, asteroid_name2=asteroid_name2, asteroid_name3=asteroid_name3, asteroid_name4=asteroid_name4, mined_mins=mined_mins)
+
+        calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
+        return render_template('mining.html', form=form, asteroid_groups=asteroid_groups, calcs=calcs)
+    else:
+        flash('You must be logged in to view the pipeline', 'danger')
+        return redirect(url_for('index'))
+
 
 @app.context_processor
 def utility_processor():
     def getAsteroids(group_id):
         asteroids = db.session.query(v_asteroids).filter_by(group_id=group_id).all()
         return asteroids
+
     return dict(getAsteroids=getAsteroids)
 
 @app.route("/pipeline", methods=['GET','POST'])
@@ -721,6 +789,7 @@ def bom():
                 db.session.add(calc)
                 db.session.commit()
                 flash('Successfully updated mining calculations.','success')
+                return redirect(url_for('mining'))
 
             if upd_or_add == 0:
                 calc = mining_calc(session['myUser_id'],  300, 120, 30, trit_required, pye_required, mex_required, iso_required, nox_required, zyd_required, meg_required, morph_required, 0, 0, 0, 0)
@@ -1224,6 +1293,35 @@ def invent_pipeline_rollup_qty(pipeline):
             materialInPipeline += [my_bom]
 
     return materialInPipeline
+
+def refine_asteroid(min_id, calcs, asteroid_stats):
+    asteroid_mins = db.session.query(v_build_components).filter_by(id=min_id).with_entities('id','material','material_id','quantity').all()
+    yield1 = calcs[0].m3_per_cycle * calcs[0].num_cycles
+    qty = yield1 / asteroid_stats.vol
+    #print ' m3 yield = ' +str(yield1) + ' , refinery % = ' + str(calcs[0].refinery)
+
+    mined_mins = MinedMinerals(0,0,0,0,0,0,0,0)
+    for mins in asteroid_mins:
+        mined = (mins.quantity * qty * calcs[0].refinery) / asteroid_stats.portion
+        remain = yield1 % asteroid_stats.portion
+        #print 'from ' + str(qty) + ', we refine - ' + str(mins.material) + ', qty = ' + str(mined) + ' , with remainder = ' + str(remain)
+        if mins.material_id == 34:
+            mined_mins.trit = mined
+        elif mins.material_id == 35:
+            mined_mins.pye = mined
+        elif mins.material_id == 36:
+            mined_mins.mex = mined
+        elif mins.material_id == 37:
+            mined_mins.iso = mined
+        elif mins.material_id == 38:
+            mined_mins.nox = mined
+        elif mins.material_id == 39:
+            mined_mins.zyd = mined
+        elif mins.material_id == 40:
+            mined_mins.meg = mined
+        elif mins.material_id == 11399:
+            mined_mins.morph = mined
+    return mined_mins
 
 if __name__ == "__main__":
    app.run()

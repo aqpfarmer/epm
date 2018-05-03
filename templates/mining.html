@@ -27,7 +27,7 @@
             <tbody>
               <tr>
                 <form action="{{ url_for('mining')}}" method="post">
-                <td class="noBorder text-right"><strong>M3 per Cycle:</td>
+                <td class="noBorder text-right"><strong>Total M3 per Cycle:</td>
                 <td class="noBorder">
                     {% if calcs[0].user_id  %}
                       <input type="text" class="col-sm-5 form-control form-control-sm py-0" name="m3_per_cycle" value="{{ calcs[0].m3_per_cycle }}">
@@ -35,7 +35,14 @@
                       <input type="text" class="col-sm-5 form-control form-control-sm py-0" name="m3_per_cycle" value="300">
                     {% endif %}
                 </td>
-                <td class="noBorder py-2" colspan="2"></td>
+                <td class="noBorder text-right"><strong>Refine%:</td>
+                <td class="noBorder py-2">
+                    {% if calcs[0].user_id  %}
+                    <input type="text" class="col-sm-6 form-control form-control-sm pt-1" name="refinery" value="{{ "{:.2f}".format(calcs[0].refinery * 100) }}">
+                  {% else %}
+                    <input type="text" class="col-sm-6 form-control form-control-sm py-0" name="refinery" value="0">
+                  {% endif %}
+                </td>
                 <td class="noBorder py-2 text-center"><strong>Total Mineral Requirement</td>
                 <td class="noBorder py-2 text-center"><strong>Mined</td>
                 <td class="noBorder py-2 text-center"><strong>Net</td>
@@ -58,22 +65,34 @@
                       {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" name="trit_mined" value="0">
+                  {% if mined_mins %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="trit_mined" value="{{ "{:,.0f}".format(mined_mins.trit) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="trit_mined" value="0">
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" name="trit_net" value="0">
+                  {% if mined_mins %}
+                    {% if calcs[0].trit_required - mined_mins.trit > 0 %}
+                      <p class="text-danger"><strong>-{{ "{:,.0f}".format(calcs[0].trit_required - mined_mins.trit) }}</p>
+                    {% else %}
+                      <p class="text-primary"><strong>+{{ "{:,.0f}".format((calcs[0].trit_required - mined_mins.trit)|abs) }}</p>
+                    {% endif %}
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
               </tr>
               <tr>
-                <td class="noBorder text-right py-0"><strong># Cycles:</td>
+                <td class="noBorder text-right py-0"><strong># Cycles: </strong></br>Time to mine: </td>
                 <td class="noBorder py-0">
                     {% if calcs[0].user_id %}
                       <input type="text" class="col-sm-4 form-control form-control-sm py-0" name="num_cycles" value="{{ "{:,.0f}".format(calcs[0].num_cycles) }}">
+                      <strong>{{ "{:,.0f}".format((calcs[0].num_cycles * calcs[0].cycle_time)/60) }}</strong> minutes
                     {% else %}
                       <input type="text" class="col-sm-4 form-control form-control-sm py-0" name="num_cycles" value="30">
                     {% endif %}
                 </td>
+
                 <td class="noBorder py-1 text-right" colspan="2">Pyerite</td>
                 <td class="noBorder py-0">
                   {% if calcs[0].user_id %}
@@ -83,10 +102,20 @@
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" id="pye_mined" value="0">
+                  {% if mined_mins %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="pye_mined" value="{{ "{:,.0f}".format(mined_mins.pye) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="pye_mined" value="0">
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" id="pye_net" value="0">
+                  {% if mined_mins %}
+                    {% if calcs[0].pye_required - mined_mins.pye > 0 %}
+                      <p class="text-danger"><strong>-{{ "{:,.0f}".format(calcs[0].pye_required - mined_mins.pye) }}</p>
+                    {% else %}
+                      <p class="text-primary"><strong>+{{ "{:,.0f}".format((calcs[0].pye_required - mined_mins.pye)|abs) }}</p>
+                    {% endif %}
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
               </tr>
@@ -104,10 +133,20 @@
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" id="mex_mined" value="0">
+                  {% if mined_mins %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="mex_mined" value="{{ "{:,.0f}".format(mined_mins.mex) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="mex_mined" value="0">
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" id="mex_net" value="0">
+                  {% if mined_mins %}
+                    {% if calcs[0].mex_required - mined_mins.mex > 0 %}
+                      <p class="text-danger"><strong>-{{ "{:,.0f}".format(calcs[0].mex_required - mined_mins.mex) }}</p>
+                    {% else %}
+                      <p class="text-primary"><strong>+{{ "{:,.0f}".format((calcs[0].mex_required - mined_mins.mex)|abs) }}</p>
+                    {% endif %}
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
               </tr>
@@ -122,10 +161,20 @@
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" id="iso_mined" value="0">
+                  {% if mined_mins %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="iso_mined" value="{{ "{:,.0f}".format(mined_mins.iso) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="iso_mined" value="0">
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" id="iso_net" value="0">
+                  {% if mined_mins %}
+                    {% if calcs[0].iso_required - mined_mins.iso > 0 %}
+                      <p class="text-danger"><strong>-{{ "{:,.0f}".format(calcs[0].iso_required - mined_mins.iso) }}</p>
+                    {% else %}
+                      <p class="text-primary"><strong>+{{ "{:,.0f}".format((calcs[0].iso_required - mined_mins.iso)|abs) }}</p>
+                    {% endif %}
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
               </tr>
@@ -134,16 +183,24 @@
                   <select id="asteroid_groups" class="form-control form-control-sm" onchange="groupChange(this);">
                     <option value="empty">Asteroid Group... </option>
                     {% for group in asteroid_groups %}
-                      <option value="{{group.group}}">{{group.group}}</option>
+                      {% if group_id1 == group.id %}
+                        <option selected value="{{group.group}}">{{group.group}}</option>
+                      {% else %}
+                        <option value="{{group.group}}">{{group.group}}</option>
+                      {% endif %}
                     {% endfor %}
                   </select>
                 </td>
                 <td class="noBorder py-0">
                   <form action="{{ url_for('mining')}}" method="post">
-                  <select name="asteroid" id="asteroid" class="form-control form-control-sm" onChange="this.form.submit()">
-                    <option value="0">Asteroid...</option>
+                  <select name="asteroid" id="asteroid" class="form-control form-control-sm" onChange="this.form.submit()" style="width:180px;">
+                    {% if min_id1 %}
+                      <option selected value="{{ min_id1 }}">{{ asteroid_name1 }}</option>
+                    {% else %}
+                      <option value="0">Asteroid...</option>
+                    {% endif %}
                   </select>
-                </form>
+
                 </td>
                 <td class="noBorder py-0 text-right" colspan="2">Nocxium</td>
                 <td class="noBorder py-0">
@@ -154,10 +211,20 @@
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" id="nox_mined" value="0">
+                  {% if mined_mins %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="nox_mined" value="{{ "{:,.0f}".format(mined_mins.nox) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="nox_mined" value="0">
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" id="nox_net" value="0">
+                  {% if mined_mins %}
+                    {% if calcs[0].nox_required - mined_mins.nox > 0 %}
+                      <p class="text-danger"><strong>-{{ "{:,.0f}".format(calcs[0].nox_required - mined_mins.nox) }}</p>
+                    {% else %}
+                      <p class="text-primary"><strong>+{{ "{:,.0f}".format((calcs[0].nox_required - mined_mins.nox)|abs) }}</p>
+                    {% endif %}
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
               </tr>
@@ -166,13 +233,21 @@
                   <select id="asteroid_groups1" class="form-control form-control-sm" onchange="groupChange1(this);">
                     <option value="empty">Asteroid Group... </option>
                     {% for group in asteroid_groups %}
-                      <option value="{{group.group}}">{{group.group}}</option>
+                      {% if group_id2 == group.id %}
+                        <option selected value="{{group.group}}">{{group.group}}</option>
+                      {% else %}
+                        <option value="{{group.group}}">{{group.group}}</option>
+                      {% endif %}
                     {% endfor %}
                   </select>
                 </td>
                 <td class="noBorder py-0">
-                  <select id="asteroid1" class="form-control form-control-sm">
-                    <option value="0">Asteroid...</option>
+                  <select name="asteroid1" id="asteroid1" class="form-control form-control-sm" onChange="this.form.submit()">
+                    {% if min_id2 %}
+                      <option selected value="{{ min_id2 }}">{{ asteroid_name2 }}</option>
+                    {% else %}
+                      <option value="0">Asteroid...</option>
+                    {% endif %}
                   </select>
                 </td>
                 <td class="noBorder py-0 text-right" colspan="2">Zydrine</td>
@@ -184,10 +259,20 @@
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" id="zyd_mined" value="0">
+                  {% if mined_mins %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="zyd_mined" value="{{ "{:,.0f}".format(mined_mins.zyd) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="zyd_mined" value="0">
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" id="zyd_net" value="0">
+                  {% if mined_mins %}
+                    {% if calcs[0].zyd_required - mined_mins.zyd > 0 %}
+                      <p class="text-danger"><strong>-{{ "{:,.0f}".format(calcs[0].zyd_required - mined_mins.zyd) }}</p>
+                    {% else %}
+                      <p class="text-primary"><strong>+{{ "{:,.0f}".format((calcs[0].zyd_required - mined_mins.zyd)|abs) }}</p>
+                    {% endif %}
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
               </tr>
@@ -196,13 +281,21 @@
                   <select id="asteroid_groups2" class="form-control form-control-sm" onchange="groupChange2(this);">
                     <option value="empty">Asteroid Group... </option>
                     {% for group in asteroid_groups %}
-                      <option value="{{group.group}}">{{group.group}}</option>
+                      {% if group_id3 == group.id %}
+                        <option selected value="{{group.group}}">{{group.group}}</option>
+                      {% else %}
+                        <option value="{{group.group}}">{{group.group}}</option>
+                      {% endif %}
                     {% endfor %}
                   </select>
                 </td>
                 <td class="noBorder py-0">
-                  <select id="asteroid2" class="form-control form-control-sm">
-                    <option value="0">Asteroid...</option>
+                  <select name="asteroid2" id="asteroid2" class="form-control form-control-sm" onChange="this.form.submit()">
+                    {% if min_id3 %}
+                      <option selected value="{{ min_id3 }}">{{ asteroid_name3 }}</option>
+                    {% else %}
+                      <option value="0">Asteroid...</option>
+                    {% endif %}
                   </select>
                 </td>
                 <td class="noBorder py-0 text-right" colspan="2">Megacyte</td>
@@ -214,10 +307,20 @@
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" id="meg_mined" value="0">
+                  {% if mined_mins %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="meg_mined" value="{{ "{:,.0f}".format(mined_mins.meg) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="meg_mined" value="0">
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" id="meg_net" value="0">
+                  {% if mined_mins %}
+                    {% if calcs[0].meg_required - mined_mins.meg > 0 %}
+                      <p class="text-danger"><strong>-{{ "{:,.0f}".format(calcs[0].meg_required - mined_mins.meg) }}</p>
+                    {% else %}
+                      <p class="text-primary"><strong>+{{ "{:,.0f}".format((calcs[0].meg_required - mined_mins.meg)|abs) }}</p>
+                    {% endif %}
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
               </tr>
@@ -226,14 +329,23 @@
                   <select id="asteroid_groups3" class="form-control form-control-sm" onchange="groupChange3(this);">
                     <option value="empty">Asteroid Group... </option>
                     {% for group in asteroid_groups %}
-                      <option value="{{group.group}}">{{group.group}}</option>
+                      {% if group_id4 == group.id %}
+                        <option selected value="{{group.group}}">{{group.group}}</option>
+                      {% else %}
+                        <option value="{{group.group}}">{{group.group}}</option>
+                      {% endif %}
                     {% endfor %}
                   </select>
                 </td>
                 <td class="noBorder py-0">
-                  <select id="asteroid3" class="form-control form-control-sm">
-                    <option value="0">Asteroid...</option>
+                  <select name="asteroid3" id="asteroid3" class="form-control form-control-sm" onChange="this.form.submit()">
+                    {% if min_id4 %}
+                      <option selected value="{{ min_id4 }}">{{ asteroid_name4 }}</option>
+                    {% else %}
+                      <option value="0">Asteroid...</option>
+                    {% endif %}
                   </select>
+                  </form>
                 </td>
                 <td class="noBorder py-0 text-right" colspan="2">Morphite</td>
                 <td class="noBorder py-0">
@@ -244,14 +356,32 @@
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" id="morp_mined" value="0">
+                  {% if mined_mins %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="morph_mined" value="{{ "{:,.0f}".format(mined_mins.morph) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" name="morph_mined" value="0">
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0">
-                  <input type="text" class="col-sm form-control form-control-sm py-0" id="morp_net" value="0">
+                  {% if mined_mins %}
+                    {% if calcs[0].morph_required - mined_mins.morph > 0 %}
+                      <p class="text-danger"><strong>-{{ "{:,.0f}".format(calcs[0].morph_required - mined_mins.morph) }}</p>
+                    {% else %}
+                      <p class="text-primary"><strong>+{{ "{:,.0f}".format((calcs[0].morph_required - mined_mins.morph) | abs) }}</p>
+                    {% endif %}
+                  {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
               </tr>
-
+              <tr>
+                <td colspan="4"></td>
+                <form action="{{ url_for('mining')}}" method="post">
+                  <td class="noBorder text-center py-2" colspan="4">
+                    <input name="upd_yield" class="btn-sm btn-success mt-0" type="submit" value="Clear Requirements">
+                  </td>
+                  <input type="hidden" name="clear" value="1">
+                </form>
+              </tr>
             </tbody>
           </table>
         </div>
