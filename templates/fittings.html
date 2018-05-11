@@ -91,9 +91,9 @@
               <table class="table table-light">
                 <tbody>
                   <tr>
-                    <td class="noBorder text-center"><strong>High Slots</td>
-                    <td class="noBorder text-center"><strong>Medium Slots</td>
-                    <td class="noBorder text-center"><strong>Low Slots</td>
+                    <td class="noBorder text-center "><strong>High Slots</td>
+                    <td class="noBorder text-center "><strong>Medium Slots</td>
+                    <td class="noBorder text-center "><strong>Low Slots</td>
                   </tr>
                   <tr>
                     <td>
@@ -102,7 +102,7 @@
                           {% if ship_id > 0 %}
                           {% for n in range(1, num_highslots+1) %}
                             <tr>
-                              <td class="noBorder py-0 bg-info">
+                              <td class="noBorder py-0 bg-white">
                                 <select name="hi{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
                                   {% if myFittingsHigh %}
                                     {% if myFittingsHigh[n-1].component_id > 0 %}
@@ -116,6 +116,7 @@
                                   {% for module in high_modules %}
                                     <option value="{{module.id}}">{{module.item}}</option>
                                   {% endfor %}
+                                  <option value="0">--</option>
                                 </select>
                               </td>
                             </tr>
@@ -131,7 +132,7 @@
                           {% if ship_id >0 %}
                           {% for n in range(1, num_medslots+1) %}
                             <tr>
-                              <td class="noBorder py-0 bg-info">
+                              <td class="noBorder py-0 bg-white">
                                 <select name="med{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
                                   {% if myFittingsMed %}
                                     {% if myFittingsMed[n-1].component_id > 0 %}
@@ -145,6 +146,7 @@
                                   {% for module in med_modules %}
                                     <option value="{{module.id}}">{{module.item}}</option>
                                   {% endfor %}
+                                  <option value="0">--</option>
                                 </select>
                               </td>
                             </tr>
@@ -160,7 +162,7 @@
                           {% if ship_id >0 %}
                           {% for n in range(1, num_lowslots+1) %}
                             <tr>
-                              <td class="noBorder py-0 bg-info">
+                              <td class="noBorder py-0 bg-white">
                                 <select name="low{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
                                   {% if myFittingsLow %}
                                     {% if myFittingsLow[n-1].component_id > 0 %}
@@ -174,6 +176,7 @@
                                   {% for module in low_modules %}
                                     <option value="{{module.id}}">{{module.item}}</option>
                                   {% endfor %}
+                                  <option value="0">--</option>
                                 </select>
                               </td>
                             </tr>
@@ -185,9 +188,9 @@
                   </tr>
 
                   <tr>
-                    <td class="text-center"><strong>Rig Slots</td>
-                    <td class="text-center"><strong>Ammo</td>
-                    <td class="text-center"><strong>Drones</td>
+                    <td class="text-center "><strong>Rig Slots</td>
+                    <td class="text-center "><strong>Ammo</td>
+                    <td class="text-center "><strong>Drones</td>
                   </tr>
 
                   <tr>
@@ -197,7 +200,7 @@
                           {% if ship_id >0 %}
                           {% for n in range(1, num_rigslots+1) %}
                             <tr>
-                              <td class="noBorder py-0 bg-info">
+                              <td class="noBorder py-0 bg-white">
                                 <select name="rig{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
                                   {% if myFittingsRig %}
                                     {% if myFittingsRig[n-1].component_id > 0 %}
@@ -211,6 +214,7 @@
                                   {% for module in rig_modules %}
                                     <option value="{{module.id}}">{{module.item}}</option>
                                   {% endfor %}
+                                  <option value="0">--</option>
                                 </select>
                               </td>
                             </tr>
@@ -226,7 +230,7 @@
                           {% if ship_id >0 %}
                           {% for n in range(1, 6) %}
                             <tr>
-                              <td class="noBorder py-0 bg-info">
+                              <td class="noBorder py-0 bg-white">
                                 <select name="ammo{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
                                   {% if myFittingsAmmo %}
                                     {% if myFittingsAmmo[n-1].component_id > 0 %}
@@ -240,9 +244,10 @@
                                   {% for module in ammos %}
                                     <option value="{{module.id}}">{{module.item}}</option>
                                   {% endfor %}
+                                  <option value="0">--</option>
                                 </select>
                               </td>
-                              <td class="noBorder py-0 bg-info">
+                              <td class="noBorder py-0 bg-white">
                                 {% if myFittingsAmmo %}
                                   {% if myFittingsAmmo[n-1].component_id > 0 %}
                                     <input type="text" name="ammo_qty{{n}}" value="{{myFittingsAmmo[n-1].component_qty}}" size="1">
@@ -265,7 +270,7 @@
                           {% if ship_id >0 %}
                           {% for n in range(1, 6) %}
                             <tr>
-                              <td class="noBorder py-0 bg-info">
+                              <td class="noBorder py-0 bg-white">
                                 <select name="drone{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
                                   {% if myFittingsDrone %}
                                     {% if myFittingsDrone[n-1].component_id > 0 %}
@@ -279,9 +284,10 @@
                                   {% for module in drones %}
                                     <option value="{{module.id}}">{{module.item}}</option>
                                   {% endfor %}
+                                    <option value="0">--</option>
                                 </select>
                               </td>
-                              <td class="noBorder py-0 bg-info">
+                              <td class="noBorder py-0 bg-white">
                                 {% if myFittingsDrone %}
                                   {% if myFittingsDrone[n-1].component_id > 0 %}
                                     <input type="text" name="drone_qty{{n}}" value="{{myFittingsDrone[n-1].component_qty}}" size="1">
@@ -299,103 +305,102 @@
                       </table>
                     </td>
                   </tr>
-
+                  <input type="hidden" name="build_id" value="{{build_id}}">
                   </form>
                   <tr>
-                    <td class="text-center"><h4 class="text-danger"><strong>Cost of Production:</h4><h5>{{ "{:,.0f}".format(fittingCost) }}</td>
-                    <td class="text-center"><h4 class="text-success"><strong>Contract Value:</h4><h5>{{ "{:,.0f}".format(myFittings[fittingIndex].qty * myFittings[fittingIndex].contract_sell_price) }}</td>
-                    <td class="text-center"><h4 class="text-secondary"><strong>Profit Margin:</h4><h5> {{ "{:.2%}".format(fittingPM) }}</td>
+                    {% if myFittingsCount > 0 %}
+                      <td class="text-center"><h4 class="text-danger"><strong>Cost of Production:</h4><h5>{{ "{:,.0f}".format(fittingCost) }}</td>
+                      <td class="text-center"><h4 class="text-success"><strong>Contract Value:</h4><h5>{{ "{:,.0f}".format(myFittings[fittingIndex].qty * myFittings[fittingIndex].contract_sell_price) }}</td>
+                      <td class="text-center"><h4 class="text-secondary"><strong>Profit Margin:</h4><h5> {{ "{:.2%}".format(fittingPM) }}</td>
+                    {% endif %}
                   </tr>
                 </tbody>
               </table>
 
-              <table class="table table-sm">
-                <tbody>
-                  <tr>
-                    <td class="text-center noBorder py-0" colspan="6">
-                      <h4 class="bg-secondary text-white">Production Rollup</h4>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="text-center noBorder py-0" colspan="6">
-                      <h5 class="bg-info text-white">Commodities to Purchase</h5>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="noBorder py-0"><strong>Material</td>
-                    <td class="noBorder py-0"><strong>QTY</td>
-                    <td class="noBorder py-0"><strong>Jita Buy</td>
-                    <td class="noBorder py-0"><strong>Material</td>
-                    <td class="noBorder py-0"><strong>QTY</td>
-                    <td class="noBorder py-0"><strong>Jita Buy</td>
-                  </tr>
-                  <tr>
-                    {% for item in nonBuildableFittings %}
-                      <td class="noBorder py-0">{{ item.component }}</td>
-                      <td class="noBorder py-0">{{ item.qty }}</td>
-                      <td class="noBorder py-0">{{ item.component_cost }}</td>
-                    {% endfor %}
-                  </tr>
-                  <tr>
-                    <td class="text-center noBorder py-0" colspan="6">
-                      <h5 class="bg-info text-white">Buildable Products</h5>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="noBorder py-0"><strong>Material</td>
-                    <td class="noBorder py-0"><strong>QTY</td>
-                    <td class="noBorder py-0"><strong>Production Cost</td>
-                    <td class="noBorder py-0"><strong>Material</td>
-                    <td class="noBorder py-0"><strong>QTY</td>
-                    <td class="noBorder py-0"><strong>Production Cost</td>
-                  </tr>
-                  <tr>
-                    <td class="noBorder py-0">Cerberus</td>
-                    <td class="noBorder py-0">10</td>
-                    <td class="noBorder py-0">260,442,419</td>
-                    <td class="noBorder py-0">Cormorant</td>
-                    <td class="noBorder py-0">50</td>
-                    <td class="noBorder py-0">61,616,114</td>
-                  </tr>
-                  <tr>
-                    <td class="noBorder py-0">Damage Control II</td>
-                    <td class="noBorder py-0">100</td>
-                    <td class="noBorder py-0">26,442,419</td>
-                    <td class="noBorder py-0">Ballistic Control System II</td>
-                    <td class="noBorder py-0">50</td>
-                    <td class="noBorder py-0">616,114</td>
-                  </tr><tr>
-                    <td class="noBorder py-0">Capacitor Power Relay II</td>
-                    <td class="noBorder py-0">100</td>
-                    <td class="noBorder py-0">24,621,034</td>
-                    <td class="noBorder py-0">Large Shield Extender II</td>
-                    <td class="noBorder py-0">50,000</td>
-                    <td class="noBorder py-0">17,187,500</td>
-                  </tr>
-                  <tr>
-                    <td class="noBorder py-0">CAdaptive Invulnerability Field II</td>
-                    <td class="noBorder py-0">50000</td>
-                    <td class="noBorder py-0">14,196,000</td>
-                    <td class="noBorder py-0">EM Ward Field II</td>
-                    <td class="noBorder py-0">10</td>
-                    <td class="noBorder py-0">-</td>
-                  </tr>
-                  <tr>
-                    <td class="noBorder py-0">150mm Railgun II</td>
-                    <td class="noBorder py-0">50000</td>
-                    <td class="noBorder py-0">14,196,000</td>
-                    <td class="noBorder py-0">Heavy Missile Launcher II</td>
-                    <td class="noBorder py-0">60</td>
-                    <td class="noBorder py-0">50,394,774</td>
-                  </tr>
-                  <tr align="center">
-                    <td class="noBorder py-0" colspan="6">
-                      <input name="addbom" class="btn-sm btn-info" type="button" value="Add to B.O.M.">
-                    </td>
-                  </tr>
+              <div class="row px-0" id="row1">
+                <div class="col">
+                  <ul class="list-group mb-1">
+                    <li class="list-group-item d-flex justify-content-between lh-condensed py-0 bg-success">
+                      <h4 class="mx-auto text-warning">Products to Purchase</h4>
+                    </li>
+                    <li class="list-group-item py-0">
+                        <table class="table table-sm table-condensed table-hover table-responsive pl-3">
+                          <thead>
+                            <tr>
+                              <th scope="col"></th>
+                              <th scope="col"></th>
+                              <th scope="col">Material</th>
+                              <th scope="col">QTY</th>
+                              <th scope="col"><center>Jita Buy Price</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                              {% for item in nonBuildableFittings %}
+                              <tr>
+                                <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{ item.id }}_32.png"></th>
+                                <td colspan="2">{{ item.component }}</td>
+                                <td> {{ "{:,.0f}".format(item.component_qty * item.qty) }} </td>
+                                <td><p class="mt-0 text-center">{{ "{:,.0f}".format(item.component_cost * item.qty * item.component_qty) }}</p></td>
+                              </tr>
+                              {% endfor %}
+                              {% if nonBuildableFittings %}
+                                {% for rig in rigRollup %}
+                                  <tr>
+                                    <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{rig.id}}_32.png"></th>
+                                    <td colspan="2"><p class="mt-1">{{ rig.component }}</p></td>
+                                    <td> {{ "{:,.0f}".format(rig.component_qty * nonBuildableFittings[0].qty) }} </td>
+                                    <td><p class="mt-0 text-center">{{ "{:,.0f}".format(rig.component_cost * rig.component_qty * nonBuildableFittings[0].qty) }}</p></td>
+                                  </tr>
+                                  {% endfor %}
+                                {% endif %}
+                                <tr align="center">
+                                  <td class="table-active" colspan="7"><h5>Commodity Total: {{ "{:,.0f}".format(nonBuildableTotal) }}</h5></td>
+                                </tr>
+                          </tbody>
+                        </table>
+                      </li>
+                  </div> <!-- col -->
 
-                </tbody>
-              </table>
+                  <div class="col">
+                    <ul class="list-group mb-1">
+                      <li class="list-group-item d-flex justify-content-between lh-condensed py-0 bg-success">
+                        <h4 class="mx-auto text-warning">Buildable Products</h4>
+                      </li>
+                      <li class="list-group-item py-0">
+                          <table class="table table-sm table-condensed table-hover table-responsive pl-3">
+                            <thead>
+                              <tr>
+                                <th scope="col"></th>
+                                <th scope="col" colspan="2">Material</th>
+                                <th scope="col">QTY</th>
+                                <th scope="col"><center>Jita Buy Price</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in buildableFittings %}
+                              <tr>
+                                <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.id}}_32.png"></th>
+                                <td colspan="2"><p class="mt-1">{{ item.component }}</p></td>
+                                <td> {{ "{:,.0f}".format(item.component_qty * item.qty) }} </td>
+                                <td><p class="mt-0 text-center">{{ "{:,.0f}".format(item.component_cost * item.qty * item.component_qty) }}</p></td>
+                              </tr>
+                              {% endfor %}
+                              {% if buildableFittings %}
+                                <tr>
+                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{buildableFittings[0].ship_id}}_32.png"></th>
+                                  <td colspan="2"><p class="mt-1">{{ buildableFittings[0].ship_name }}</p></td>
+                                  <td> {{ "{:,.0f}".format(buildableFittings[0].qty) }} </td>
+                                  <td><p class="mt-0 text-center">{{ "{:,.0f}".format(buildableFittings[0].jita_buy * buildableFittings[0].qty ) }}</p></td>
+                                </tr>
+                                <tr align="center">
+                                  <td class="table-active" colspan="7"><h5>Buildable Products Total: {{ "{:,.0f}".format(buildableTotal) }}</h5></td>
+                                </tr>
+                              {% endif %}
+                            </tbody>
+                          </table>
+                      </li>
+                    </div>
+                  </div>
 
             </div><!-- row2 -->
 
