@@ -6,15 +6,25 @@
     <ul class="list-group mb-auto">
       <li class="list-group-item d-flex justify-content-between lh-condensed bg-info">
         <h3 class="mx-auto text-white">Fitted Ship Builder</h3>
-        <input name="fetch" class="btn-sm btn-primary mt-0" type="button" value="<">..
-        <input name="fetch" class="btn-sm btn-primary mt-0" type="button" value=">">
+        {% if myFittingsCount > 1 %}
+        <form action="{{ url_for('fittings')}}" method="POST">
+          <button class="btn btn" type="submit" name="action" value="prev">
+          <i class="fas fa-angle-left" title="Previous Ship Fitting"></i></button>..
+
+          <button class="btn btn" type="submit" name="action" value="next">
+          <i class="fas fa-angle-right" title="Next Ship Fitting"></i></button>
+
+          <input type="hidden" name="build_id" value="{{build_id}}">
+          <input type="hidden" name="ship_id" value="{{ship_id}}">
+        </form>
+        {% endif %}
       </li>
       <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
         <div class="col-12">
           <form action="{{ url_for('fittings')}}" method="POST">
             <div class="form-inline" id="row1">
               <div class="form-group pr-1">
-                {% if myFittingsCount > 0 %}
+                {% if build_id > 0 and build_id <= myFittingsCount %}
                   <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/Render/{{myFittings[fittingIndex].ship_id}}_128.png">
                 {% elif ship_id > 0 %}
                   <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/Render/{{ship_id}}_128.png">
@@ -25,8 +35,8 @@
               <label class="px-1" for="ship">Ship to Build:</label>
               <div class="form-group">
                 <select name="ship_id" id="ship" class="form-control" style="max-width: 300px;">
-                  {% if myFittingsCount > 0 %}
-                    <option selected value="{{myFittings[0].ship_id}}">{{myFittings[fittingIndex].ship_name}}</option>
+                  {% if build_id > 0 and build_id <= myFittingsCount  %}
+                    <option selected value="{{myFittings[fittingIndex].ship_id}}">{{myFittings[fittingIndex].ship_name}}</option>
                   {% elif ship_id > 0 %}
                     <option selected value="{{ship_id}}">{{ship_name}}</option>
                   {% else %}
@@ -39,7 +49,7 @@
               </div>
                 <label class="px-1" for="qty">QTY:</label>
                 <div class="form-inline">
-                  {% if myFittingsCount > 0 %}
+                  {% if build_id > 0 and build_id <= myFittingsCount  %}
                     <input type="text" class="form-control" name="qty" value="{{myFittings[fittingIndex].qty}}" size="1">
                   {% else %}
                     <input type="text" class="form-control" name="qty" value="1" size="1">
@@ -47,14 +57,14 @@
                 </div>
                 <label class="px-1" for="contract">Contract Price:</label>
                 <div class="form-inline pr-1">
-                  {% if myFittingsCount > 0 %}
+                  {% if build_id > 0 and build_id <= myFittingsCount  %}
                     <input type="text" class="form-control" name="contract_sell_price" value="{{ "{:,.0f}".format(myFittings[fittingIndex].contract_sell_price) }}" style="width: 150px;">
                   {% else %}
                     <input type="text" class="form-control" name="contract_sell_price" value="0" style="width: 150px;">
                   {% endif %}
                 </div>
                 <div class="form-inline form-check px-1">
-                  {% if myFittingsCount > 0 %}
+                  {% if build_id > 0 and build_id <= myFittingsCount  %}
                     {% if myFittings[fittingIndex].rollup == 1 %}
                       <input class="form-check-input" type="checkbox" name="rollup" checked>
                     {% else %}
@@ -66,7 +76,7 @@
                   <label class="form-check-label" for="rollup">Rollup?</label>
                 </div>
                 <div class="form-inline pr-1">
-                  {% if myFittingsCount > 0 %}
+                  {% if build_id > 0 and build_id <= myFittingsCount %}
                     <button class="btn btn" type="submit" name="action" value="edit">
                       <i class="fas fa-pencil-alt" title="Edit This Fitting"></i></button>
                     <button class="btn btn" type="submit" name="action" value="delete">
@@ -79,7 +89,7 @@
                     <button class="btn btn" type="submit" name="action" value="new">
                     <i class="fas fa-plus-square" title="Add New Fitting"></i></button>
                   {% else %}
-                    <button class="btn btn" type="submit" name="action" value="new">
+                    <button class="btn btn" type="submit" name="action" value="newBuild">
                       <i class="fas fa-plus-square" title="Add New Fitting"></i></button>
                   {% endif %}
                 </div>
@@ -99,7 +109,7 @@
                     <td>
                       <table class="table table-light">
                         <tbody>
-                          {% if ship_id > 0 %}
+                          {% if ship_id > 0 and num_highslots > 0%}
                           {% for n in range(1, num_highslots+1) %}
                             <tr>
                               <td class="noBorder py-0 bg-white">
@@ -129,7 +139,7 @@
                     <td>
                       <table class="table table-light">
                         <tbody>
-                          {% if ship_id >0 %}
+                          {% if ship_id >0 and num_medslots > 0 %}
                           {% for n in range(1, num_medslots+1) %}
                             <tr>
                               <td class="noBorder py-0 bg-white">
@@ -159,7 +169,7 @@
                     <td>
                       <table class="table table-light">
                         <tbody>
-                          {% if ship_id >0 %}
+                          {% if ship_id >0 and num_lowslots > 0 %}
                           {% for n in range(1, num_lowslots+1) %}
                             <tr>
                               <td class="noBorder py-0 bg-white">
@@ -197,7 +207,7 @@
                     <td>
                       <table class="table table-light">
                         <tbody>
-                          {% if ship_id >0 %}
+                          {% if ship_id >0 and num_rigslots > 0%}
                           {% for n in range(1, num_rigslots+1) %}
                             <tr>
                               <td class="noBorder py-0 bg-white">
@@ -305,10 +315,10 @@
                       </table>
                     </td>
                   </tr>
-                  <input type="hidden" name="build_id" value="{{build_id}}">
+                  <input type="hidden" name="build_id" value="{{build_id}}">Build # {{build_id}}
                   </form>
                   <tr>
-                    {% if myFittingsCount > 0 %}
+                    {% if build_id > 0 and build_id <= myFittingsCount  %}
                       <td class="text-center"><h4 class="text-danger"><strong>Cost of Production:</h4><h5>{{ "{:,.0f}".format(fittingCost) }}</td>
                       <td class="text-center"><h4 class="text-success"><strong>Contract Value:</h4><h5>{{ "{:,.0f}".format(myFittings[fittingIndex].qty * myFittings[fittingIndex].contract_sell_price) }}</td>
                       <td class="text-center"><h4 class="text-secondary"><strong>Profit Margin:</h4><h5> {{ "{:.2%}".format(fittingPM) }}</td>
@@ -335,7 +345,7 @@
                             </tr>
                           </thead>
                           <tbody>
-                              {% for item in nonBuildableFittings %}
+                              {% for item in nonBuildablefittingRollup %}
                               <tr>
                                 <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{ item.id }}_32.png"></th>
                                 <td colspan="2">{{ item.component }}</td>
@@ -343,18 +353,10 @@
                                 <td><p class="mt-0 text-center">{{ "{:,.0f}".format(item.component_cost * item.qty * item.component_qty) }}</p></td>
                               </tr>
                               {% endfor %}
-                              {% if nonBuildableFittings %}
-                                {% for rig in rigRollup %}
-                                  <tr>
-                                    <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{rig.id}}_32.png"></th>
-                                    <td colspan="2"><p class="mt-1">{{ rig.component }}</p></td>
-                                    <td> {{ "{:,.0f}".format(rig.component_qty * nonBuildableFittings[0].qty) }} </td>
-                                    <td><p class="mt-0 text-center">{{ "{:,.0f}".format(rig.component_cost * rig.component_qty * nonBuildableFittings[0].qty) }}</p></td>
-                                  </tr>
-                                  {% endfor %}
-                                {% endif %}
                                 <tr align="center">
+                                  {% if nonBuildablefittingRollup %}
                                   <td class="table-active" colspan="7"><h5>Commodity Total: {{ "{:,.0f}".format(nonBuildableTotal) }}</h5></td>
+                                  {% endif %}
                                 </tr>
                           </tbody>
                         </table>
@@ -377,7 +379,7 @@
                               </tr>
                             </thead>
                             <tbody>
-                                {% for item in buildableFittings %}
+                                {% for item in buildablefittingRollup %}
                               <tr>
                                 <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.id}}_32.png"></th>
                                 <td colspan="2"><p class="mt-1">{{ item.component }}</p></td>
@@ -385,17 +387,19 @@
                                 <td><p class="mt-0 text-center">{{ "{:,.0f}".format(item.component_cost * item.qty * item.component_qty) }}</p></td>
                               </tr>
                               {% endfor %}
-                              {% if buildableFittings %}
-                                <tr>
-                                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{buildableFittings[0].ship_id}}_32.png"></th>
-                                  <td colspan="2"><p class="mt-1">{{ buildableFittings[0].ship_name }}</p></td>
-                                  <td> {{ "{:,.0f}".format(buildableFittings[0].qty) }} </td>
-                                  <td><p class="mt-0 text-center">{{ "{:,.0f}".format(buildableFittings[0].jita_buy * buildableFittings[0].qty ) }}</p></td>
-                                </tr>
+                              {% for item in shipRollup %}
+                              <tr>
+                                <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.ship_id}}_32.png"></th>
+                                <td colspan="2"><p class="mt-1">{{ item.ship_name }}</p></td>
+                                <td> {{ "{:,.0f}".format(item.qty) }} </td>
+                                <td><p class="mt-0 text-center">{{ "{:,.0f}".format(item.qty * item.jita_buy) }}</p></td>
+                              </tr>
+                              {% endfor %}
                                 <tr align="center">
+                                  {% if buildablefittingRollup %}
                                   <td class="table-active" colspan="7"><h5>Buildable Products Total: {{ "{:,.0f}".format(buildableTotal) }}</h5></td>
+                                  {% endif %}
                                 </tr>
-                              {% endif %}
                             </tbody>
                           </table>
                       </li>
