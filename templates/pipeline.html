@@ -90,9 +90,9 @@
                   <td><p class="mt-1 text-center"><input type="text" class="form-control text-center" size="3" name="qty" value="{{ item.runs }}"></p></td>
                   <td>
                     {% if item.local_sell_price == 0%}
-                      <input type="text" class="form-control text-center mt-1" size="10" name="local_sell" value="{{ "{:.0f}".format(item.jita_sell_price * 1.20) }}">
+                      <input type="text" class="form-control text-center mt-1" size="10" name="local_sell" value="{{ "{:,.0f}".format(item.jita_sell_price * 1.20) }}">
                     {% else %}
-                      <input type="text" class="form-control text-center mt-1" size="10" name="local_sell" value="{{ "{:.0f}".format(item.local_sell_price) }}">
+                      <input type="text" class="form-control text-center mt-1" size="10" name="local_sell" value="{{ "{:,.0f}".format(item.local_sell_price) }}">
                     {% endif %}
                   </td>
                   {% set mv = namespace(a=0) %}

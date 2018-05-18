@@ -239,8 +239,9 @@ class v_buildable_fittings(db.Model):
     meta = db.Column(db.Integer())
     rollup = db.Column(db.Integer())
     user_id = db.Column(db.Integer())
+    bp_id = db.Column(db.Integer())
 
-    def __init__(ship_id, ship_name, jita_buy, qty, component_id, component, component_cost, component_qty, build_cost, meta, rollup, user_id):
+    def __init__(ship_id, ship_name, jita_buy, qty, component_id, component, component_cost, component_qty, build_cost, meta, rollup, user_id, bp_id):
         self.ship_id = ship_id
         self.ship_name = ship_name
         self.jita_buy = jita_buy
@@ -253,6 +254,7 @@ class v_buildable_fittings(db.Model):
         self.meta = meta
         self.rollup = rollup
         self.user_id = user_id
+        self.bp_id = bp_id
 
 class v_buildable_fittings_all(db.Model):
     build_id = db.Column(db.Integer(), primary_key=True)
@@ -268,8 +270,9 @@ class v_buildable_fittings_all(db.Model):
     meta = db.Column(db.Integer())
     rollup = db.Column(db.Integer())
     user_id = db.Column(db.Integer())
+    bp_id = db.Column(db.Integer())
 
-    def __init__(ship_id, ship_name, jita_buy, qty, component_id, component, component_cost, component_qty, build_cost, meta, rollup, user_id):
+    def __init__(ship_id, ship_name, jita_buy, qty, component_id, component, component_cost, component_qty, build_cost, meta, rollup, user_id, bp_id):
         self.ship_id = ship_id
         self.ship_name = ship_name
         self.jita_buy = jita_buy
@@ -282,6 +285,7 @@ class v_buildable_fittings_all(db.Model):
         self.meta = meta
         self.rollup = rollup
         self.user_id = user_id
+        self.bp_id = bp_id
 
 class v_shipslots(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
@@ -482,12 +486,13 @@ class BomDatacores():
         self.runs = runs
 
 class BomShipFittings():
-    def __init__(self, id, component, component_qty, component_cost, qty):
+    def __init__(self, id, component, component_qty, component_cost, qty, bp_id):
         self.id = id
         self.component = component
         self.component_qty = component_qty
         self.component_cost = component_cost
         self.qty = qty
+        self.bp_id = bp_id
 
 class BomMaterial():
     def __init__(self, material_id, material, material_qty, material_cost, runs, id, build_or_buy, blueprint_id):
@@ -520,11 +525,12 @@ class FittingRigs():
         self.qty = qty
 
 class FittingShips():
-    def __init__(self, ship_id, ship_name, qty, jita_buy):
+    def __init__(self, ship_id, ship_name, qty, jita_buy, bp_id):
         self.ship_id = ship_id
         self.ship_name = ship_name
         self.qty = qty
         self.jita_buy = jita_buy
+        self.bp_id = bp_id
 
 @app.route("/")
 def index():
@@ -536,7 +542,7 @@ def fittings():
     form = LoginForm(request.form)
     if 'myUser_id' in session:
         #try:
-        build_id = 1
+        build_id = 0
         user_id = session['myUser_id']
         ships = db.session.query(v_ships).all()
         ship_name = ''
@@ -547,7 +553,6 @@ def fittings():
         rigsize = 0
         fittingIndex = 0
         ship_id = 0
-        myFittings = []
         nonBuildableFittings = []
         nonBuildablefittingRollup = []
         nonBuildableTotal = 0.0
@@ -556,58 +561,69 @@ def fittings():
         buildableTotal = 0.0
         fittingCost = 0.0
         fittingPM = 0.0
-        shipRollup = []
 
         myFittingsCount = db.session.query(v_count_fittings).filter_by(user_id=user_id).order_by('ship_name').count()
+        myFittings = db.session.query(v_count_fittings).filter_by(user_id=user_id).order_by('build_id').all()
 
-        #if request.args.get('ship_id'):
-        #    ship_id = request.args.get('ship_id')
         if request.form.get('ship_id'):
             ship_id = request.form.get('ship_id')
 
         if request.args.get('build_id'):
             build_id = request.args.get('build_id')
+            #print 'build args id = ' + str(build_id)
+
         if request.form.get('build_id'):
             build_id = request.form.get('build_id')
-
-        if request.form.get('action') == 'prev':
-            build_id = int(request.form.get('build_id')) -1
-            if build_id < 1: build_id = 1
-        elif request.form.get('action') == 'next':
-            build_id = int(request.form.get('build_id')) +1
-            if build_id > myFittingsCount: build_id = myFittingsCount
-
-        print 'build id = ' + str(build_id)
+            #print 'build form id = ' + str(build_id)
 
         if myFittingsCount > 0:
-            if build_id > 0 and build_id <= myFittingsCount:
-                print 'Rollup buildable and nonbuildable fittings'
-                myFittings = db.session.query(v_count_fittings).filter_by(user_id=user_id).order_by('build_id').all()
-                myShips = db.session.query(v_count_fittings).filter_by(user_id=user_id, rollup=1).order_by('build_id').all()
-                fittingIndex = build_id -1
-                ship_id = myFittings[fittingIndex].ship_id
-                shipFittings = db.session.query(ship_fittings).filter_by(user_id=user_id, build_id=build_id).order_by('ship_name').all()
+            if request.form.get('fittingIndex'): fittingIndex = int(request.form.get('fittingIndex'))
 
-                nonBuildableFittings = db.session.query(v_buildable_fittings).filter(v_buildable_fittings.meta <> 2).filter(v_buildable_fittings.rollup==1).filter(v_buildable_fittings.user_id==user_id).with_entities('ship_id', 'ship_name', 'jita_buy', 'qty', 'id', 'component', 'component_cost', 'component_qty', 'build_cost', 'meta', 'rollup','user_id').all()
+            if request.form.get('action') == 'prev':
+                fittingIndex = int(request.form.get('fittingIndex')) -1
+            elif request.form.get('action') == 'next':
+                fittingIndex = int(request.form.get('fittingIndex')) +1
+
+            if fittingIndex < 0:
+                build_id = myFittings[0].build_id
+                fittingIndex = 0
+                #print 'build id index0= ' + str(build_id)
+            elif fittingIndex > myFittingsCount-1:
+                build_id = myFittings[-1].build_id
+                fittingIndex -= 1
+                #print 'build id indexmax= ' + str(build_id)
+
+            if build_id == 0:
+                build_id = myFittings[0].build_id
+                #print 'myfittings build id at index0 = ' + str(build_id)
+            else:
+                build_id = myFittings[fittingIndex].build_id
+                #print 'build id from myFittings (default) = ' + str(build_id)
+
+            if request.form.get('newBuild'):
+                build_id = myFittings[-1].build_id +1
+                #print 'build id last+1 = ' + str(build_id)
+            else:
+                if request.form.get('action') <> 'new': ship_id = myFittings[fittingIndex].ship_id
+                shipFittings = db.session.query(ship_fittings).filter_by(user_id=user_id, build_id=build_id).order_by('ship_name').all()
+                nonBuildableFittings = db.session.query(v_buildable_fittings).filter(v_buildable_fittings.meta <> 2).filter(v_buildable_fittings.rollup==1).filter(v_buildable_fittings.user_id==user_id).with_entities('ship_id', 'ship_name', 'jita_buy', 'qty', 'id', 'component', 'component_cost', 'component_qty', 'build_cost', 'meta', 'rollup','user_id', 'bp_id').all()
                 nonBuildablefittingRollup = fitting_rollup_qty(nonBuildableFittings)
                 for nbf in nonBuildableFittings:
                     nonBuildableTotal += (float(nbf.qty) * float(nbf.component_qty) * float(nbf.component_cost))
 
-                buildableFittings = db.session.query(v_buildable_fittings_all).filter_by(rollup=1, user_id=user_id).with_entities('ship_id', 'ship_name', 'jita_buy', 'qty', 'id', 'component', 'component_cost', 'component_qty', 'build_cost', 'meta', 'rollup', 'user_id').all()
+                buildableFittings = db.session.query(v_buildable_fittings_all).filter_by(rollup=1, user_id=user_id).with_entities('ship_id', 'ship_name', 'jita_buy', 'qty', 'id', 'component', 'component_cost', 'component_qty', 'build_cost', 'meta', 'rollup', 'user_id', 'bp_id').all()
 
                 buildablefittingRollup = fitting_rollup_qty(buildableFittings)
                 for bf in buildableFittings:
                     buildableTotal += (float(bf.qty) * float(bf.component_qty) * float(bf.component_cost))
-                for mf in myShips:
-                    #print mf.ship_name
-                    shipRollup += [FittingShips(mf.ship_id, mf.ship_name, mf.qty, mf.jita_buy)]
-                    buildableTotal += (float(mf.qty) * float(mf.jita_buy))
+
+                #print 'fitting index = ' + str(fittingIndex)
+                #print 'build id = ' + str(build_id)
+                #print 'ship id = ' +str(ship_id)
 
                 fittingCost = fitting_rollup_cost(shipFittings, fittingIndex)
                 fittingPM = ((float(shipFittings[fittingIndex].qty) * float(shipFittings[fittingIndex].contract_sell_price)) / float(fittingCost)) -1.0
 
-
-        #print 'ship id = ' +str(ship_id)
         if ship_id > 0 :
             rigs = db.session.query(v_shipslots).filter_by(id=1137, ship_id=ship_id).one()
             rigsize = db.session.query(v_shipslots).filter_by(id=1547, ship_id=ship_id).one()
@@ -644,20 +660,17 @@ def fittings():
 
         #print request.method
         if request.method == 'POST':
-            print request.form.get('action')
+            #print request.form.get('action')
             if request.form.get('action') == 'new':
                 item = db.session.query(v_ships).filter_by(id = ship_id).one()
                 ship_name = item.ship
-                build_id = myFittingsCount + 1
-                print 'new build id: ' + str(build_id)
+                if myFittings:
+                    build_id = myFittings[-1].build_id + 1
+                else:
+                    build_id = 1
+                #print 'new build id: ' + str(build_id)
 
-                return render_template('fittings.html', form=form, ships=ships, myFittingsCount=myFittingsCount, ship_id=ship_id, build_id=build_id, ship_name=ship_name, num_rigslots=num_rigslots, num_lowslots=num_lowslots, num_medslots=num_medslots, num_highslots=num_highslots, rig_modules=rig_modules, low_modules=low_modules, med_modules=med_modules, high_modules=high_modules,ammos=ammos, drones=drones, myFittings=myFittings, fittingIndex=fittingIndex, fittingCost=fittingCost, fittingPM=fittingPM)
-
-            elif request.form.get('action') == 'newBuild':
-                item = db.session.query(v_ships).filter_by(id = ship_id).one()
-                ship_name = item.ship
-
-                return render_template('fittings.html', form=form, ships=ships, ship_id=ship_id, ship_name=ship_name, num_rigslots=num_rigslots, num_lowslots=num_lowslots, num_medslots=num_medslots, num_highslots=num_highslots, rig_modules=rig_modules, low_modules=low_modules, med_modules=med_modules, high_modules=high_modules,ammos=ammos, drones=drones, myFittingsCount=myFittingsCount, myFittings=myFittings, fittingIndex=fittingIndex, fittingCost=fittingCost, fittingPM=fittingPM, build_id=build_id)
+                return render_template('fittings.html', form=form, ships=ships, myFittingsCount=myFittingsCount, ship_id=ship_id, build_id=build_id, ship_name=ship_name, num_rigslots=num_rigslots, num_lowslots=num_lowslots, num_medslots=num_medslots, num_highslots=num_highslots, rig_modules=rig_modules, low_modules=low_modules, med_modules=med_modules, high_modules=high_modules,ammos=ammos, drones=drones, myFittings=myFittings, fittingIndex=fittingIndex, fittingCost=fittingCost, fittingPM=fittingPM, newBuild=True)
 
             elif request.form.get('action') == 'delete':
                 existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id']).all()
@@ -667,6 +680,24 @@ def fittings():
 
                 flash('Successfully deleted fitting.', 'success')
                 return redirect(url_for('fittings'))
+
+            elif request.form.get('build'):
+                for bfr in buildablefittingRollup:
+                    myMaterialCost = []
+                    myBuildCost = 0
+                    myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = bfr.bp_id, product_id=bfr.id).with_entities('id','material','material_id','group_id','qty','product_id').all()
+
+                    for requirements in myBuildRequirements:
+                        myBuildCost += (get_marketValue(requirements.material_id, 'sell') * requirements.qty)
+
+                    for requirements in myBuildRequirements:
+                        myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty
+                        pipeline = build_pipeline(session['myUser_id'], bfr.id, bfr.bp_id, bfr.component_qty * bfr.qty, requirements.material_id, requirements.qty, myCost, bfr.component, requirements.material, requirements.group_id, 0, bfr.component_cost, 0, myBuildCost, 0, 2)
+                        db.session.add(pipeline)
+                        db.session.commit()
+
+                flash('Successfully added to build pipeline.','success')
+                return redirect(url_for('build'))
 
             elif request.form.get('action') == 'edit':
                 item = db.session.query(v_ships).filter_by(id = ship_id).one()
@@ -680,108 +711,132 @@ def fittings():
                 else:
                     myRollup = 0
 
-                existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='high').all()
-                for n in range(1, num_highslots+1):
-                    #print  request.form.get('hi'+str(n))
-                    if request.form.get('hi'+str(n)) > 0:
-                        comp_id  = request.form.get('hi'+str(n))
-                        #print comp_id
-                        if comp_id > 0:
-                            comp_jita_buy = get_marketValue(comp_id,'buy')
-                            comp = db.session.query(invtypes).filter_by(typeID=comp_id).one()
+                existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='ship').all()
+                if existingFitting:
+                    existingFitting[0].qty = myQty
+                    existingFitting[0].component_id = ship_id
+                    existingFitting[0].component_qty = 1
+                    existingFitting[0].component_cost = ship_jita_buy
+                    existingFitting[0].component = ship_name
+                    existingFitting[0].contract_sell_price = myContractPrice
+                    existingFitting[0].rollup = myRollup
+                    db.session.add(existingFitting[0])
+                    db.session.commit()
+                else:
+                    if build_id == 0: build_id = 1
+                    myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, ship_id, 1, ship_jita_buy, ship_name, 'ship', myContractPrice, 0, ship_jita_buy, myRollup)
+                    db.session.add(myFittings)
+                    db.session.commit()
 
-                        if existingFitting:
-                            #print 'rollup = ' + str(myRollup)
-                            fit = existingFitting[n-1]
-                            fit.qty = myQty
-                            fit.component_id = comp_id
-                            fit.component_qty = 1
-                            fit.component_cost = comp_jita_buy
-                            fit.component = comp.typeName
-                            fit.contract_sell_price = myContractPrice
-                            fit.rollup = myRollup
-                            db.session.add(fit)
-                            db.session.commit()
-                        else:
-                            myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp.typeName, 'high', myContractPrice, 0, ship_jita_buy, myRollup)
-                            db.session.add(myFittings)
-                            db.session.commit()
+                existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='high').all()
+                if num_highslots > 0:
+                    for n in range(1, num_highslots+1):
+                        if request.form.get('hi'+str(n)) > 0:
+                            comp_id  = request.form.get('hi'+str(n))
+                            #print comp_id
+                            if comp_id > 0:
+                                comp_jita_buy = get_marketValue(comp_id,'buy')
+                                comp = db.session.query(invtypes).filter_by(typeID=comp_id).one()
+
+                            if existingFitting:
+                                #print 'rollup = ' + str(myRollup)
+                                fit = existingFitting[n-1]
+                                fit.qty = myQty
+                                fit.component_id = comp_id
+                                fit.component_qty = 1
+                                fit.component_cost = comp_jita_buy
+                                fit.component = comp.typeName
+                                fit.contract_sell_price = myContractPrice
+                                fit.rollup = myRollup
+                                db.session.add(fit)
+                                db.session.commit()
+                            else:
+                                if build_id == 0: build_id = 1
+                                myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp.typeName, 'high', myContractPrice, 0, ship_jita_buy, myRollup)
+                                db.session.add(myFittings)
+                                db.session.commit()
 
                 existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='med').all()
-                for n in range(1, num_medslots+1):
-                    if request.form.get('med'+str(n)):
-                        comp_id  = request.form.get('med'+str(n))
-                        if comp_id > 0:
-                            comp_jita_buy = get_marketValue(comp_id,'buy')
-                            comp = db.session.query(invtypes).filter_by(typeID=comp_id).one()
+                if num_medslots > 0:
+                    for n in range(1, num_medslots+1):
+                        if request.form.get('med'+str(n)) > 0:
+                            comp_id  = request.form.get('med'+str(n))
+                            if comp_id > 0:
+                                comp_jita_buy = get_marketValue(comp_id,'buy')
+                                comp = db.session.query(invtypes).filter_by(typeID=comp_id).one()
 
-                        if existingFitting:
-                            fit = existingFitting[n-1]
-                            fit.qty = myQty
-                            fit.component_id = comp_id
-                            fit.component_qty = 1
-                            fit.component_cost = comp_jita_buy
-                            fit.component = comp.typeName
-                            fit.contract_sell_price = myContractPrice
-                            fit.rollup = myRollup
-                            db.session.add(fit)
-                            db.session.commit()
-                        else:
-                            myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp.typeName, 'med', myContractPrice, 0, ship_jita_buy, myRollup)
-                            db.session.add(myFittings)
-                            db.session.commit()
+                            if existingFitting:
+                                fit = existingFitting[n-1]
+                                fit.qty = myQty
+                                fit.component_id = comp_id
+                                fit.component_qty = 1
+                                fit.component_cost = comp_jita_buy
+                                fit.component = comp.typeName
+                                fit.contract_sell_price = myContractPrice
+                                fit.rollup = myRollup
+                                db.session.add(fit)
+                                db.session.commit()
+                            else:
+                                if build_id == 0: build_id = 1
+                                myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp.typeName, 'med', myContractPrice, 0, ship_jita_buy, myRollup)
+                                db.session.add(myFittings)
+                                db.session.commit()
 
                 existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='low').all()
-                for n in range(1, num_lowslots+1):
-                    if request.form.get('low'+str(n)):
-                        comp_id  = request.form.get('low'+str(n))
-                        if comp_id > 0:
-                            comp_jita_buy = get_marketValue(comp_id,'buy')
-                            comp = db.session.query(invtypes).filter_by(typeID=comp_id).one()
+                if num_lowslots > 0:
+                    for n in range(1, num_lowslots+1):
+                        if request.form.get('low'+str(n)) > 0:
+                            comp_id  = request.form.get('low'+str(n))
+                            if comp_id > 0:
+                                comp_jita_buy = get_marketValue(comp_id,'buy')
+                                comp = db.session.query(invtypes).filter_by(typeID=comp_id).one()
 
-                        if existingFitting:
-                            fit = existingFitting[n-1]
-                            fit.qty = myQty
-                            fit.component_id = comp_id
-                            fit.component_qty = 1
-                            fit.component_cost = comp_jita_buy
-                            fit.component = comp.typeName
-                            fit.contract_sell_price = myContractPrice
-                            fit.rollup = myRollup
-                            db.session.add(fit)
-                            db.session.commit()
-                        else:
-                            myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp.typeName, 'low', myContractPrice, 0, ship_jita_buy, myRollup)
-                            db.session.add(myFittings)
-                            db.session.commit()
+                            if existingFitting:
+                                fit = existingFitting[n-1]
+                                fit.qty = myQty
+                                fit.component_id = comp_id
+                                fit.component_qty = 1
+                                fit.component_cost = comp_jita_buy
+                                fit.component = comp.typeName
+                                fit.contract_sell_price = myContractPrice
+                                fit.rollup = myRollup
+                                db.session.add(fit)
+                                db.session.commit()
+                            else:
+                                if build_id == 0: build_id = 1
+                                myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp.typeName, 'low', myContractPrice, 0, ship_jita_buy, myRollup)
+                                db.session.add(myFittings)
+                                db.session.commit()
 
                 existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='rig').all()
-                for n in range(1, num_rigslots+1):
-                    if request.form.get('rig'+str(n)):
-                        comp_id  = request.form.get('rig'+str(n))
-                        if comp_id > 0:
-                            comp_jita_buy = get_marketValue(comp_id,'buy')
-                            comp = db.session.query(invtypes).filter_by(typeID=comp_id).one()
+                if num_rigslots > 0:
+                    for n in range(1, num_rigslots+1):
+                        if request.form.get('rig'+str(n)) > 0:
+                            comp_id  = request.form.get('rig'+str(n))
+                            if comp_id > 0:
+                                comp_jita_buy = get_marketValue(comp_id,'buy')
+                                comp = db.session.query(invtypes).filter_by(typeID=comp_id).one()
 
-                        if existingFitting:
-                            fit = existingFitting[n-1]
-                            fit.qty = myQty
-                            fit.component_id = comp_id
-                            fit.component_qty = 1
-                            fit.component_cost = comp_jita_buy
-                            fit.component = comp.typeName
-                            fit.contract_sell_price = myContractPrice
-                            fit.rollup = myRollup
-                            db.session.add(fit)
-                            db.session.commit()
-                        else:
-                            myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp.typeName, 'rig', myContractPrice, 0, ship_jita_buy, myRollup)
-                            db.session.add(myFittings)
-                            db.session.commit()
+                            if existingFitting:
+                                fit = existingFitting[n-1]
+                                fit.qty = myQty
+                                fit.component_id = comp_id
+                                fit.component_qty = 1
+                                fit.component_cost = comp_jita_buy
+                                fit.component = comp.typeName
+                                fit.contract_sell_price = myContractPrice
+                                fit.rollup = myRollup
+                                db.session.add(fit)
+                                db.session.commit()
+                            else:
+                                if build_id == 0: build_id = 1
+                                myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp.typeName, 'rig', myContractPrice, 0, ship_jita_buy, myRollup)
+                                db.session.add(myFittings)
+                                db.session.commit()
 
                 existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='ammo').all()
                 for n in range(1, 6):
-                    if request.form.get('ammo'+str(n)):
+                    if request.form.get('ammo'+str(n)) > 0:
                         comp_qty = request.form.get('ammo_qty'+str(n))
                         comp_id  = request.form.get('ammo'+str(n))
                         if comp_id > 0:
@@ -800,13 +855,14 @@ def fittings():
                             db.session.add(fit)
                             db.session.commit()
                         else:
+                            if build_id == 0: build_id = 1
                             myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, comp_qty, comp_jita_buy, comp.typeName, 'ammo', myContractPrice, 0, ship_jita_buy, myRollup)
                             db.session.add(myFittings)
                             db.session.commit()
 
                 existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='drone').order_by('component').all()
                 for n in range(1, 6):
-                    if request.form.get('drone'+str(n)):
+                    if request.form.get('drone'+str(n)) > 0:
                         comp_qty = request.form.get('drone_qty'+str(n))
                         comp_id  = request.form.get('drone'+str(n))
                         if comp_id > 0:
@@ -825,6 +881,7 @@ def fittings():
                             db.session.add(fit)
                             db.session.commit()
                         else:
+                            if build_id == 0: build_id = 1
                             myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, comp_qty, comp_jita_buy, comp.typeName, 'drone', myContractPrice, 0, ship_jita_buy, myRollup)
                             db.session.add(myFittings)
                             db.session.commit()
@@ -841,7 +898,7 @@ def fittings():
             myFittingsAmmo = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='ammo').all()
             myFittingsDrone = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='drone').all()
 
-            return render_template('fittings.html', form=form, ships=ships, ship_id=ship_id, ship_name=ship_name, num_rigslots=num_rigslots, num_lowslots=num_lowslots, num_medslots=num_medslots, num_highslots=num_highslots, rig_modules=rig_modules, low_modules=low_modules, med_modules=med_modules, high_modules=high_modules,ammos=ammos, drones=drones, myFittingsCount=myFittingsCount, myFittings=myFittings, myFittingsHigh=myFittingsHigh, myFittingsMed=myFittingsMed, myFittingsLow=myFittingsLow, myFittingsRig=myFittingsRig, myFittingsAmmo=myFittingsAmmo, myFittingsDrone=myFittingsDrone, fittingIndex=fittingIndex, fittingCost=fittingCost, fittingPM=fittingPM, buildableFittings=buildableFittings, nonBuildableFittings=nonBuildableFittings, nonBuildableTotal=nonBuildableTotal, buildableTotal=buildableTotal, build_id=build_id, nonBuildablefittingRollup=nonBuildablefittingRollup, buildablefittingRollup=buildablefittingRollup, shipRollup=shipRollup)
+            return render_template('fittings.html', form=form, ships=ships, ship_id=ship_id, ship_name=ship_name, num_rigslots=num_rigslots, num_lowslots=num_lowslots, num_medslots=num_medslots, num_highslots=num_highslots, rig_modules=rig_modules, low_modules=low_modules, med_modules=med_modules, high_modules=high_modules,ammos=ammos, drones=drones, myFittingsCount=myFittingsCount, myFittings=myFittings, myFittingsHigh=myFittingsHigh, myFittingsMed=myFittingsMed, myFittingsLow=myFittingsLow, myFittingsRig=myFittingsRig, myFittingsAmmo=myFittingsAmmo, myFittingsDrone=myFittingsDrone, fittingIndex=fittingIndex, fittingCost=fittingCost, fittingPM=fittingPM, buildableFittings=buildableFittings, nonBuildableFittings=nonBuildableFittings, nonBuildableTotal=nonBuildableTotal, buildableTotal=buildableTotal, build_id=build_id, nonBuildablefittingRollup=nonBuildablefittingRollup, buildablefittingRollup=buildablefittingRollup)
 
         return render_template('fittings.html', form=form, ships=ships, myFittingsCount=0, ship_id=0, build_id=build_id, myFittings=myFittings, fittingCost=fittingCost)
 
@@ -1041,7 +1098,7 @@ def pipeline():
                         bp_id = request.form.get('blueprint_id')
                         runs = request.form.get('qty')
                         status = request.form.get('bld_pipeline_select')
-                        local_sell_price = float(request.form.get('local_sell'))
+                        local_sell_price = float(request.form.get('local_sell').replace(',', ''))
                         pipeline = db.session.query(build_pipeline).filter_by(blueprint_id = bp_id).all()
                         for item in pipeline:
                             item.runs = runs
@@ -1403,41 +1460,41 @@ def build_selected():
         runs = int(request.args.get('runs'))
 
     form = LoginForm(request.form)
-    #try:
-    myBlueprints = db.session.query(v_build_product).all()
-    selected_bp = db.session.query(v_build_product).filter_by(id = id).one()
-    myProduct = db.session.query(invtypes).filter_by(typeID = int(selected_bp.t2_id)).one()
-    querySell = get_marketValue(str(myProduct.typeID),'buy')
-    mySellMedian = "{:,.0f}".format(querySell)
-    buildTime = db.session.query(v_build_time).filter_by(id = id).one()
-    myTime = "{:,}".format(buildTime.time/60)
-    myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = id, product_id = selected_bp.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id').all()
+    try:
+        myBlueprints = db.session.query(v_build_product).all()
+        selected_bp = db.session.query(v_build_product).filter_by(id = id).one()
+        myProduct = db.session.query(invtypes).filter_by(typeID = int(selected_bp.t2_id)).one()
+        querySell = get_marketValue(str(myProduct.typeID),'buy')
+        mySellMedian = "{:,.0f}".format(querySell)
+        buildTime = db.session.query(v_build_time).filter_by(id = id).one()
+        myTime = "{:,}".format(buildTime.time/60)
+        myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = id, product_id = selected_bp.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id').all()
 
-    myBuildCost = 0
-    myMaterialCost = []
-    for requirements in myBuildRequirements:
-        myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
+        myBuildCost = 0
+        myMaterialCost = []
+        for requirements in myBuildRequirements:
+            myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
 
-    for cost in myMaterialCost:
-        myBuildCost = myBuildCost + cost
+        for cost in myMaterialCost:
+            myBuildCost = myBuildCost + cost
 
-    if 'myUser_id' in session:
-        pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material', 'group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','status').order_by('material').all()
+        if 'myUser_id' in session:
+            pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material', 'group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','status').order_by('material').all()
 
-        pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost','status')
+            pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost','status')
 
-        materialInPipeline = build_pipeline_rollup_qty(pipeline)
-        materialCost = build_pipeline_rollup_cost(pipeline)
+            materialInPipeline = build_pipeline_rollup_qty(pipeline)
+            materialCost = build_pipeline_rollup_cost(pipeline)
 
-        return render_template('build.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, runs=runs)
+            return render_template('build.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, runs=runs)
 
-    else:
-        return render_template('build.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, runs=runs)
+        else:
+            return render_template('build.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, runs=runs)
 
-    #except Exception as e:
-    #    flash('Problem querying blueprint. See log', 'danger')
-    #    app.logger.info(str(e))
-    #    return redirect(url_for('build'))
+    except Exception as e:
+        flash('Problem querying blueprint. See log', 'danger')
+        app.logger.info(str(e))
+        return redirect(url_for('build'))
 
 @app.route('/build_add_pipeline', methods=['POST'])
 def build_add_pipeline():
@@ -1770,7 +1827,6 @@ def fitting_rollup_cost(myFittings, fittingIndex):
         if item.component_qty > 0:
             buildCost += float(item.component_cost) * float(item.qty) * float(item.component_qty)
 
-    buildCost += float(myFittings[fittingIndex].jita_buy) * float(myFittings[fittingIndex].qty)
     return buildCost
 
 def build_pipeline_rollup_qty(pipeline):
@@ -1830,7 +1886,7 @@ def fitting_rollup_qty(shipFittings):
         if matchFound1 == True:
             matchFound1 = False
         else:
-            my_bom = BomShipFittings(item.id, item.component, item.component_qty, item.component_cost, item.qty)
+            my_bom = BomShipFittings(item.id, item.component, item.component_qty, item.component_cost, item.qty, item.bp_id)
             shipFittingsRollup += [my_bom]
 
     return shipFittingsRollup

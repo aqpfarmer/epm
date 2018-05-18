@@ -16,6 +16,7 @@
 
           <input type="hidden" name="build_id" value="{{build_id}}">
           <input type="hidden" name="ship_id" value="{{ship_id}}">
+          <input type="hidden" name="fittingIndex" value="{{fittingIndex}}">
         </form>
         {% endif %}
       </li>
@@ -24,7 +25,7 @@
           <form action="{{ url_for('fittings')}}" method="POST">
             <div class="form-inline" id="row1">
               <div class="form-group pr-1">
-                {% if build_id > 0 and build_id <= myFittingsCount %}
+                {% if myFittingsCount > 0 and newBuild != True %}
                   <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/Render/{{myFittings[fittingIndex].ship_id}}_128.png">
                 {% elif ship_id > 0 %}
                   <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/Render/{{ship_id}}_128.png">
@@ -35,7 +36,7 @@
               <label class="px-1" for="ship">Ship to Build:</label>
               <div class="form-group">
                 <select name="ship_id" id="ship" class="form-control" style="max-width: 300px;">
-                  {% if build_id > 0 and build_id <= myFittingsCount  %}
+                  {% if myFittingsCount > 0 and newBuild != True   %}
                     <option selected value="{{myFittings[fittingIndex].ship_id}}">{{myFittings[fittingIndex].ship_name}}</option>
                   {% elif ship_id > 0 %}
                     <option selected value="{{ship_id}}">{{ship_name}}</option>
@@ -49,7 +50,7 @@
               </div>
                 <label class="px-1" for="qty">QTY:</label>
                 <div class="form-inline">
-                  {% if build_id > 0 and build_id <= myFittingsCount  %}
+                  {% if myFittingsCount > 0 and newBuild != True  %}
                     <input type="text" class="form-control" name="qty" value="{{myFittings[fittingIndex].qty}}" size="1">
                   {% else %}
                     <input type="text" class="form-control" name="qty" value="1" size="1">
@@ -57,14 +58,14 @@
                 </div>
                 <label class="px-1" for="contract">Contract Price:</label>
                 <div class="form-inline pr-1">
-                  {% if build_id > 0 and build_id <= myFittingsCount  %}
+                  {% if myFittingsCount > 0 and newBuild != True   %}
                     <input type="text" class="form-control" name="contract_sell_price" value="{{ "{:,.0f}".format(myFittings[fittingIndex].contract_sell_price) }}" style="width: 150px;">
                   {% else %}
                     <input type="text" class="form-control" name="contract_sell_price" value="0" style="width: 150px;">
                   {% endif %}
                 </div>
                 <div class="form-inline form-check px-1">
-                  {% if build_id > 0 and build_id <= myFittingsCount  %}
+                  {% if myFittingsCount > 0 and newBuild != True  %}
                     {% if myFittings[fittingIndex].rollup == 1 %}
                       <input class="form-check-input" type="checkbox" name="rollup" checked>
                     {% else %}
@@ -76,7 +77,7 @@
                   <label class="form-check-label" for="rollup">Rollup?</label>
                 </div>
                 <div class="form-inline pr-1">
-                  {% if build_id > 0 and build_id <= myFittingsCount %}
+                  {% if myFittingsCount > 0 and newBuild != True %}
                     <button class="btn btn" type="submit" name="action" value="edit">
                       <i class="fas fa-pencil-alt" title="Edit This Fitting"></i></button>
                     <button class="btn btn" type="submit" name="action" value="delete">
@@ -89,9 +90,10 @@
                     <button class="btn btn" type="submit" name="action" value="new">
                     <i class="fas fa-plus-square" title="Add New Fitting"></i></button>
                   {% else %}
-                    <button class="btn btn" type="submit" name="action" value="newBuild">
+                    <button class="btn btn" type="submit" name="action" value="new">
                       <i class="fas fa-plus-square" title="Add New Fitting"></i></button>
                   {% endif %}
+
                 </div>
 
             </div><!-- row1 -->
@@ -316,9 +318,11 @@
                     </td>
                   </tr>
                   <input type="hidden" name="build_id" value="{{build_id}}">Build # {{build_id}}
+                  <input type="hidden" name="fittingIndex" value="{{fittingIndex}}">
+                  <input type="hidden" name="newBuild" value="{{newBuild}}">
                   </form>
                   <tr>
-                    {% if build_id > 0 and build_id <= myFittingsCount  %}
+                    {% if myFittingsCount > 0  %}
                       <td class="text-center"><h4 class="text-danger"><strong>Cost of Production:</h4><h5>{{ "{:,.0f}".format(fittingCost) }}</td>
                       <td class="text-center"><h4 class="text-success"><strong>Contract Value:</h4><h5>{{ "{:,.0f}".format(myFittings[fittingIndex].qty * myFittings[fittingIndex].contract_sell_price) }}</td>
                       <td class="text-center"><h4 class="text-secondary"><strong>Profit Margin:</h4><h5> {{ "{:.2%}".format(fittingPM) }}</td>
@@ -387,18 +391,15 @@
                                 <td><p class="mt-0 text-center">{{ "{:,.0f}".format(item.component_cost * item.qty * item.component_qty) }}</p></td>
                               </tr>
                               {% endfor %}
-                              {% for item in shipRollup %}
-                              <tr>
-                                <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.ship_id}}_32.png"></th>
-                                <td colspan="2"><p class="mt-1">{{ item.ship_name }}</p></td>
-                                <td> {{ "{:,.0f}".format(item.qty) }} </td>
-                                <td><p class="mt-0 text-center">{{ "{:,.0f}".format(item.qty * item.jita_buy) }}</p></td>
+                              <tr align="center">
+                                {% if buildablefittingRollup %}
+                                <td class="table-active" colspan="7"><h5>Buildable Products Total: {{ "{:,.0f}".format(buildableTotal) }}</h5></td>
+                                {% endif %}
                               </tr>
-                              {% endfor %}
-                                <tr align="center">
-                                  {% if buildablefittingRollup %}
-                                  <td class="table-active" colspan="7"><h5>Buildable Products Total: {{ "{:,.0f}".format(buildableTotal) }}</h5></td>
-                                  {% endif %}
+                              <tr align="center">
+                                  <form action="{{ url_for('fittings')}}" method="POST">
+                                    <td class="table-active" colspan="7"><input name="build" class="btn-sm btn-info" type="submit" value="Add All to Build Pipeline"></td>
+                                  </form>
                                 </tr>
                             </tbody>
                           </table>
