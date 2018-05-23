@@ -13,12 +13,14 @@
           {% if session.logged_in %}
             {{session.name}}
           {% else %}
-            Builder
+            Builder not logged in
           {% endif %}
-
         </button>
-        <img class="img-fluid" width="40" src="{{ url_for('static', filename='img/74_64_13.png') }}"></img>
-
+        {% if session.logged_in %}
+          <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/Character/{{session.myUser_id}}_32.jpg">
+        {% else %}
+          <img class="img-fluid" width="40" src="{{ url_for('static', filename='img/74_64_13.png') }}"></img>
+        {% endif %}
         <!-- End Button trigger modal -->
         <!-- Modal -->
         <div class="modal fade" id="builderModal" tabindex="-1" role="dialog" aria-labelledby="builderModalLabel" aria-hidden="true">
@@ -31,34 +33,26 @@
                 </button>
               </div>
               <div class="modal-body">
-                {% if session.logged_in %}
-                  <form method="POST" action="/updateBuilder">
-                    <div class="form-group text-muted">
-                      <label for="name" class="col-form-label text-primary">Name</label>
-                      <input type="text" class="form-control" id="name" name="name" value="{{session.name}}">
-                    </div>
-                    <label for="email" class="col-form-label text-primary">Email</label>
-                    <div class="form-group text-muted">
-                      <input type="text" class="form-control" id="email" name="email" value="{{session.email}}">
-                    </div>
-                    <label for="password" class="col-form-label text-primary">Password</label>
-                    <div class="form-group text-muted">
-                      <input type="password" class="form-control" id="password" name="password">
-                    </div>
-                    <label for="api_key" class="col-form-label text-primary">Character API Key</label>
-                    <div class="form-group text-muted">
-                      <input type="text" class="form-control" id="api_key" name="api_key" value="{{session.api_key}}">
-                    </div>
-                    <label for="api_code" class="col-form-label text-primary">API Code</label>
-                    <div class="form-group text-muted">
-                      <input type="text" class="form-control" id="api_code" name="api_code" value="{{session.api_code}}">
-                    </div>
-                    <div class="form-group">
-                      <input type="submit" class="btn btn-primary pull-center" value="Update">
-                    </div>
-                  </form>
+                {% if 'myUser_id' in session %}
+                <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/Character/{{session.myUser_id}}_256.jpg">
+                  <p class=""><strong>Builder: </strong>{{session.name}}</p>
+                  <p class=""><strong>Character ID: </strong>{{session.myUser_id}}</p>
+                  {% if 'wallet_balance' in session %}
+                    <p class=""><strong>Wallet Balance: </strong>{{ "{:,.0f}".format(session.wallet_balance) }}</p>
+                  {% else %}
+                    <p class=""><strong>Wallet Balance: </strong> --</p>
+                  {% endif %}
+                  <a class="btn btn-secondary" href="/logout">Logout</a>
                 {% else %}
-                  Login to See builder details.
+                <form method="GET" action="https://login.eveonline.com/oauth/authorize">
+                  <h2 class="text-success"><input type="image" src="{{ url_for('static', filename='img/eve-sso-login-black-small.png') }}">
+                  </h2>
+                  <input type="hidden" name="response_type" value="code">
+                  <input type="hidden" name="redirect_uri" value="http://catfish:5000/login">
+                  <input type="hidden" name="client_id" value="353666b5e6d44a439878c514e45f82b0">
+                  <input type="hidden" name="scope" value="characterFittingsRead characterFittingsWrite characterWalletRead characterAssetsRead characterIndustryJobsRead characterMarketOrdersRead characterContractsRead esi-wallet.read_character_wallet.v1 esi-search.search_structures.v1 esi-assets.read_assets.v1 esi-fittings.read_fittings.v1 esi-fittings.write_fittings.v1 esi-markets.structure_markets.v1 esi-industry.read_character_jobs.v1 esi-markets.read_character_orders.v1 esi-characters.read_blueprints.v1 esi-contracts.read_character_contracts.v1">
+                  <input type="hidden" name="state" value="epm101">
+                </form>
                 {% endif %}
               </div>
             </div>
@@ -94,52 +88,6 @@
           </div>
           <!-- End Modal -->
 
-          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#loginModal">
-            {% if session.logged_in %}
-              Logout
-            {% else %}
-              Login
-            {% endif %}
-          </button>
-          <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-              <div class="modal-content">
-                <div class="modal-header">
-                  {% if session.logged_in %}
-                    <div class="modal-body">
-                      <h5 class="modal-title" id="loginModalLabel">Over and out, {{session.name}}</h5>
-                    </div>
-                    <div class="modal-body">
-                      <a href="/logout" class="btn btn-primary">Logout</a>
-                    </div>
-                  {% else %}
-                  <form method="POST" action="/login">
-                    <h2 class="text-success"> Please Login </h2>
-                    {% include 'includes/_messages.html' %}
-                    {% from "includes/_formhelpers.html" import render_field %}
-
-
-                      <div class="form-group text-black">
-                        {{render_field(form.email, class_="form-control")}}
-                      </div>
-                      <div class="form-group text-black">
-                        {{render_field(form.password, class_="form-control")}}
-                      </div>
-                      <p><a class="btn btn-secondary" href="/">Back to Home</a>
-                        <input type="submit" class="btn btn-primary" value="Login">
-                      </p>
-                    </form>
-                  {% endif %}
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div class="modal-body">
-                  <p><a href="/registration">Register</a> to save progress.</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </ul>
       </div>
     </div> <!-- upper nav -->

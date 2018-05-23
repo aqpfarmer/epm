@@ -3,7 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import render_template, request, redirect, url_for, flash, session, logging
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
-from datetime import datetime
+from datetime import datetime, timedelta
+from base64 import b64encode
 import requests
 import json
 from sqlalchemy import or_
@@ -19,24 +20,35 @@ app.config['MAX_OVERFLOW'] = 0
 
 db = SQLAlchemy(app)
 
-class User(db.Model):
+class users(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    email = db.Column(db.String(255), unique=True)
-    password = db.Column(db.String(255))
+    character_id = db.Column(db.String(100))
+    character_name = db.Column(db.String(100))
+    refresh_token = db.Column(db.String(255))
+    expiration = db.Column(db.DateTime())
+    auth_code = db.Column(db.String(255))
     active = db.Column(db.Boolean())
-    name = db.Column(db.String(255), unique=False)
     last_logged_in = db.Column(db.DateTime())
-    api_key = db.Column(db.String(100), unique=False)
-    api_code = db.Column(db.String(255), unique=False)
 
-    def __init__(self, name, email, password, active, last_logged_in, api_key, api_code):
-        self.name = name
-        self.email = email
-        self.password = password
+    def __init__(self, character_id, character_name, refresh_token, expiration, auth_code, active, last_logged_in):
+        self.character_id = character_id
+        self.character_name = character_name
+        self.refresh_token = refresh_token
+        self.expiration = expiration
+        self.auth_code = auth_code
         self.active = active
         self.last_logged_in = last_logged_in
-        self.api_key = api_key
-        self.api_code = api_code
+
+class eve_sso(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    client_id = db.Column(db.String(100))
+    secret_key = db.Column(db.String(100))
+    scope = db.Column(db.String(100))
+
+    def _init__(self, client_id, secret_key, scope):
+        self.client_id = client_id
+        self.secret_key = secret_key
+        self.scope = scope
 
 class invtypes(db.Model):
     typeID = db.Column(db.Integer(), primary_key=True)
@@ -532,10 +544,68 @@ class FittingShips():
         self.jita_buy = jita_buy
         self.bp_id = bp_id
 
+def check_token(character_id):
+    myUser = db.session.query(users).filter_by(character_id=character_id).all()
+    if myUser:
+        refresh_token = myUser[0].refresh_token
+        auth_code = myUser[0].auth_code
+        headers1 = {'Authorization': 'Bearer ' + auth_code}
+        response1 = requests.get('https://esi.tech.ccp.is/verify/', headers=headers1)
+        jsonData1 = json.loads(response1.text)
+        #print response1.status_code
+        #print jsonData1
+        #print jsonData1['error_description']
+
+        if response1.status_code == 400:
+            sso = db.session.query(eve_sso).all()
+            client_id = sso[0].client_id
+            secret_key = sso[0].secret_key
+            auth = b64encode("{0}:{1}".format(client_id, secret_key))
+
+            headers = {'Authorization': 'Basic ' + auth}
+            payload = {'grant_type':'refresh_token', 'refresh_token':refresh_token}
+
+            response = requests.post('https://login.eveonline.com/oauth/token', headers=headers, params=payload)
+            jsonData = json.loads(response.text)
+            auth_code = jsonData['access_token']
+            myUser[0].auth_code = auth_code
+            myUser[0].active = True
+            myUser[0].last_logged_in = datetime.now()
+            db.session.add(myUser[0])
+            db.session.commit()
+
+            print 'Successful refreshed '+myUser[0].character_name+'\'s auth token.'
+            session['logged_in'] = True
+            session['access_token'] = auth_code
+            return 0
+        else:
+            print 'No token refresh needed.'
+            return 0
+    else:
+        print 'Problem with logged in user.'
+        return 1
+
+def get_wallet_balance():
+    check = check_token(session['myUser_id'])
+    if check == 0:
+        payload = {'datasource':'tranquility', 'token':session['access_token']}
+        response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/', params=payload)
+        jsonData = json.loads(response.text)
+        return jsonData
+    else:
+        return 0.0
+
 @app.route("/")
 def index():
-    form = LoginForm(request.form)
-    return render_template('home.html', form=form)
+    if 'myUser_id' in session:
+        result = check_token(session['myUser_id'])
+        if result == 1:
+            flash('Problem with SSO login. Please re-do your EVE Authorization.', 'danger')
+            return redirect(url_for('logout'))
+        else:
+            session['wallet_balance'] = get_wallet_balance()
+
+    return render_template('home.html')
 
 @app.route("/fittings", methods=['GET','POST'])
 def fittings():
@@ -1747,9 +1817,63 @@ def updateBuilder():
             app.logger.info(str(e))
             return redirect(url_for('index'))
 
-
 @app.route('/login', methods=['GET','POST'])
 def login():
+    sso = db.session.query(eve_sso).all()
+    client_id = sso[0].client_id
+    secret_key = sso[0].secret_key
+    code = request.args.get('code')
+    state = request.args.get('state')
+    auth = b64encode("{0}:{1}".format(client_id, secret_key))
+
+    headers = {'Authorization': 'Basic ' + auth}
+    payload = {'grant_type':'authorization_code', 'code':code}
+
+    response = requests.post('https://login.eveonline.com/oauth/token', headers=headers, params=payload)
+    jsonData = json.loads(response.text)
+
+    if jsonData:
+        #print jsonData
+        refresh_token = jsonData['refresh_token']
+        auth_code = jsonData['access_token']
+        headers1 = {'Authorization': 'Bearer ' + auth_code}
+        response1 = requests.get('https://esi.tech.ccp.is/verify/', headers=headers1)
+        jsonData1 = json.loads(response1.text)
+
+        if jsonData1:
+            character_id = str(jsonData1['CharacterID'])
+            character_name = jsonData1['CharacterName']
+            new_expiration = jsonData1['ExpiresOn']
+            myUser = db.session.query(users).filter_by(character_id=character_id).all()
+
+            if myUser:
+                lli = myUser[0].last_logged_in.strftime('%b %d, %Y')
+                myUser[0].auth_code = auth_code
+                myUser[0].expiration = new_expiration
+                myUser[0].last_logged_in = datetime.now()
+                myUser[0].active = True
+                db.session.add(myUser[0])
+                db.session.commit()
+
+                flash('Successful login. '+character_name+' last logged in on: ' + lli,  'success')
+            else:
+                myUser = users(character_id, character_name, refresh_token, new_expiration, auth_code, True, datetime.now())
+                db.session.add(myUser)
+                db.session.commit()
+
+                flash('Successfully created new login. Welcome, '+character_name+ '!',  'success')
+
+            session['logged_in'] = True
+            session['name'] = character_name
+            session['myUser_id'] = character_id
+            session['access_token'] = auth_code
+            session['expiration'] = new_expiration
+
+
+    return redirect(url_for('index'))
+
+@app.route('/login_old', methods=['GET','POST'])
+def login_old():
     form = LoginForm(request.form)
     if request.method == 'POST' and form.validate():
         email = form.email.data
