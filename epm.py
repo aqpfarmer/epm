@@ -45,10 +45,46 @@ class eve_sso(db.Model):
     secret_key = db.Column(db.String(100))
     scope = db.Column(db.String(100))
 
-    def _init__(self, client_id, secret_key, scope):
+    def __init__(self, client_id, secret_key, scope):
         self.client_id = client_id
         self.secret_key = secret_key
         self.scope = scope
+
+class wallet_journal(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.String(100))
+    amount = db.Column(db.Numeric())
+    date_transaction = db.Column(db.DateTime())
+    transaction_id = db.Column(db.String(100))
+    ref_type = db.Column(db.String(100))
+
+    def __init__(self, user_id, amount, date_transaction, transaction_id, ref_type):
+        self.user_id = user_id
+        self.amount = amount
+        self.date_transaction = date_transaction
+        self.transaction_id = transaction_id
+        self.ref_type = ref_type
+
+class wallet_transactions(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.String(100))
+    amount = db.Column(db.Numeric())
+    date_transaction = db.Column(db.DateTime())
+    transaction_id = db.Column(db.String(100))
+    client_id = db.Column(db.String(100))
+    location_id = db.Column(db.String(100))
+    qty = db.Column(db.Integer())
+    product_id = db.Column(db.Integer())
+
+    def __init__(self, user_id, amount, date_transaction, transaction_id, client_id, location_id, qty, product_id):
+        self.user_id = user_id
+        self.amount = amount
+        self.date_transaction = date_transaction
+        self.transaction_id = transaction_id
+        self.client_id = client_id
+        self.location_id = location_id
+        self.qty = qty
+        self.product_id = product_id
 
 class invtypes(db.Model):
     typeID = db.Column(db.Integer(), primary_key=True)
@@ -544,68 +580,41 @@ class FittingShips():
         self.jita_buy = jita_buy
         self.bp_id = bp_id
 
-def check_token(character_id):
-    myUser = db.session.query(users).filter_by(character_id=character_id).all()
-    if myUser:
-        refresh_token = myUser[0].refresh_token
-        auth_code = myUser[0].auth_code
-        headers1 = {'Authorization': 'Bearer ' + auth_code}
-        response1 = requests.get('https://esi.tech.ccp.is/verify/', headers=headers1)
-        jsonData1 = json.loads(response1.text)
-        #print response1.status_code
-        #print jsonData1
-        #print jsonData1['error_description']
 
-        if response1.status_code == 400:
-            sso = db.session.query(eve_sso).all()
-            client_id = sso[0].client_id
-            secret_key = sso[0].secret_key
-            auth = b64encode("{0}:{1}".format(client_id, secret_key))
-
-            headers = {'Authorization': 'Basic ' + auth}
-            payload = {'grant_type':'refresh_token', 'refresh_token':refresh_token}
-
-            response = requests.post('https://login.eveonline.com/oauth/token', headers=headers, params=payload)
-            jsonData = json.loads(response.text)
-            auth_code = jsonData['access_token']
-            myUser[0].auth_code = auth_code
-            myUser[0].active = True
-            myUser[0].last_logged_in = datetime.now()
-            db.session.add(myUser[0])
-            db.session.commit()
-
-            print 'Successful refreshed '+myUser[0].character_name+'\'s auth token.'
-            session['logged_in'] = True
-            session['access_token'] = auth_code
-            return 0
-        else:
-            print 'No token refresh needed.'
-            return 0
-    else:
-        print 'Problem with logged in user.'
-        return 1
-
-def get_wallet_balance():
-    check = check_token(session['myUser_id'])
-    if check == 0:
-        payload = {'datasource':'tranquility', 'token':session['access_token']}
-        response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/', params=payload)
-        jsonData = json.loads(response.text)
-        return jsonData
-    else:
-        return 0.0
 
 @app.route("/")
 def index():
     if 'myUser_id' in session:
-        result = check_token(session['myUser_id'])
-        if result == 1:
-            flash('Problem with SSO login. Please re-do your EVE Authorization.', 'danger')
-            return redirect(url_for('logout'))
-        else:
-            session['wallet_balance'] = get_wallet_balance()
+        session['wallet_balance'] = get_wallet_balance()
 
     return render_template('home.html')
+
+@app.route("/financial", methods=['GET','POST'])
+def financial():
+    if 'myUser_id' in session:
+        if request.form.get('fetch'):
+            journal = get_wallet_journal()
+            transactions = get_wallet_transactions()
+
+            for item in journal:
+                existing = db.session.query(wallet_journal).filter_by(transaction_id=str(item['id'])).all()
+                if not existing:
+                    entry = wallet_journal(session['myUser_id'], item['amount'], item['date'], item['id'], item['ref_type'])
+                    db.session.add(entry)
+                    db.session.commit()
+
+            for item in transactions:
+                existing = db.session.query(wallet_transactions).filter_by(transaction_id=str(item['transaction_id'])).all()
+                if not existing:
+                    entry = wallet_transactions(session['myUser_id'], item['unit_price'], item['date'], item['transaction_id'], item['client_id'], item['location_id'], item['quantity'], item['type_id'])
+                    db.session.add(entry)
+                    db.session.commit()
+
+        return render_template('financial.html')
+
+    else:
+        flash('You must be logged in to use the financial report.', 'danger')
+        return redirect(url_for('index'))
 
 @app.route("/fittings", methods=['GET','POST'])
 def fittings():
@@ -979,11 +988,6 @@ def fittings():
     else:
         flash('You must be logged in to use Ship Fittings.', 'danger')
         return redirect(url_for('index'))
-
-@app.route("/financial")
-def financial():
-    form = LoginForm(request.form)
-    return render_template('financial.html', form=form)
 
 @app.route("/mining", methods=['GET','POST'])
 def mining():
@@ -2043,6 +2047,95 @@ def refine_asteroid(min_id, calcs, asteroid_stats):
         elif mins.material_id == 11399:
             mined_mins.morph = mined
     return mined_mins
+
+
+def do_refresh_token(character_id):
+    sso = db.session.query(eve_sso).all()
+    myUser = db.session.query(users).filter_by(character_id=character_id).all()
+    if myUser:
+        refresh_token = myUser[0].refresh_token
+        client_id = sso[0].client_id
+        secret_key = sso[0].secret_key
+        auth = b64encode("{0}:{1}".format(client_id, secret_key))
+
+        headers = {'Authorization': 'Basic ' + auth}
+        payload = {'grant_type':'refresh_token', 'refresh_token':refresh_token}
+
+        response = requests.post('https://login.eveonline.com/oauth/token', headers=headers, params=payload)
+        jsonData = json.loads(response.text)
+        auth_code = jsonData['access_token']
+        myUser[0].auth_code = auth_code
+        myUser[0].active = True
+        myUser[0].last_logged_in = datetime.now()
+        db.session.add(myUser[0])
+        db.session.commit()
+
+        print 'Successful refreshed '+myUser[0].character_name+'\'s auth token.'
+        session['logged_in'] = True
+        session['access_token'] = auth_code
+        return 0
+    else:
+        print 'Problem with logged in user.'
+        return 1
+
+def check_token(character_id):
+    myUser = db.session.query(users).filter_by(character_id=character_id).all()
+    if myUser:
+        refresh_token = myUser[0].refresh_token
+        auth_code = myUser[0].auth_code
+        headers1 = {'Authorization': 'Bearer ' + auth_code}
+        response1 = requests.get('https://esi.tech.ccp.is/verify/', headers=headers1)
+        jsonData1 = json.loads(response1.text)
+        print response1.status_code
+        print jsonData1
+
+        if response1.status_code <> 200:
+            do_refresh_token(character_id)
+            return 0
+        else:
+            print 'No token refresh needed.'
+            return 0
+    else:
+        print 'Problem with logged in user.'
+        return 1
+
+def get_wallet_balance():
+    payload = {'datasource':'tranquility', 'token':session['access_token']}
+    response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/', params=payload)
+    #print payload
+    print response.status_code
+    if response.status_code <> 200:
+        do_refresh_token(session['myUser_id'])
+        payload = {'datasource':'tranquility', 'token':session['access_token']}
+        response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/', params=payload)
+
+    jsonData = json.loads(response.text)
+    #print jsonData
+    return jsonData
+
+def get_wallet_journal():
+    payload = {'datasource':'tranquility', 'token':session['access_token']}
+    response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/journal/', params=payload)
+    print response.status_code
+    if response.status_code <> 200:
+        do_refresh_token(session['myUser_id'])
+        payload = {'datasource':'tranquility', 'token':session['access_token']}
+        response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/journal/', params=payload)
+
+    jsonData = json.loads(response.text)
+    return jsonData
+
+def get_wallet_transactions():
+    payload = {'datasource':'tranquility', 'token':session['access_token']}
+    response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/transactions/', params=payload)
+    print response.status_code
+    if response.status_code <> 200:
+        do_refresh_token(session['myUser_id'])
+        payload = {'datasource':'tranquility', 'token':session['access_token']}
+        response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/transactions/', params=payload)
+
+    jsonData = json.loads(response.text)
+    return jsonData
 
 if __name__ == "__main__":
    app.run()

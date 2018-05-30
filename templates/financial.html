@@ -9,7 +9,6 @@
       </li>
       <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
         <div class="col-12">
-          <form>
             <table class="table table-striped">
               <tbody>
                 <tr>
@@ -17,7 +16,9 @@
                   <td class="noBorder"><strong>3/1/2018</strong> to <strong>3/31/2018</strong>
                     <a href="#"><</a> - <a href="#">></a>
                   </td>
-                  <td class="noBorder"><input name="fetch" class="btn-sm btn-primary" type="button" value="Fetch Journal Transactions"></td>
+                  <form action="{{ url_for('financial')}}" method="post">
+                    <td class="noBorder"><input name="fetch" class="btn-sm btn-primary" type="submit" value="Fetch Journal Transactions - last 30 days"></td>
+                  </form>
                 </tr>
                 <tr>
                   <td class="text-center noBorder py-0" colspan="2"><h5>Total Expenses</h5></td>
@@ -67,7 +68,6 @@
                 </tr>
               </tbody>
             </table>
-          </form>
         </div>
       </li>
       <li class="list-group-item d-flex justify-content-between lh-condensed">
