@@ -4,6 +4,7 @@ from flask import render_template, request, redirect, url_for, flash, session, l
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from base64 import b64encode
 import requests
 import json
@@ -85,6 +86,27 @@ class wallet_transactions(db.Model):
         self.location_id = location_id
         self.qty = qty
         self.product_id = product_id
+
+class assets_onhand(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.String(100))
+    product_id = db.Column(db.Integer())
+    item_id = db.Column(db.String(100))
+    location_flag = db.Column(db.String(100))
+    location_type = db.Column(db.String(100))
+    location_id = db.Column(db.String(100))
+    qty = db.Column(db.Integer())
+    is_singleton = db.Column(db.Boolean())
+
+    def __init__(self, user_id, product_id, item_id, location_flag, location_type, location_id, qty, is_singleton):
+        self.user_id = user_id
+        self.product_id = product_id
+        self.item_id = item_id
+        self.location_flag = location_flag
+        self.location_type = location_type
+        self.location_id = location_id
+        self.qty = qty
+        self.is_singleton = is_singleton
 
 class invtypes(db.Model):
     typeID = db.Column(db.Integer(), primary_key=True)
@@ -455,6 +477,36 @@ class v_invention_product(db.Model):
         self.t2_blueprint = str(t2_blueprint)
         self.t2_id = t2_id
 
+class v_my_invention_product(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.Integer())
+    t2_blueprint = db.Column(db.String(100))
+    t2_id = db.Column(db.Integer())
+    location_id = db.Column(db.String(100))
+    qty = db.Column(db.Integer())
+
+    def __init__(user_id, t2_blueprint, t2_id, location_id, qty):
+        self.user_id - user_id
+        self.t2_blueprint = str(t2_blueprint)
+        self.t2_id = t2_id
+        self.location_id = location_id
+        self.qty = qty
+
+class v_my_build_product(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.Integer())
+    t2_blueprint = db.Column(db.String(100))
+    t2_id = db.Column(db.Integer())
+    location_id = db.Column(db.String(100))
+    qty = db.Column(db.Integer())
+
+    def __init__(user_id, t2_blueprint, t2_id, location_id, qty):
+        self.user_id - user_id
+        self.t2_blueprint = str(t2_blueprint)
+        self.t2_id = t2_id
+        self.location_id = location_id
+        self.qty = qty
+
 class v_build_product(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     t2_blueprint = db.Column(db.String(100))
@@ -589,6 +641,21 @@ def index():
 
     return render_template('home.html')
 
+@app.route("/fetch_assets")
+def fetch_assets():
+    if 'myUser_id' in session:
+        myAssets = get_assets_onhand()
+        for item in myAssets:
+            existing = db.session.query(assets_onhand).filter_by(item_id=str(item['item_id'])).all()
+            if not existing:
+                entry = assets_onhand(session['myUser_id'], item['type_id'], item['item_id'], item['location_flag'], item['location_type'], item['location_id'], item['quantity'], item['is_singleton'])
+                db.session.add(entry)
+                db.session.commit()
+
+        flash('Seccessfully pulled on hand assets for '+session['name'], 'success')
+
+    return render_template('home.html')
+
 @app.route("/financial", methods=['GET','POST'])
 def financial():
     if 'myUser_id' in session:
@@ -610,7 +677,85 @@ def financial():
                     db.session.add(entry)
                     db.session.commit()
 
-        return render_template('financial.html')
+        total_transaction_taxes = 0.0
+        total_broker_fees = 0.0
+        total_pi = 0.0
+        total_donations_out = 0.0
+        total_purchases = 0.0
+        total_contract_buys = 0.0
+        total_insurance_fees = 0.0
+        total_donations_in = 0.0
+        total_sales = 0.0
+        total_bounties = 0.0
+        total_contract_sales = 0.0
+        total_insurance_payouts = 0.0
+        total_bounty_tax = 0.0
+        total_contract_broker_fees = 0.0
+        range_start = ''
+        range_end = ''
+        total_expenses = 0.0
+        total_income = 0.0
+
+        current_day = datetime.now().day
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        current_range_start = str(current_year) + '-' + str(current_month)+ '-1'
+        current_range_end = str(current_year) + '-' + str(current_month) + '-' + str(current_day)
+        if request.form.get('action')=='prev':
+            myDate = datetime.strptime(request.form.get('range_start'),'%Y-%m-%d')
+            range_start = str(myDate.year) + '-' + str(myDate.month-1) + '-1'
+            range_end = datetime.strftime(myDate - relativedelta(days=1),'%Y-%-m-%-d')
+        elif request.form.get('action')=='next':
+            myDate = datetime.strptime(request.form.get('range_end'),'%Y-%m-%d')
+            range_start = str(myDate.year) + '-' + str(myDate.month+1) + '-1'
+            range_end = datetime.strftime(myDate + relativedelta(months=1),'%Y-%-m-%-d')
+        else:
+            range_start = current_range_start
+            range_end = current_range_end
+
+        print range_start
+        print range_end
+        myQuery = db.session.query(wallet_journal).filter(wallet_journal.user_id==session['myUser_id']).filter(wallet_journal.date_transaction >= range_start).filter(wallet_journal.date_transaction <= range_end).order_by(wallet_journal.ref_type).with_entities('date_transaction', 'ref_type', 'amount').all()
+        for item in myQuery:
+            #print item.ref_type
+            if item.ref_type=='transaction_tax':
+                total_transaction_taxes += item.amount
+            elif item.ref_type=='market_transaction':
+                total_sales += item.amount
+            elif item.ref_type=='brokers_fee':
+                total_broker_fees += item.amount
+            elif item.ref_type=='bounty_prizes':
+                total_bounties += item.amount
+            elif item.ref_type=='player_donation':
+                if item.amount < 0 :
+                    total_donations_out += item.amount
+                else:
+                    total_donations_in += item.amount
+            elif item.ref_type=='market_escrow':
+                total_purchases += item.amount
+            elif item.ref_type=='contract_brokers_fee':
+                total_contract_broker_fees += item.amount
+            elif item.ref_type=='contract_price':
+                if item.amount < 0 :
+                    total_contract_buys += item.amount
+                else:
+                    total_contract_sales += item.amount
+            elif item.ref_type=='insurance':
+                total_insurance_fees += item.amount
+            elif item.ref_type=='insurance_payout':
+                total_insurance_payouts += item.amount
+            elif item.ref_type=='planetary_export' or item.ref_type=='planetary_import':
+                total_pi += item.amount
+            elif item.ref_type=='bounty_prizes_corporate_tax':
+                total_bounty_tax += item.amount
+
+        total_income = total_donations_in + total_sales + total_bounties + total_contract_sales + total_insurance_payouts
+        total_expenses = total_transaction_taxes + total_broker_fees + total_contract_broker_fees + total_pi + total_donations_out + total_purchases + total_contract_buys + total_insurance_fees + total_bounty_tax
+
+        print 'income: ' + str(total_income)
+        print 'expenses: ' + str(abs(total_expenses))
+
+        return render_template('financial.html',total_transaction_taxes=total_transaction_taxes,total_broker_fees=total_broker_fees,total_pi=total_pi,total_donations_out=total_donations_out,total_purchases=total_purchases,total_contract_buys=total_contract_buys,total_insurance_fees=total_insurance_fees,total_donations_in=total_donations_in,total_sales=total_sales,total_bounties=total_bounties,total_contract_sales=total_contract_sales,total_insurance_payouts=total_insurance_payouts,total_bounty_tax=total_bounty_tax,total_contract_broker_fees=total_contract_broker_fees,range_start=range_start,range_end=range_end, total_income=total_income, total_expenses=abs(total_expenses))
 
     else:
         flash('You must be logged in to use the financial report.', 'danger')
@@ -618,7 +763,6 @@ def financial():
 
 @app.route("/fittings", methods=['GET','POST'])
 def fittings():
-    form = LoginForm(request.form)
     if 'myUser_id' in session:
         #try:
         build_id = 0
@@ -749,7 +893,7 @@ def fittings():
                     build_id = 1
                 #print 'new build id: ' + str(build_id)
 
-                return render_template('fittings.html', form=form, ships=ships, myFittingsCount=myFittingsCount, ship_id=ship_id, build_id=build_id, ship_name=ship_name, num_rigslots=num_rigslots, num_lowslots=num_lowslots, num_medslots=num_medslots, num_highslots=num_highslots, rig_modules=rig_modules, low_modules=low_modules, med_modules=med_modules, high_modules=high_modules,ammos=ammos, drones=drones, myFittings=myFittings, fittingIndex=fittingIndex, fittingCost=fittingCost, fittingPM=fittingPM, newBuild=True)
+                return render_template('fittings.html', ships=ships, myFittingsCount=myFittingsCount, ship_id=ship_id, build_id=build_id, ship_name=ship_name, num_rigslots=num_rigslots, num_lowslots=num_lowslots, num_medslots=num_medslots, num_highslots=num_highslots, rig_modules=rig_modules, low_modules=low_modules, med_modules=med_modules, high_modules=high_modules,ammos=ammos, drones=drones, myFittings=myFittings, fittingIndex=fittingIndex, fittingCost=fittingCost, fittingPM=fittingPM, newBuild=True)
 
             elif request.form.get('action') == 'delete':
                 existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id']).all()
@@ -977,9 +1121,9 @@ def fittings():
             myFittingsAmmo = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='ammo').all()
             myFittingsDrone = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='drone').all()
 
-            return render_template('fittings.html', form=form, ships=ships, ship_id=ship_id, ship_name=ship_name, num_rigslots=num_rigslots, num_lowslots=num_lowslots, num_medslots=num_medslots, num_highslots=num_highslots, rig_modules=rig_modules, low_modules=low_modules, med_modules=med_modules, high_modules=high_modules,ammos=ammos, drones=drones, myFittingsCount=myFittingsCount, myFittings=myFittings, myFittingsHigh=myFittingsHigh, myFittingsMed=myFittingsMed, myFittingsLow=myFittingsLow, myFittingsRig=myFittingsRig, myFittingsAmmo=myFittingsAmmo, myFittingsDrone=myFittingsDrone, fittingIndex=fittingIndex, fittingCost=fittingCost, fittingPM=fittingPM, buildableFittings=buildableFittings, nonBuildableFittings=nonBuildableFittings, nonBuildableTotal=nonBuildableTotal, buildableTotal=buildableTotal, build_id=build_id, nonBuildablefittingRollup=nonBuildablefittingRollup, buildablefittingRollup=buildablefittingRollup)
+            return render_template('fittings.html', ships=ships, ship_id=ship_id, ship_name=ship_name, num_rigslots=num_rigslots, num_lowslots=num_lowslots, num_medslots=num_medslots, num_highslots=num_highslots, rig_modules=rig_modules, low_modules=low_modules, med_modules=med_modules, high_modules=high_modules,ammos=ammos, drones=drones, myFittingsCount=myFittingsCount, myFittings=myFittings, myFittingsHigh=myFittingsHigh, myFittingsMed=myFittingsMed, myFittingsLow=myFittingsLow, myFittingsRig=myFittingsRig, myFittingsAmmo=myFittingsAmmo, myFittingsDrone=myFittingsDrone, fittingIndex=fittingIndex, fittingCost=fittingCost, fittingPM=fittingPM, buildableFittings=buildableFittings, nonBuildableFittings=nonBuildableFittings, nonBuildableTotal=nonBuildableTotal, buildableTotal=buildableTotal, build_id=build_id, nonBuildablefittingRollup=nonBuildablefittingRollup, buildablefittingRollup=buildablefittingRollup)
 
-        return render_template('fittings.html', form=form, ships=ships, myFittingsCount=0, ship_id=0, build_id=build_id, myFittings=myFittings, fittingCost=fittingCost)
+        return render_template('fittings.html', ships=ships, myFittingsCount=0, ship_id=0, build_id=build_id, myFittings=myFittings, fittingCost=fittingCost)
 
         #except Exception as e:
         #    flash('Problem with Ship Fittings - see log.', 'danger')
@@ -991,7 +1135,6 @@ def fittings():
 
 @app.route("/mining", methods=['GET','POST'])
 def mining():
-    form = LoginForm(request.form)
     asteroid_groups = db.session.query(v_asteroid_groups).all()
     if 'myUser_id' in session:
         try:
@@ -1076,10 +1219,10 @@ def mining():
                 mined_mins = MinedMinerals(mined_mins1.trit +mined_mins2.trit +mined_mins3.trit +mined_mins4.trit, mined_mins1.pye +mined_mins2.pye +mined_mins3.pye +mined_mins4.pye, mined_mins1.mex +mined_mins2.mex +mined_mins3.mex +mined_mins4.mex, mined_mins1.iso +mined_mins2.iso +mined_mins3.iso +mined_mins4.iso, mined_mins1.nox +mined_mins2.nox +mined_mins3.nox +mined_mins4.nox, mined_mins1.zyd +mined_mins2.zyd +mined_mins3.zyd +mined_mins4.zyd, mined_mins1.meg +mined_mins2.meg +mined_mins3.meg +mined_mins4.meg, mined_mins1.morph +mined_mins2.morph +mined_mins3.morph +mined_mins4.morph)
                 #print group_id1
 
-                return render_template('mining.html', form=form, asteroid_groups=asteroid_groups, calcs=calcs, min_id1=min_id1, min_id2=min_id2, min_id3=min_id3, min_id4=min_id4, group_id1=group_id1, group_id2=group_id2, group_id3=group_id3, group_id4=group_id4, asteroid_name1=asteroid_name1, asteroid_name2=asteroid_name2, asteroid_name3=asteroid_name3, asteroid_name4=asteroid_name4, mined_mins=mined_mins)
+                return render_template('mining.html', asteroid_groups=asteroid_groups, calcs=calcs, min_id1=min_id1, min_id2=min_id2, min_id3=min_id3, min_id4=min_id4, group_id1=group_id1, group_id2=group_id2, group_id3=group_id3, group_id4=group_id4, asteroid_name1=asteroid_name1, asteroid_name2=asteroid_name2, asteroid_name3=asteroid_name3, asteroid_name4=asteroid_name4, mined_mins=mined_mins)
 
             calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
-            return render_template('mining.html', form=form, asteroid_groups=asteroid_groups, calcs=calcs)
+            return render_template('mining.html', asteroid_groups=asteroid_groups, calcs=calcs)
 
         except Exception as e:
             flash('Problem with Mining Calculator - see log.', 'danger')
@@ -1100,7 +1243,6 @@ def utility_processor():
 
 @app.route("/pipeline", methods=['GET','POST'])
 def pipeline():
-    form = LoginForm(request.form)
     if 'myUser_id' in session:
         try:
             inv_pipeline = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name','user_id','runs','blueprint_id','status').order_by('product_name').all()
@@ -1192,7 +1334,7 @@ def pipeline():
 
                     bld_pipeline = db.session.query(v_build_pipeline_products).filter_by(user_id= session['myUser_id']).with_entities('product_name','user_id','blueprint_id','product_id','runs','jita_sell_price','local_sell_price','build_cost','status').order_by('product_name').all()
 
-            return render_template('pipeline.html', form=form, inv_pipeline=inv_pipeline, bld_pipeline=bld_pipeline)
+            return render_template('pipeline.html', inv_pipeline=inv_pipeline, bld_pipeline=bld_pipeline)
 
         except Exception as e:
             flash('Problem with Pipeline. - see log.', 'danger')
@@ -1204,7 +1346,6 @@ def pipeline():
 
 @app.route("/bom", methods=['GET','POST'])
 def bom():
-    form = LoginForm(request.form)
     if 'myUser_id' in session:
         try:
             build_or_buy = 0
@@ -1467,7 +1608,7 @@ def bom():
             bom_total += ram_total
             bom_total += mineral_total
 
-            return render_template('shopping_list.html', form=form, datacoresInPipeline=datacoresInPipeline, planetaryInPipeline=planetaryInPipeline, componentInPipeline=componentInPipeline, materialInPipeline=materialInPipeline, tech1InPipeline=tech1InPipeline, ramInPipeline=ramInPipeline, mineralInPipeline=mineralInPipeline, bom_total=bom_total, dc_total=dc_total, planet_total=planet_total, component_total=component_total, material_total=material_total, tech1_total=tech1_total, ram_total=ram_total, mineral_total=mineral_total,calcs=calcs)
+            return render_template('shopping_list.html', datacoresInPipeline=datacoresInPipeline, planetaryInPipeline=planetaryInPipeline, componentInPipeline=componentInPipeline, materialInPipeline=materialInPipeline, tech1InPipeline=tech1InPipeline, ramInPipeline=ramInPipeline, mineralInPipeline=mineralInPipeline, bom_total=bom_total, dc_total=dc_total, planet_total=planet_total, component_total=component_total, material_total=material_total, tech1_total=tech1_total, ram_total=ram_total, mineral_total=mineral_total,calcs=calcs)
 
         except Exception as e:
             flash('Problem with B.o.M. - see log.', 'danger')
@@ -1480,9 +1621,11 @@ def bom():
 
 @app.route('/build', methods=['GET','POST'])
 def build():
-    form = LoginForm(request.form)
+    myBlueprints = []
     try:
         myBlueprints = db.session.query(v_build_product).all()
+        bp_all = True
+
         if request.method == 'POST':
             if request.form['action'] == 'edit':
                 if request.form.get('product_id'):
@@ -1506,6 +1649,13 @@ def build():
                     flash('Successfully deleted pipeline product.', 'success')
 
         if 'myUser_id' in session:
+            if request.args.get('bp_collection') == 'all':
+                myBlueprints = db.session.query(v_build_product).all()
+                bp_all = True
+            elif request.args.get('bp_collection') == 'mine':
+                myBlueprints = db.session.query(v_my_build_product).filter_by(user_id=session['myUser_id']).all()
+                bp_all = False
+
             pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').order_by('material').all()
 
             pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id', 'runs', 'jita_sell_price','local_sell_price','build_cost','status')
@@ -1513,9 +1663,9 @@ def build():
             materialInPipeline = build_pipeline_rollup_qty(pipeline)
             materialCost = build_pipeline_rollup_cost(pipeline)
 
-            return render_template('build.html', form=form, blueprints=myBlueprints, bp_id=0, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products)
+            return render_template('build.html', blueprints=myBlueprints, bp_id=0, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, bp_all=bp_all)
         else:
-            return render_template('build.html', form=form, blueprints=myBlueprints, bp_id=0)
+            return render_template('build.html', blueprints=myBlueprints, bp_id=0, bp_all=True)
 
     except Exception as e:
         flash('Problem with blueprint - see log.', 'danger')
@@ -1525,6 +1675,7 @@ def build():
 @app.route('/build_selected', methods=['POST','GET'])
 def build_selected():
     runs = 1
+    bp_all = True
     id = request.form.get('build_product')
     if id == 'None':
         id = request.args.get('build_product')
@@ -1533,7 +1684,8 @@ def build_selected():
     if request.args.get('runs'):
         runs = int(request.args.get('runs'))
 
-    form = LoginForm(request.form)
+    if request.form.get('bp_all'): bp_all = request.form.get('bp_all')
+
     try:
         myBlueprints = db.session.query(v_build_product).all()
         selected_bp = db.session.query(v_build_product).filter_by(id = id).one()
@@ -1553,6 +1705,11 @@ def build_selected():
             myBuildCost = myBuildCost + cost
 
         if 'myUser_id' in session:
+            myBlueprints = db.session.query(v_my_build_product).filter_by(user_id=session['myUser_id']).all()
+            if not myBlueprints:
+                myBlueprints = db.session.query(v_build_product).all()
+                bp_all = True
+
             pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material', 'group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','status').order_by('material').all()
 
             pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost','status')
@@ -1560,10 +1717,10 @@ def build_selected():
             materialInPipeline = build_pipeline_rollup_qty(pipeline)
             materialCost = build_pipeline_rollup_cost(pipeline)
 
-            return render_template('build.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, runs=runs)
+            return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, runs=runs, bp_all=bp_all)
 
         else:
-            return render_template('build.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, runs=runs)
+            return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, runs=runs, bp_all=False)
 
     except Exception as e:
         flash('Problem querying blueprint. See log', 'danger')
@@ -1573,7 +1730,6 @@ def build_selected():
 @app.route('/build_add_pipeline', methods=['POST'])
 def build_add_pipeline():
     id = request.form.get('bp_id')
-    form = LoginForm(request.form)
     if 'myUser_id' in session:
         try:
             if id > 0:
@@ -1612,7 +1768,7 @@ def build_add_pipeline():
                     return redirect(url_for('build'))
                 else:
                     flash('Enter a quantity in job runs field.', 'danger')
-                    return render_template('build.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products)
+                    return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products)
 
             else:
                 flash('Choose a product to build.', 'danger')
@@ -1627,12 +1783,15 @@ def build_add_pipeline():
         flash('You must be logged in to add to pipeline.', 'danger')
         return redirect(url_for('build'))
 
-@app.route('/invent', methods=['GET','POST'])
+@app.route('/invent', methods=['POST','GET'])
 def invent():
     runs = 20
-    form = LoginForm(request.form)
+    myBlueprints = []
+
     try:
         myBlueprints = db.session.query(v_invention_product).all()
+        bp_all = True
+
         if request.method == 'POST':
             if request.form['action'] == 'edit':
                 if request.form['product_name']:
@@ -1656,6 +1815,13 @@ def invent():
                     flash('Successfully deleted pipeline product.', 'success')
 
         if 'myUser_id' in session:
+            if request.args.get('bp_collection') == 'all':
+                myBlueprints = db.session.query(v_invention_product).all()
+                bp_all = True
+            elif request.args.get('bp_collection') == 'mine':
+                myBlueprints = db.session.query(v_my_invention_product).filter_by(user_id=session['myUser_id']).all()
+                bp_all = False
+
             pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','status').order_by('datacore').all()
 
             pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status')
@@ -1663,9 +1829,9 @@ def invent():
             materialInPipeline = invent_pipeline_rollup_qty(pipeline)
             materialCost = invent_pipeline_rollup_cost(pipeline)
 
-            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0, pipeline=pipeline, materialInPipeline=materialInPipeline, pipeline_products=pipeline_products, materialCost=materialCost, runs=runs)
+            return render_template('invent.html', blueprints=myBlueprints, bp_id=0, pipeline=pipeline, materialInPipeline=materialInPipeline, pipeline_products=pipeline_products, materialCost=materialCost, runs=runs, bp_all=bp_all)
         else:
-            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=0)
+            return render_template('invent.html', blueprints=myBlueprints, bp_id=0, bp_all=True)
 
     except Exception as e:
         flash('Problem with blueprint - see log.', 'danger')
@@ -1676,14 +1842,17 @@ def invent():
 def invent_selected():
     queryByName = False
     runs = 20
+    if request.form.get('bp_all'): bp_all = request.form.get('bp_all')
     id = request.form.get('invent_product')
+
+    myBlueprints = db.session.query(v_invention_product).all()
+    bp_all = True
+
     if request.args.get('invent_productName'):
         queryByName = True
         runs = int(request.args.get('runs'))
 
-    form = LoginForm(request.form)
     try:
-        myBlueprints = db.session.query(v_invention_product).all()
         if queryByName == True:
             productName = request.args.get('invent_productName')
             selected_bp = db.session.query(v_invention_product).filter_by(t2_blueprint = productName).first()
@@ -1707,6 +1876,10 @@ def invent_selected():
         myBaseProduct = db.session.query(v_build_requirements).filter_by(id = selected_bp.t2_id).filter(v_build_requirements.group_id <> 334).filter(v_build_requirements.group_id <> 18).filter(v_build_requirements.group_id <> 1034).filter(v_build_requirements.group_id <> 332).filter(v_build_requirements.group_id <> 1040).one()
 
         if 'myUser_id' in session:
+            myBlueprints = db.session.query(v_my_invention_product).filter_by(user_id=session['myUser_id']).all()
+            if not myBlueprints:
+                myBlueprints = db.session.query(v_invention_product).all()
+                bp_all = True
 
             pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','status').order_by('datacore').all()
 
@@ -1715,10 +1888,10 @@ def invent_selected():
             materialInPipeline = invent_pipeline_rollup_qty(pipeline)
             materialCost = invent_pipeline_rollup_cost(pipeline)
 
-            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacoreRequirements = myDatacoreRequirements, datacoresCost=myDatacoresCost, baseProduct = myBaseProduct.material, pipeline=pipeline, materialInPipeline=materialInPipeline, materialCost=materialCost, pipeline_products=pipeline_products, runs=runs)
+            return render_template('invent.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacoreRequirements = myDatacoreRequirements, datacoresCost=myDatacoresCost, baseProduct = myBaseProduct.material, pipeline=pipeline, materialInPipeline=materialInPipeline, materialCost=materialCost, pipeline_products=pipeline_products, runs=runs, bp_all=bp_all)
 
         else:
-            return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacoreRequirements=myDatacoreRequirements, datacoresCost = myDatacoresCost, baseProduct = myBaseProduct.material, runs=runs)
+            return render_template('invent.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacoreRequirements=myDatacoreRequirements, datacoresCost = myDatacoresCost, baseProduct = myBaseProduct.material, runs=runs, bp_all=True)
 
     except Exception as e:
         flash('Problem querying blueprint. See log', 'danger')
@@ -1728,7 +1901,6 @@ def invent_selected():
 @app.route('/invent_add_pipeline', methods=['POST'])
 def invent_add_pipeline():
     id = request.form.get('bp_id')
-    form = LoginForm(request.form)
 
     if 'myUser_id' in session:
         try:
@@ -1769,7 +1941,7 @@ def invent_add_pipeline():
                     return redirect(url_for('invent'))
                 else:
                     flash('Enter a quantity in job runs field.', 'danger')
-                    return render_template('invent.html', form=form, blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, datacoreRequirements = myDatacoreRequirements, inventCost = myInventCost, datacoreCost = myDatacoreCost, pipeline=pipeline, materialInPipeline=materialInPipeline, materialCost=materialCost, pipeline_products=pipeline_products)
+                    return render_template('invent.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, datacoreRequirements = myDatacoreRequirements, inventCost = myInventCost, datacoreCost = myDatacoreCost, pipeline=pipeline, materialInPipeline=materialInPipeline, materialCost=materialCost, pipeline_products=pipeline_products)
 
             else:
                 flash('Choose a product to invent.', 'danger')
@@ -1878,7 +2050,6 @@ def login():
 
 @app.route('/login_old', methods=['GET','POST'])
 def login_old():
-    form = LoginForm(request.form)
     if request.method == 'POST' and form.validate():
         email = form.email.data
         password_candidate = form.password.data
@@ -1900,13 +2071,13 @@ def login_old():
                 return redirect(url_for('index'))
             else:
                 flash('Login denied. Wrong password. Try again', 'danger')
-                return render_template('login.html', form=form)
+                return render_template('login.html')
         except Exception as e:
             app.logger.info(str(e))
             flash('Problem logging in. See log', 'danger')
-            return render_template('login.html', form=form)
+            return render_template('login.html')
     else:
-        return render_template('login.html', form=form)
+        return render_template('login.html')
 
 @app.route('/registration', methods=['GET', 'POST'])
 def register():
@@ -1918,7 +2089,7 @@ def register():
         flash('Successful Registration. Please login.')
         return redirect(url_for('index'))
     else:
-        return render_template('register.html', form=form)
+        return render_template('register.html')
 
 @app.route('/logout')
 def logout():
@@ -2133,6 +2304,18 @@ def get_wallet_transactions():
         do_refresh_token(session['myUser_id'])
         payload = {'datasource':'tranquility', 'token':session['access_token']}
         response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/transactions/', params=payload)
+
+    jsonData = json.loads(response.text)
+    return jsonData
+
+def get_assets_onhand():
+    payload = {'datasource':'tranquility', 'token':session['access_token']}
+    response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/assets/', params=payload)
+    print response.status_code
+    if response.status_code <> 200:
+        do_refresh_token(session['myUser_id'])
+        payload = {'datasource':'tranquility', 'token':session['access_token']}
+        response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/assets/', params=payload)
 
     jsonData = json.loads(response.text)
     return jsonData

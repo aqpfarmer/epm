@@ -4,7 +4,7 @@
 <form action="{{ url_for('build_selected')}}" method="POST">
   <div class="form-group row bg-secondary mb-1">
     <label for="build_product" class="col-sm-3 col-form-label text-white text-right">Choose Product to Build:</label>
-    <div class="col-sm-4"> <!-- this increases or decreases selectbox size -->
+    <div class="col-sm-5"> <!-- this increases or decreases selectbox size -->
       <select id="build_product" name="build_product" class="form-control" onChange="this.form.submit()">
         {% if bp_id > 0 %}
           <option value="{{selected_bp.id}}" selected>{{selected_bp.t2_blueprint}} </option>
@@ -16,9 +16,29 @@
         {% endfor %}
       </select>
     </div>
-    <p class="col-sm-5 col-form-label text-white pt-2 text-center">Build Pipeline</p>
-  </div>
-</form>
+  </form>
+    <form action="{{ url_for('build')}}">
+      {% if bp_all %}
+        <div class="form-check form-check-inline pt-1">
+          <input class="form-check-input" type="radio" name="bp_collection" value="mine" onChange="this.form.submit()">
+          <label class="form-check-label text-warning" for="buy">My Blueprints</label>
+        </div>
+        <div class="form-check form-check-inline pt-1">
+          <input class="form-check-input" type="radio" name="bp_collection" value="all" checked>
+          <label class="form-check-label text-white" for="build">All Blueprints</label>
+        </div>
+      {% else %}
+        <div class="form-check form-check-inline pt-1">
+          <input class="form-check-input" type="radio" name="bp_collection" value="mine" checked>
+          <label class="form-check-label text-warning" for="buy">My Blueprints</label>
+        </div>
+        <div class="form-check form-check-inline pt-1">
+          <input class="form-check-input" type="radio" name="bp_collection" value="all" onChange="this.form.submit()">
+          <label class="form-check-label text-white" for="build">All Blueprints</label>
+        </div>
+      {% endif %}
+    </div>
+    </form>
 
 <div class="row" id="row2">
   <div class="col-sm-4">
@@ -70,7 +90,7 @@
   <div class="col-sm-4">
       <ul class="list-group mb-auto">
         <li class="list-group-item d-flex justify-content-between lh-condensed">
-        <div class="col"> 
+        <div class="col">
 	 <div>
             {% if bp_id > 0 %}
               <img class="img-fluid max-width:auto pr-1" src="https://imageserver.eveonline.com/type/{{selected_bp.id}}_64.png">

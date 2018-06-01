@@ -12,67 +12,85 @@
             <table class="table table-striped">
               <tbody>
                 <tr>
-                  <td class="text-right noBorder" colspan="2">Date Range:</td>
-                  <td class="noBorder"><strong>3/1/2018</strong> to <strong>3/31/2018</strong>
-                    <a href="#"><</a> - <a href="#">></a>
+                  <td class="text-right text-secondary noBorder pt-3" colspan="2"><h5>Date Range:</td>
+                  <td class="noBorder text-secondary"><strong><h5>{{range_start}}</strong> to <strong>{{range_end}}</strong>
+                    <form action="{{ url_for('financial')}}" method="post">
+                      <button class="btn btn" type="submit" name="action" value="prev">
+                      <i class="fas fa-angle-left" title="Previous Month"></i></button> -
+
+                      <button class="btn btn" type="submit" name="action" value="next">
+                      <i class="fas fa-angle-right" title="Next Month"></i></button>
+                      <input type="hidden" name="range_start" value="{{range_start}}">
+                      <input type="hidden" name="range_end" value="{{range_end}}">
+                    </form>
                   </td>
                   <form action="{{ url_for('financial')}}" method="post">
-                    <td class="noBorder"><input name="fetch" class="btn-sm btn-primary" type="submit" value="Fetch Journal Transactions - last 30 days"></td>
+                    <td class="noBorder pt-3"><input name="fetch" class="btn-sm btn-primary" type="submit" value="Fetch Journal Transactions - last 30 days"></td>
                   </form>
                 </tr>
                 <tr>
-                  <td class="text-center noBorder py-0" colspan="2"><h5>Total Expenses</h5></td>
-                  <td class="text-center noBorder py-0" colspan="2"><h5>Total Income</h5></td>
+                  <td class="text-center noBorder py-0" colspan="2"><h4><strong>Total Expenses</h4></td>
+                  <td class="text-center noBorder py-0" colspan="2"><h4><strong>Total Income</h4></td>
                 </tr>
                 <tr>
-                  <td class="text-right noBorder py-0">Transaction Taxes</td>
-                  <td class="noBorder py-0">24,828,554</td>
-                  <td class="text-right noBorder py-0">Money Received</td>
-                  <td class="noBorder py-0">800,000,000</td>
+                  <td class="text-right noBorder py-0"><h5>Transaction Taxes</td>
+                  <td class="noBorder py-0"><h5>{{ "{:,.0f}".format(total_transaction_taxes|abs) }}</td>
+                  <td class="text-right noBorder py-0"><h5>Money Received</td>
+                  <td class="noBorder py-0"><h5>{{ "{:,.0f}".format(total_donations_in) }}</td>
                 </tr>
                 <tr>
-                  <td class="text-right noBorder py-0">Broker Fees</td>
-                  <td class="noBorder py-0">67,408,729</td>
-                  <td class="text-right noBorder py-0">Sales</td>
-                  <td class="noBorder py-0">1,904,976,123</td>
+                  <td class="text-right noBorder py-0"><h5>Broker Fees</td>
+                  <td class="noBorder py-0"><h5>{{ "{:,.0f}".format(total_broker_fees|abs + total_contract_broker_fees|abs) }}</td>
+                  <td class="text-right noBorder py-0"><h5>Sales</td>
+                  <td class="noBorder py-0"><h5>{{ "{:,.0f}".format(total_sales) }}</td>
                 </tr>
                 <tr>
-                  <td class="text-right noBorder py-0">Planetary Interaction Taxes</td>
-                  <td class="noBorder py-0">0</td>
-                  <td class="text-right noBorder py-0">Bounties</td>
-                  <td class="noBorder py-0">1,556,700</td>
+                  <td class="text-right noBorder py-0"><h5>Planetary Interaction Taxes</td>
+                  <td class="noBorder py-0"><h5>{{ "{:,.0f}".format(total_pi|abs) }}</td>
+                  <td class="text-right noBorder py-0"><h5>Bounties</td>
+                  <td class="noBorder py-0"><h5>{{ "{:,.0f}".format(total_bounties) }}</td>
                 </tr>
                 <tr>
-                  <td class="text-right noBorder py-0">Money Donated</td>
-                  <td class="noBorder py-0">400,000,000</td>
-                  <td class="text-right noBorder py-0">Contract Sales</td>
-                  <td class="noBorder py-0">30,000,000</td>
+                  <td class="text-right noBorder py-0"><h5>Money Donated</td>
+                  <td class="noBorder py-0"><h5>{{ "{:,.0f}".format(total_donations_out|abs) }}</td>
+                  <td class="text-right noBorder py-0"><h5>Contract Sales</td>
+                  <td class="noBorder py-0"><h5>{{ "{:,.0f}".format(total_contract_sales) }}</td>
                 </tr>
                 <tr>
-                  <td class="text-right noBorder py-0">Purchases</td>
-                  <td class="noBorder py-0">468,880,099</td>
-                  <td class="text-right noBorder py-0">Insurance Payout</td>
-                  <td class="noBorder py-0">0</td>
+                  <td class="text-right noBorder py-0"><h5>Purchases</td>
+                  <td class="noBorder py-0"><h5>{{ "{:,.0f}".format(total_purchases|abs) }}</td>
+                  <td class="text-right noBorder py-0"><h5>Insurance Payout</td>
+                  <td class="noBorder py-0"><h5>{{ "{:,.0f}".format(total_insurance_payouts) }}</td>
                 </tr>
                 <tr>
-                  <td class="text-right noBorder py-0">Contract Buys</td>
-                  <td class="noBorder py-0">0</td>
-                  <td class="text-right noBorder py-0"></td>
-                  <td class="noBorder py-0"></td>
+                  <td class="text-right noBorder py-0"><h5>Contract Buys</td>
+                  <td class="noBorder py-0"><h5>{{ "{:,.0f}".format(total_contract_buys|abs) }}</td>
+                  <td class="text-right noBorder py-0"><h5></td>
+                  <td class="noBorder py-0"><h5></td>
                 </tr>
                 <tr>
-                  <td class="text-right noBorder py-0">Insurance Fees</td>
-                  <td class="noBorder py-0">0</td>
-                  <td class="text-right noBorder py-0"></td>
-                  <td class="noBorder py-0"></td>
+                  <td class="text-right noBorder py-0"><h5>Insurance Fees</td>
+                  <td class="noBorder py-0"><h5>{{ "{:,.0f}".format(total_insurance_fees|abs) }}</td>
+                  <td class="text-right noBorder py-0"><h5></td>
+                  <td class="noBorder py-0"><h5></td>
+                </tr>
+                <tr>
+                  <td class="text-right noBorder py-0"><h5>Corporate Taxes</td>
+                  <td class="noBorder py-0"><h5>{{ "{:,.0f}".format(total_bounty_tax|abs) }}</td>
+                  <td class="text-right noBorder py-0"><h5></td>
+                  <td class="noBorder py-0"><h5></td>
                 </tr>
               </tbody>
             </table>
         </div>
       </li>
       <li class="list-group-item d-flex justify-content-between lh-condensed">
-          <h5 class="text-center col-sm-12 text-success">
-            Profit/Loss: +1,919,800,101 ISK
+          <h4 class="text-center col-sm-12 text-success">
+            {% if total_income - total_expenses > 0 %}
+              Profit/Loss: <p class="text-primary"> {{"{:,.0f}".format(total_income-total_expenses) }} ISK
+            {% else %}
+              Profit/Loss: <p class="text-danger">{{ "{:,.0f}".format(total_income-total_expenses) }} ISK
+            {% endif %}
           </h5>
       </li>
     </ul>
