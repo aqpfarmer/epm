@@ -36,7 +36,7 @@
                 {% if 'myUser_id' in session %}
                 <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/Character/{{session.myUser_id}}_256.jpg">
                   <p class=""><strong>Builder: </strong>{{session.name}}</p>
-                  <p class=""><strong>Character ID: </strong>{{session.myUser_id}} - {{session.access_token}}</p>
+                  <p class=""><strong>Character ID: </strong>{{session.myUser_id}} </p>
                   {% if 'wallet_balance' in session %}
                     <p class=""><strong>Wallet Balance: </strong>{{ "{:,.0f}".format(session.wallet_balance) }}</p>
                   {% else %}
@@ -51,7 +51,7 @@
                   <input type="hidden" name="response_type" value="code">
                   <input type="hidden" name="redirect_uri" value="http://epm.mrchips.xyz/login">
                   <input type="hidden" name="client_id" value="353666b5e6d44a439878c514e45f82b0">
-                  <input type="hidden" name="scope" value="esi-wallet.read_character_wallet.v1 esi-search.search_structures.v1 esi-assets.read_assets.v1 esi-fittings.read_fittings.v1 esi-fittings.write_fittings.v1 esi-markets.structure_markets.v1 esi-industry.read_character_jobs.v1 esi-markets.read_character_orders.v1 esi-characters.read_blueprints.v1 esi-contracts.read_character_contracts.v1">
+                  <input type="hidden" name="scope" value="esi-wallet.read_character_wallet.v1 esi-search.search_structures.v1 esi-universe.read_structures.v1 esi-assets.read_assets.v1 esi-fittings.read_fittings.v1 esi-fittings.write_fittings.v1 esi-markets.structure_markets.v1 esi-industry.read_character_jobs.v1 esi-markets.read_character_orders.v1 esi-characters.read_blueprints.v1 esi-contracts.read_character_contracts.v1">
                   <input type="hidden" name="state" value="epm101">
                 </form>
                 {% endif %}
