@@ -127,6 +127,13 @@ class invtypes(db.Model):
         self.capacity = capacity
         self.marketGroupID = marketGroupID
 
+class invVolumes(db.Model):
+    typeID = db.Column(db.Integer(), primary_key=True)
+    volume = db.Column(db.Integer())
+
+    def __init__(self, volume):
+        self.volume = volume
+
 class ship_fittings(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     build_id = db.Column(db.Integer())
@@ -218,9 +225,10 @@ class invent_pipeline(db.Model):
     datacore_qty = db.Column(db.Integer())
     datacore_cost = db.Column(db.Numeric())
     datacore = db.Column(db.String(100))
+    datacore_vol = db.Column(db.Numeric())
     status = db.Column(db.Integer())
 
-    def __init__(self, user_id, product_id, blueprint_id, runs, product_name, datacore_id, datacore_qty, datacore_cost, datacore, status):
+    def __init__(self, user_id, product_id, blueprint_id, runs, product_name, datacore_id, datacore_qty, datacore_cost, datacore, datacore_vol, status):
         self.user_id = user_id
         self.product_id = product_id
         self.blueprint_id = blueprint_id
@@ -230,6 +238,7 @@ class invent_pipeline(db.Model):
         self.datacore_qty = datacore_qty
         self.datacore_cost = datacore_cost
         self.datacore = datacore
+        self.datacore_vol = datacore_vol
         self.status = status
 
 class mining_calc(db.Model):
@@ -470,11 +479,13 @@ class v_datacore_requirements(db.Model):
     datacore = db.Column(db.String(100))
     quantity = db.Column(db.Integer())
     dc_id = db.Column(db.Integer())
+    vol = dc_id = db.Column(db.Numeric())
 
-    def __init__(datacore, quantity, dc_id):
+    def __init__(datacore, quantity, dc_id, vol):
         self.datacore = str(datacore)
         self.quantity = quantity
         self.dc_id = dc_id
+        self.vol = vol
 
 class v_invention_product(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
@@ -586,12 +597,13 @@ class LoginForm(Form):
     password = PasswordField('Password', [validators.DataRequired()])
 
 class BomDatacores():
-    def __init__(self, datacore_id, datacore, datacore_qty, datacore_cost, runs):
+    def __init__(self, datacore_id, datacore, datacore_qty, datacore_cost, runs, datacore_vol):
         self.datacore_id = datacore_id
         self.datacore = datacore
         self.datacore_qty = datacore_qty
         self.datacore_cost = datacore_cost
         self.runs = runs
+        self.datacore_vol = datacore_vol
 
 class BomShipFittings():
     def __init__(self, id, component, component_qty, component_cost, qty, bp_id):
@@ -1443,7 +1455,7 @@ def bom():
                             db.session.add(comp)
                             db.session.commit()
 
-            inv_pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','status').order_by('datacore').all()
+            inv_pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore', 'datacore_vol','status').order_by('datacore').all()
 
             planetary_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==1034, build_pipeline.group_id==1040))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').order_by('material').all()
 
@@ -1616,7 +1628,7 @@ def bom():
                     elif mins.material_id == 40:
                         meg_required += mins.material_qty
                     elif mins.material_id == 11399:
-                        morph_required += mins.material_qty 
+                        morph_required += mins.material_qty
 
                 for calc in calcs:
                     upd_or_add = 1
@@ -1642,6 +1654,7 @@ def bom():
             calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
             datacoresInPipeline = invent_pipeline_rollup_qty(inv_pipeline)
             dc_total = invent_pipeline_rollup_cost(inv_pipeline)
+            vol_total = invent_pipeline_rollup_vol(inv_pipeline)
             planetaryInPipeline = build_pipeline_rollup_qty(planetary_pipeline)
             planet_total = build_pipeline_rollup_cost(planetary_pipeline)
             componentInPipeline = build_pipeline_rollup_qty(component_pipeline)
@@ -1664,7 +1677,7 @@ def bom():
             bom_total += ram_total
             bom_total += mineral_total
 
-            return render_template('shopping_list.html', datacoresInPipeline=datacoresInPipeline, planetaryInPipeline=planetaryInPipeline, componentInPipeline=componentInPipeline, materialInPipeline=materialInPipeline, tech1InPipeline=tech1InPipeline, ramInPipeline=ramInPipeline, mineralInPipeline=mineralInPipeline, bom_total=bom_total, dc_total=dc_total, planet_total=planet_total, component_total=component_total, material_total=material_total, tech1_total=tech1_total, ram_total=ram_total, mineral_total=mineral_total,calcs=calcs)
+            return render_template('shopping_list.html', datacoresInPipeline=datacoresInPipeline, planetaryInPipeline=planetaryInPipeline, componentInPipeline=componentInPipeline, materialInPipeline=materialInPipeline, tech1InPipeline=tech1InPipeline, ramInPipeline=ramInPipeline, mineralInPipeline=mineralInPipeline, bom_total=bom_total, dc_total=dc_total, planet_total=planet_total, component_total=component_total, material_total=material_total, tech1_total=tech1_total, ram_total=ram_total, mineral_total=mineral_total,calcs=calcs, vol_total=vol_total)
 
         except Exception as e:
             flash('Problem with B.o.M. - see log.', 'danger')
@@ -1878,7 +1891,7 @@ def invent():
                 myBlueprints = db.session.query(v_my_invention_product).filter_by(user_id=session['myUser_id']).all()
                 bp_all = False
 
-            pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','status').order_by('datacore').all()
+            pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','datacore_vol','status').order_by('datacore').all()
 
             pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status')
 
@@ -1924,7 +1937,7 @@ def invent_selected():
         mySellMedian = "{:,.0f}".format(querySell)
         inventTime = db.session.query(v_invent_time).filter_by(id = id).one()
         myTime = "{:,}".format((inventTime.time/60)/60)
-        myDatacoreRequirements = db.session.query(v_datacore_requirements).filter_by(id = id).with_entities('id','datacore','quantity','dc_id').all()
+        myDatacoreRequirements = db.session.query(v_datacore_requirements).filter_by(id = id).with_entities('id','datacore','quantity','dc_id', 'vol').all()
         myDatacoresCost = 0
         for datacore in myDatacoreRequirements:
             myDatacoresCost = myDatacoresCost + get_marketValue(datacore.dc_id, 'sell') * datacore.quantity
@@ -1937,7 +1950,7 @@ def invent_selected():
                 myBlueprints = db.session.query(v_invention_product).all()
                 bp_all = True
 
-            pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','status').order_by('datacore').all()
+            pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','datacore_vol','status').order_by('datacore').all()
 
             pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status')
 
@@ -1968,7 +1981,7 @@ def invent_add_pipeline():
                 querySell = get_marketValue(str(myProduct.typeID),'buy')
                 inventTime = db.session.query(v_invent_time).filter_by(id = id).one()
                 myTime = "{:,}".format((inventTime.time/60)/60)
-                myDatacoreRequirements = db.session.query(v_datacore_requirements).filter_by(id = id).with_entities('id','datacore','quantity','dc_id').all()
+                myDatacoreRequirements = db.session.query(v_datacore_requirements).filter_by(id = id).with_entities('id','datacore','quantity','dc_id', 'vol').all()
                 myInventCost = 0
                 myDatacoreCost = []
                 for requirements in myDatacoreRequirements:
@@ -1977,7 +1990,7 @@ def invent_add_pipeline():
                 for cost in myDatacoreCost:
                     myInventCost += cost
 
-                pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','status').order_by('datacore').all()
+                pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','datacore_vol','status').order_by('datacore').all()
 
                 pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status')
 
@@ -1988,7 +2001,7 @@ def invent_add_pipeline():
                     for requirements in myDatacoreRequirements:
                         myCost = get_marketValue(requirements.dc_id, 'sell') * requirements.quantity
 
-                        pipeline = invent_pipeline(session['myUser_id'],  myProduct.typeID, id, request.form.get('job_runs'), selected_bp.t2_blueprint, requirements.dc_id, requirements.quantity, myCost, requirements.datacore, 3)
+                        pipeline = invent_pipeline(session['myUser_id'],  myProduct.typeID, id, request.form.get('job_runs'), selected_bp.t2_blueprint, requirements.dc_id, requirements.quantity, myCost, requirements.datacore, requirements.vol, 3)
 
                         db.session.add(pipeline)
                         db.session.commit()
@@ -2191,6 +2204,7 @@ def build_pipeline_rollup_qty(pipeline):
     matchFound1 = False
 
     for item in pipeline:
+        mat_oh = 0
         for mat in materialInPipeline:
             if mat.material_id == item.material_id:
                 mat.material_qty += item.material_qty * item.runs
@@ -2213,9 +2227,18 @@ def invent_pipeline_rollup_cost(pipeline):
     for item in pipeline:
         dc_oh = search_assets(session['myUser_id'], item.datacore_id)
         if dc_oh == 0:
-            buildCost += item.datacore_cost * item.runs
+            buildCost += (item.datacore_cost * item.runs)
 
     return buildCost
+
+def invent_pipeline_rollup_vol(pipeline):
+    vol = 0.0
+    for item in pipeline:
+        dc_oh = search_assets(session['myUser_id'], item.datacore_id)
+        if dc_oh == 0:
+            vol += (item.datacore_vol * item.runs)
+
+    return vol
 
 def invent_pipeline_rollup_qty(pipeline):
     materialInPipeline = []
@@ -2225,7 +2248,8 @@ def invent_pipeline_rollup_qty(pipeline):
         dc_oh = 0
         for mat in materialInPipeline:
             if mat.datacore_id == item.datacore_id:
-                mat.datacore_qty += item.datacore_qty
+                mat.datacore_qty += (item.datacore_qty * item.runs)
+                mat.datacore_cost += item.datacore_cost
                 matchFound1 = True
 
         if matchFound1 == True:
@@ -2234,7 +2258,7 @@ def invent_pipeline_rollup_qty(pipeline):
             dc_oh = search_assets(session['myUser_id'], item.datacore_id)
             dc_qty = (item.datacore_qty * item.runs) - dc_oh
             if dc_qty < 0: dc_qty = 0
-            my_bom = BomDatacores(item.datacore_id, item.datacore, dc_qty, item.datacore_cost, item.runs)
+            my_bom = BomDatacores(item.datacore_id, item.datacore, dc_qty, item.datacore_cost, item.runs, item.datacore_vol)
             materialInPipeline += [my_bom]
 
     return materialInPipeline
