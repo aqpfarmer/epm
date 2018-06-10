@@ -5,7 +5,8 @@
   <div class="col">
     <ul class="list-group mb-0">
       <li class="list-group-item d-flex justify-content-between lh-condensed bg-secondary">
-        <h3 class="mx-auto text-white">Bill Of Materials Total:<a class="text-warning"> {{ "{:,.0f}".format(bom_total) }} ISK</a></h3>
+        <h3 class="mx-auto text-white">Bill Of Materials Total:<a class="text-warning"> {{ "{:,.0f}".format(bom_total) }} ISK</a></h3> &nbsp;
+        <h3 class="mx-auto text-white">m3 Total:<a class="text-warning"> {{ "{:,.0f}".format(total_volume) }} </a></h3>
       </li>
       <li class="list-group-item d-flex justify-content-between lh-condensed">
         <div class="col text-center">
@@ -54,7 +55,7 @@
                 {% endfor %}
                 <tr align="center">
                   <td class="table-active" colspan="5"><h5>Datacore Total: {{ "{:,.0f}".format(dc_total) }}</h5></td>
-                  <td class="table-active"><h5>{{ "{:.0f}".format(vol_total) }}</h5></td>
+                  <td class="table-active"><h5>{{ "{:,.0f}".format(vol_total) }}</h5></td>
                 </tr>
               {% endif %}
             </tbody>
@@ -75,7 +76,7 @@
                   <th scope="col" colspan="2">Material</th>
                   <th scope="col">QTY</th>
                   <th scope="col"><center>Jita Buy Price</th>
-                  <th class="text-white" scope="col"><center>Option</th>
+                  <th scope="col"><center>m3</th>
                 </tr>
               </thead>
               <tbody>
@@ -83,14 +84,15 @@
                   {% for item in planetaryInPipeline %}
                 <tr>
                   <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
-                  <td colspan="3"><p class="mt-1">{{ item.material }}</p></td>
+                  <td colspan="3"><p class="mt-2">{{ item.material }}</p></td>
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
-                  <td><p class="mt-1 text-white">filler filler filler</p></td>
+                  <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_vol * item.material_qty) }}</p> </td>
                 </tr>
                 {% endfor %}
                 <tr align="center">
-                  <td class="table-active" colspan="7"><h5>Planetary Commodities Total: {{ "{:,.0f}".format(planet_total) }}</h5></td>
+                  <td class="table-active" colspan="6"><h5>Planetary Commodities Total: {{ "{:,.0f}".format(planet_total) }}</h5></td>
+                  <td class="table-active"><h5>{{ "{:,.0f}".format(planet_vol_total) }}</h5></td>
                 </tr>
                 {% endif %}
               </tbody>
@@ -116,6 +118,7 @@
                   <th scope="col">QTY</th>
                   <th scope="col">Jita Buy Price</th>
                   <th scope="col">Option</th>
+                  <th scope="col"><center>m3</th>
                 </tr>
               </thead>
               <tbody>
@@ -144,14 +147,15 @@
                           <input class="form-check-input" type="radio" name="build_or_buy" value="build" checked>
                           <label class="form-check-label" for="build">Build</label>
                       {% endif %}
-                    </div>
                   </td>
+                  <td><p class="mt-1 text-center"> {{ "{:,.0f}".format(item.material_vol * item.material_qty) }}</p> </td>
                 </tr>
                 <input type="hidden" name="material_id" value="{{ item.material_id }}">
               </form>
                 {% endfor %}
                 <tr align="center">
                   <td class="table-active" colspan="6"><h5>Advanced Components Total: {{ "{:,.0f}".format(component_total) }}</h5></td>
+                  <td class="table-active"><h5>{{ "{:,.0f}".format(component_vol_total) }}</h5></td>
                 </tr>
                 {% endif %}
               </tbody>
@@ -172,7 +176,7 @@
                     <th scope="col" colspan="2">Material</th>
                     <th scope="col">QTY</th>
                     <th scope="col"><center>Jita Buy Price</th>
-                    <th class="text-white" scope="col"><center>Option</th>
+                    <th scope="col"><center>m3</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -180,14 +184,15 @@
                     {% for item in materialInPipeline %}
                     <tr>
                       <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
-                      <td colspan="3"><p class="mt-1">{{ item.material }}</p></td>
+                      <td colspan="3"><p class="mt-2">{{ item.material }}</p></td>
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
-                      <td><p class="mt-1 text-white">filler filler filler</p></td>
+                      <td><p class="mt-1 text-center"> {{ "{:,.0f}".format(item.material_vol * item.material_qty) }}</p> </td>
                     </tr>
                     {% endfor %}
                     <tr align="center">
-                      <td class="table-active" colspan="7"><h5>Component Material Total: {{ "{:,.0f}".format(material_total) }}</h5></td>
+                      <td class="table-active" colspan="6"><h5>Component Material Total: {{ "{:,.0f}".format(material_total) }}</h5></td>
+                      <td class="table-active" colspan="1"><h5>{{ "{:,.0f}".format(material_vol_total) }}</h5></td>
                     </tr>
                     {% endif %}
                 </tbody>
@@ -213,6 +218,7 @@
                     <th scope="col">QTY</th>
                     <th scope="col"><center>Jita Buy Price</th>
                     <th scope="col">Option</th>
+                    <th scope="col"><center>m3</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -241,14 +247,15 @@
                             <input class="form-check-input" type="radio" name="build_or_buy" value="build" checked>
                             <label class="form-check-label" for="build">Build</label>
                         {% endif %}
-                      </div>
                     </td>
+                    <td><p class="mt-1 text-center"> {{ "{:,.0f}".format(item.material_vol * item.material_qty) }}</p> </td>
                   </tr>
                   <input type="hidden" name="material_id" value="{{ item.material_id }}">
                 </form>
                 {% endfor %}
                   <tr align="center">
                     <td class="table-active" colspan="6"><h5>Tech 1 Total: {{ "{:,.0f}".format(tech1_total) }}</h5></td>
+                    <td class="table-active" colspan="1"><h5>{{ "{:,.0f}".format(tech1_vol_total) }}</h5></td>
                   </tr>
                   {% endif %}
                 </tbody>
@@ -270,6 +277,7 @@
                       <th scope="col">QTY</th>
                       <th scope="col"><center>Jita Buy Price</th>
                       <th scope="col">Option</th>
+                      <th scope="col"><center>m3</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -298,14 +306,15 @@
                               <input class="form-check-input" type="radio" name="build_or_buy" value="build" checked>
                               <label class="form-check-label" for="build">Build</label>
                           {% endif %}
-                        </div>
                       </td>
+                      <td><p class="mt-1 text-center"> {{ "{:,.0f}".format(item.material_vol * item.material_qty) }}</p> </td>
                     </tr>
                     <input type="hidden" name="material_id" value="{{ item.material_id }}">
                   </form>
                   {% endfor %}
                     <tr align="center">
                       <td class="table-active" colspan="7"><h5>R.A.M. Total: {{ "{:,.0f}".format(ram_total) }}</h5></td>
+                      <td class="table-active" colspan="1"><h5>{{ "{:,.0f}".format(ram_vol_total) }}</h5></td>
                     </tr>
                     {% endif %}
                   </tbody>
