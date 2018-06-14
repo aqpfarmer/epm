@@ -1,6 +1,9 @@
 {% extends 'layout.html' %}
 {% block body %}
 
+{% if 'myUser_id' in session %}
+  <p class="text-right pr-4"><a class="btn btn-warning" href="/invent_jobs">Check Invent Jobs</a></p>
+{% endif %}
 <form action="{{ url_for('invent_selected')}}" method="POST">
   <div class="form-group row bg-secondary mb-1">
     <label for="invent_product" class="col-sm-3 col-form-label text-white text-right">Choose Product to Invent:</label>
@@ -39,6 +42,7 @@
     {% endif %}
   </div>
 </form>
+
 
 <div class="row" id="row2">
 
@@ -110,11 +114,8 @@
           <form class="form" action="{{ url_for('invent_add_pipeline')}}" method="POST">
             <li class="list-group-item d-flex justify-content-between lh-condensed">
 
-                <label for="job_runs" class="col-form-label text-black
-pr-1"><strong>Runs:</strong></label>
-                  <input type="text" class="form-control
-text-center" id="job_runs" name="job_runs" value="{{runs}}"
-style="width: 75px;">
+                <label for="job_runs" class="col-form-label text-black pr-1"><strong>Runs:</strong></label>
+                  <input type="text" class="form-control text-center" id="job_runs" name="job_runs" value="{{runs}}" style="width: 75px;">
                 <!-- <div class="col pt-1 mr-4"> -->
                   {% if bp_id > 0 %}
                     <input name="add" class="btn-sm btn-info" type="submit" value="Add to Invention Pipeline">

@@ -51,6 +51,39 @@ class eve_sso(db.Model):
         self.secret_key = secret_key
         self.scope = scope
 
+class job_journal(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    job_id = db.Column(db.String(100))
+    user_id = db.Column(db.String(100))
+    product_id = db.Column(db.Integer())
+    activity_id = db.Column(db.Integer())
+    facility_id = db.Column(db.String(100))
+    station_id = db.Column(db.String(100))
+    licensed_runs = db.Column(db.Integer())
+    runs = db.Column(db.Integer())
+    blueprint_location_id = db.Column(db.String(100))
+    output_location_id = db.Column(db.String(100))
+    start_date = db.Column(db.DateTime())
+    end_date = db.Column(db.DateTime())
+    status = db.Column(db.String(50))
+    job_cost = db.Column(db.Numeric())
+
+    def __init__(self, job_id, user_id, product_id, activity_id, facility_id, station_id, licensed_runs, runs, blueprint_location_id, output_location_id, start_date, end_date, status, job_cost):
+        self.job_id = job_id
+        self.user_id = user_id
+        self.product_id = product_id
+        self.activity_id = activity_id
+        self.facility_id = facility_id
+        self.station_id = station_id
+        self.licensed_runs = licensed_runs
+        self.runs = runs
+        self.blueprint_location_id = blueprint_location_id
+        self.output_location_id = output_location_id
+        self.start_date = start_date
+        self.end_date = end_date
+        self.status = status
+        self.job_cost = job_cost
+
 class wallet_journal(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     user_id = db.Column(db.String(100))
@@ -675,27 +708,51 @@ def fetch_assets():
     if 'myUser_id' in session:
         myAssets = get_assets_onhand()
         for item in myAssets:
-            existing = db.session.query(assets_onhand).filter_by(item_id=str(item['item_id'])).all()
-            if not existing:
-                entry = assets_onhand(session['myUser_id'], item['type_id'], item['item_id'], item['location_flag'], item['location_type'], item['location_id'], item['quantity'], item['is_singleton'])
-                db.session.add(entry)
-                db.session.commit()
+            print item
+            if item =='error' or item=='timeout':
+                flash ('Problem fetching assets from EVE.', 'danger')
+                break
             else:
-                entry = existing[0]
-                db.session.add(entry)
-                db.session.commit()
+                existing = db.session.query(assets_onhand).filter_by(item_id=str(item['item_id'])).all()
+                if not existing:
+                    entry = assets_onhand(session['myUser_id'], item['type_id'], item['item_id'], item['location_flag'], item['location_type'], item['location_id'], item['quantity'], item['is_singleton'])
+                    db.session.add(entry)
+                    db.session.commit()
+                else:
+                    entry = existing[0]
+                    db.session.add(entry)
+                    db.session.commit()
 
-        flash('Seccessfully pulled on hand assets for '+session['name'], 'success')
+            flash('Seccessfully pulled on hand assets for '+session['name'], 'success')
 
     return redirect(url_for('bom'))
 
+
+@app.route("/invent_jobs")
+def invent_jobs():
+    if 'myUser_id' in session:
+        myAssets = get_job_journal()
+        for item in myAssets:
+            print item
+            if item =='error' or item=='timeout':
+                flash ('Problem fetching job status from EVE.', 'danger')
+                break
+            else:
+                result = import_jobs(item)
+
+    return render_template('invent_jobs.html')
 
 @app.route("/fetch_fittings")
 def fetch_fittings():
     if 'myUser_id' in session:
         myAssets = get_fittings()
         for item in myAssets:
-            result = import_fitting(item)
+            #print item
+            if item =='error' or item=='timeout':
+                flash ('Problem fetching fitting from EVE.', 'danger')
+                break
+            else:
+                result = import_fitting(item)
 
         flash('Seccessfully pulled all ship fittings for '+session['name'], 'success')
 
@@ -709,18 +766,28 @@ def financial():
             transactions = get_wallet_transactions()
 
             for item in journal:
-                existing = db.session.query(wallet_journal).filter_by(transaction_id=str(item['id'])).all()
-                if not existing:
-                    entry = wallet_journal(session['myUser_id'], item['amount'], item['date'], item['id'], item['ref_type'])
-                    db.session.add(entry)
-                    db.session.commit()
+                print item
+                if item =='error' or item=='timeout':
+                    flash ('Problem fetching financial data from EVE.', 'danger')
+                    break
+                else:
+                    existing = db.session.query(wallet_journal).filter_by(transaction_id=str(item['id'])).all()
+                    if not existing:
+                        entry = wallet_journal(session['myUser_id'], item['amount'], item['date'], item['id'], item['ref_type'])
+                        db.session.add(entry)
+                        db.session.commit()
 
             for item in transactions:
-                existing = db.session.query(wallet_transactions).filter_by(transaction_id=str(item['transaction_id'])).all()
-                if not existing:
-                    entry = wallet_transactions(session['myUser_id'], item['unit_price'], item['date'], item['transaction_id'], item['client_id'], item['location_id'], item['quantity'], item['type_id'])
-                    db.session.add(entry)
-                    db.session.commit()
+                print item
+                if item =='error' or item=='timeout':
+                    flash ('Problem fetching financial data from EVE.', 'danger')
+                    break
+                else:
+                    existing = db.session.query(wallet_transactions).filter_by(transaction_id=str(item['transaction_id'])).all()
+                    if not existing:
+                        entry = wallet_transactions(session['myUser_id'], item['unit_price'], item['date'], item['transaction_id'], item['client_id'], item['location_id'], item['quantity'], item['type_id'])
+                        db.session.add(entry)
+                        db.session.commit()
 
         total_transaction_taxes = 0.0
         total_broker_fees = 0.0
@@ -852,7 +919,6 @@ def fittings():
                 fittingIndex = int(request.form.get('fittingIndex')) -1
             elif request.form.get('action') == 'next':
                 fittingIndex = int(request.form.get('fittingIndex')) +1
-
             if fittingIndex < 0:
                 build_id = myFittings[0].build_id
                 fittingIndex = 0
@@ -889,7 +955,7 @@ def fittings():
 
 
                 fittingCost = fitting_rollup_cost(shipFittings, fittingIndex)
-                fittingPM = ((float(shipFittings[fittingIndex].qty) * float(shipFittings[fittingIndex].contract_sell_price)) / float(fittingCost)) -1.0
+                if fittingCost > 0: fittingPM = ((float(shipFittings[fittingIndex].qty) * float(shipFittings[fittingIndex].contract_sell_price)) / float(fittingCost)) -1.0
 
         if ship_id > 0 :
             rigs = db.session.query(v_shipslots).filter_by(id=1137, ship_id=ship_id).one()
@@ -931,16 +997,26 @@ def fittings():
             if request.form.get('fetch'):
                 myAssets = get_fittings()
                 for item in myAssets:
-                    my_import = FittingList(item['fitting_id'], item['name'])
-                    fitting_list += [my_import]
+                    #print item
+                    if item =='error' or item=='timeout':
+                        flash ('Problem fetching fittings from EVE.', 'danger')
+                        break
+                    else:
+                        my_import = FittingList(item['fitting_id'], item['name'])
+                        fitting_list += [my_import]
 
             if request.form.get('import'):
                 fitting_selection = int(request.form.get('fitting_selection'))
                 myAssets = get_fittings()
-                for idx, item in enumerate(myAssets):
-                    if item['fitting_id'] == fitting_selection:
-                        result = import_fitting(item)
-                        return redirect(url_for('fittings'))
+                for item in myAssets:
+                    print item
+                    if item =='error' or item=='timeout':
+                        flash ('Problem fetching this fitting from EVE.', 'danger')
+                        break
+                    else:
+                        if item['fitting_id'] == fitting_selection:
+                            result = import_fitting(item)
+                            return redirect(url_for('fittings'))
 
             if request.form.get('action') == 'new':
                 if ship_id > 0 :
@@ -969,14 +1045,14 @@ def fittings():
                 for bfr in buildablefittingRollup:
                     myMaterialCost = []
                     myBuildCost = 0
-                    myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = bfr.bp_id, product_id=bfr.id).with_entities('id','material','material_id','group_id','qty','product_id').all()
+                    myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = bfr.bp_id, product_id=bfr.id).with_entities('id','material','material_id','group_id','qty','product_id', 'vol').all()
 
                     for requirements in myBuildRequirements:
                         myBuildCost += (get_marketValue(requirements.material_id, 'sell') * requirements.qty)
 
                     for requirements in myBuildRequirements:
                         myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty
-                        pipeline = build_pipeline(session['myUser_id'], bfr.id, bfr.bp_id, bfr.component_qty * bfr.qty, requirements.material_id, requirements.qty, myCost, bfr.component, requirements.material, requirements.group_id, 0, bfr.component_cost, 0, myBuildCost, 0, 2)
+                        pipeline = build_pipeline(session['myUser_id'], bfr.id, bfr.bp_id, bfr.component_qty * bfr.qty, requirements.material_id, requirements.qty, myCost, bfr.component, requirements.material, requirements.group_id, 0, bfr.component_cost, 0, myBuildCost, 0, 2, requirements.vol)
                         db.session.add(pipeline)
                         db.session.commit()
 
@@ -2205,12 +2281,12 @@ def build_pipeline_rollup_cost(pipeline):
 
 def build_pipeline_rollup_vol(pipeline):
     vol = 0.0
+
     for item in pipeline:
         mat_oh = search_assets(session['myUser_id'], item.material_id)
         if mat_oh == 0:
             vol += (item.material_vol * item.runs * item.material_qty)
-        else:
-            vol += (item.material_vol * item.runs * item.material_qty) - mat_oh
+
     return vol
 
 def fitting_rollup_cost(myFittings, fittingIndex):
@@ -2370,7 +2446,7 @@ def check_token(character_id):
         headers1 = {'Authorization': 'Bearer ' + auth_code}
         response1 = requests.get('https://esi.tech.ccp.is/verify/', headers=headers1)
         jsonData1 = json.loads(response1.text)
-        print response1.status_code
+        print 'Get Check Token - ' + str(response1.status_code)
         print jsonData1
 
         if response1.status_code <> 200:
@@ -2387,8 +2463,8 @@ def get_wallet_balance():
     payload = {'datasource':'tranquility', 'token':session['access_token']}
     response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/', params=payload)
     #print payload
-    print response.status_code
-    if response.status_code <> 200:
+    print 'Get Wallet Balance - ' + str(response.status_code)
+    if response.status_code <> 200 and response.status_code <> 504:
         do_refresh_token(session['myUser_id'])
         payload = {'datasource':'tranquility', 'token':session['access_token']}
         response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/', params=payload)
@@ -2400,8 +2476,8 @@ def get_wallet_balance():
 def get_wallet_journal():
     payload = {'datasource':'tranquility', 'token':session['access_token']}
     response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/journal/', params=payload)
-    print response.status_code
-    if response.status_code <> 200:
+    print 'Get Wallet Journal - ' + str(response.status_code)
+    if response.status_code <> 200 and response.status_code <> 504:
         do_refresh_token(session['myUser_id'])
         payload = {'datasource':'tranquility', 'token':session['access_token']}
         response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/journal/', params=payload)
@@ -2412,8 +2488,8 @@ def get_wallet_journal():
 def get_wallet_transactions():
     payload = {'datasource':'tranquility', 'token':session['access_token']}
     response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/transactions/', params=payload)
-    print response.status_code
-    if response.status_code <> 200:
+    print 'Get Wallet Transactions - ' + str(response.status_code)
+    if response.status_code <> 200 and response.status_code <> 504:
         do_refresh_token(session['myUser_id'])
         payload = {'datasource':'tranquility', 'token':session['access_token']}
         response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/transactions/', params=payload)
@@ -2424,8 +2500,8 @@ def get_wallet_transactions():
 def get_assets_onhand():
     payload = {'datasource':'tranquility', 'token':session['access_token']}
     response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/assets/', params=payload)
-    print response.status_code
-    if response.status_code <> 200:
+    print 'Get Assets On Hand - ' + str(response.status_code)
+    if response.status_code <> 200 and response.status_code <> 504:
         do_refresh_token(session['myUser_id'])
         payload = {'datasource':'tranquility', 'token':session['access_token']}
         response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/assets/', params=payload)
@@ -2436,8 +2512,8 @@ def get_assets_onhand():
 def get_fittings():
     payload = {'datasource':'tranquility', 'token':session['access_token']}
     response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/fittings/', params=payload)
-    print response.status_code
-    if response.status_code <> 200:
+    print 'Get Fittings - ' + str(response.status_code)
+    if response.status_code <> 200 and response.status_code <> 504:
         do_refresh_token(session['myUser_id'])
         payload = {'datasource':'tranquility', 'token':session['access_token']}
         response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/fittings/', params=payload)
@@ -2453,20 +2529,34 @@ def search_assets(user_id, product_id):
 
     return qty
 
+def get_job_journal():
+    payload = {'datasource':'tranquility', 'token':session['access_token']}
+    response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/industry/jobs/', params=payload)
+    print 'Get Job Journal - ' + str(response.status_code)
+    if response.status_code <> 200 and response.status_code <> 504:
+        do_refresh_token(session['myUser_id'])
+        payload = {'datasource':'tranquility', 'token':session['access_token']}
+        response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/industry/jobs/', params=payload)
+
+    jsonData = json.loads(response.text)
+    return jsonData
+
 def import_fitting(item):
     print 'Importing fit: ' + item['name']
+    ship_id = item['ship_type_id']
     existingFitting = db.session.query(ship_fittings).filter_by(build_id = item['fitting_id'], user_id=session['myUser_id'], component_slot='ship').all()
-    ship_jita_buy = get_marketValue(item['ship_type_id'],'buy')
+    ship_jita_buy = get_marketValue(ship_id, 'buy')
     #ship_jita_buy = 0.0
-    ship = db.session.query(v_ships).filter_by(id = item['ship_type_id']).one()
+    ship = db.session.query(v_ships).filter_by(id = ship_id).one()
     ship_name = ship.ship
-    rigs = db.session.query(v_shipslots).filter_by(id=1137, ship_id=item['ship_type_id']).one()
-    rigsize = db.session.query(v_shipslots).filter_by(id=1547, ship_id=item['ship_type_id']).one()
+    rigs = db.session.query(v_shipslots).filter_by(id=1137, ship_id=ship_id).one()
+    rigsize = db.session.query(v_shipslots).filter_by(id=1547, ship_id=ship_id).one()
     myRigSize = rigsize.valfloat
     rig_modules = db.session.query(v_rigs).filter_by(size=myRigSize).all()
-    lows = db.session.query(v_shipslots).filter_by(id=12, ship_id=item['ship_type_id']).one()
-    meds = db.session.query(v_shipslots).filter_by(id=13, ship_id=item['ship_type_id']).one()
-    highs = db.session.query(v_shipslots).filter_by(id=14, ship_id=item['ship_type_id']).one()
+    lows = db.session.query(v_shipslots).filter_by(id=12, ship_id=ship_id).one()
+    meds = db.session.query(v_shipslots).filter_by(id=13, ship_id=ship_id).one()
+    highs = db.session.query(v_shipslots).filter_by(id=14, ship_id=ship_id).one()
+
     if rigs.valfloat:
         num_rigslots = rigs.valfloat
     else:
@@ -2489,7 +2579,7 @@ def import_fitting(item):
         num_highslots = highs.valint
 
     if not existingFitting:
-        myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], item['ship_type_id'], ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, item['ship_type_id'], 1, ship_jita_buy, ship_name, 'ship', 0.0, 0, ship_jita_buy, 0)
+        myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], ship_id, ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, ship_id, 1, ship_jita_buy, ship_name, 'ship', 0.0, 0, ship_jita_buy, 0)
         db.session.add(myFittings)
         db.session.commit()
 
@@ -2509,49 +2599,62 @@ def import_fitting(item):
                 slot_position = 'ammo'
 
             comp_id  = slot['type_id']
+            comp_qty = slot['quantity']
             if comp_id > 0:
                 comp_jita_buy = get_marketValue(comp_id,'buy')
                 comp = db.session.query(invtypes).filter(invtypes.typeID==comp_id).with_entities('"typeName"').one()
 
-            myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], item['ship_type_id'], ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp[0], slot_position, 0.0, 0, ship_jita_buy, 0)
+            myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], ship_id, ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, comp_qty, comp_jita_buy, comp[0], slot_position, 0.0, 0, ship_jita_buy, 0)
             db.session.add(myFittings)
             db.session.commit()
 
 
-    highCount = db.session.query(ship_fittings).filter_by(build_id = item['fitting_id'], user_id=session['myUser_id'], component_slot='high').count()
-    for n in range(1, (num_highslots+1) - highCount):
-        myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], item['ship_type_id'], ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, 0, 1, 0.0, '', 'high', 0.0, 0, ship_jita_buy, 0)
-        db.session.add(myFittings)
-        db.session.commit()
+        highCount = db.session.query(ship_fittings).filter_by(build_id = item['fitting_id'], user_id=session['myUser_id'], component_slot='high').count()
 
-    medCount = db.session.query(ship_fittings).filter_by(build_id = item['fitting_id'], user_id=session['myUser_id'], component_slot='med').count()
-    for n in range(1, (num_medslots+1) - medCount):
-        myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], item['ship_type_id'], ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, 0, 1, 0.0, '', 'med', 0.0, 0, ship_jita_buy, 0)
-        db.session.add(myFittings)
-        db.session.commit()
+        for n in range(1, (num_highslots+1) - highCount):
+            myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], item['ship_type_id'], ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, 0, 1, 0.0, '', 'high', 0.0, 0, ship_jita_buy, 0)
+            db.session.add(myFittings)
+            db.session.commit()
 
-    lowCount = db.session.query(ship_fittings).filter_by(build_id = item['fitting_id'], user_id=session['myUser_id'], component_slot='low').count()
-    for n in range(1, (num_lowslots+1) - lowCount):
-        myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], item['ship_type_id'], ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, 0, 1, 0.0, '', 'low', 0.0, 0, ship_jita_buy, 0)
-        db.session.add(myFittings)
-        db.session.commit()
+        medCount = db.session.query(ship_fittings).filter_by(build_id = item['fitting_id'], user_id=session['myUser_id'], component_slot='med').count()
 
-    rigCount = db.session.query(ship_fittings).filter_by(build_id = item['fitting_id'], user_id=session['myUser_id'], component_slot='rig').count()
-    for n in range(1, (num_rigslots+1) - rigCount):
-        myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], item['ship_type_id'], ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, 0, 1, 0.0, '', 'rig', 0.0, 0, ship_jita_buy, 0)
-        db.session.add(myFittings)
-        db.session.commit()
+        for n in range(1, (num_medslots+1) - medCount):
+            myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], item['ship_type_id'], ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, 0, 1, 0.0, '', 'med', 0.0, 0, ship_jita_buy, 0)
+            db.session.add(myFittings)
+            db.session.commit()
 
-    ammoCount = db.session.query(ship_fittings).filter_by(build_id = item['fitting_id'], user_id=session['myUser_id'], component_slot='ammo').count()
-    for n in range(1, (6 - ammoCount)):
-        myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], item['ship_type_id'], ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, 0, 1, 0.0, '', 'ammo', 0.0, 0, ship_jita_buy, 0)
-        db.session.add(myFittings)
-        db.session.commit()
+        lowCount = db.session.query(ship_fittings).filter_by(build_id = item['fitting_id'], user_id=session['myUser_id'], component_slot='low').count()
+        for n in range(1, (num_lowslots+1) - lowCount):
+            myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], item['ship_type_id'], ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, 0, 1, 0.0, '', 'low', 0.0, 0, ship_jita_buy, 0)
+            db.session.add(myFittings)
+            db.session.commit()
 
-    droneCount = db.session.query(ship_fittings).filter_by(build_id = item['fitting_id'], user_id=session['myUser_id'], component_slot='drone').count()
-    for n in range(1, (6 - droneCount)):
-        myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], item['ship_type_id'], ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, 0, 1, 0.0, '', 'drone', 0.0, 0, ship_jita_buy, 0)
-        db.session.add(myFittings)
+        rigCount = db.session.query(ship_fittings).filter_by(build_id = item['fitting_id'], user_id=session['myUser_id'], component_slot='rig').count()
+        for n in range(1, (num_rigslots+1) - rigCount):
+            myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], item['ship_type_id'], ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, 0, 1, 0.0, '', 'rig', 0.0, 0, ship_jita_buy, 0)
+            db.session.add(myFittings)
+            db.session.commit()
+
+        ammoCount = db.session.query(ship_fittings).filter_by(build_id = item['fitting_id'], user_id=session['myUser_id'], component_slot='ammo').count()
+        for n in range(1, (6 - ammoCount)):
+            myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], item['ship_type_id'], ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, 0, 1, 0.0, '', 'ammo', 0.0, 0, ship_jita_buy, 0)
+            db.session.add(myFittings)
+            db.session.commit()
+
+        droneCount = db.session.query(ship_fittings).filter_by(build_id = item['fitting_id'], user_id=session['myUser_id'], component_slot='drone').count()
+        for n in range(1, (6 - droneCount)):
+            myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], item['ship_type_id'], ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, 0, 1, 0.0, '', 'drone', 0.0, 0, ship_jita_buy, 0)
+            db.session.add(myFittings)
+            db.session.commit()
+
+    return 0
+
+def import_jobs(item):
+    print 'Importing job: ' + item['blueprint_type_id']
+    existingJob = db.session.query(job_journal).filter_by(job_id = item['job_id'], user_id=session['myUser_id']).all()
+    if not existingJob:
+        myJob = job_journal(item['fitting_id'], session['myUser_id'], item['product_type_id'], item['activity_id'], item['facility_id'], item['station_id'], item['licensed_runs'], item['runs'], item['blueprint_location_id'], item['output_location_id'], item['start_date'], item['end_date'], item['status'], item['job_cost'])
+        db.session.add(myJob)
         db.session.commit()
 
     return 0

@@ -36,8 +36,8 @@
                 {% if 'myUser_id' in session %}
                 <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/Character/{{session.myUser_id}}_256.jpg">
                   <p class=""><strong>Builder: </strong>{{session.name}}</p>
-                  <p class=""><strong>Character ID: </strong>{{session.myUser_id}} </p>
-                  {% if 'wallet_balance' in session %}
+                  <p class=""><strong>Character ID: </strong>{{session.myUser_id}} - {{session.access_token}}</p>
+                  {% if 'wallet_balance' in session and session.wallet_balance is number %}
                     <p class=""><strong>Wallet Balance: </strong>{{ "{:,.0f}".format(session.wallet_balance) }}</p>
                   {% else %}
                     <p class=""><strong>Wallet Balance: </strong> --</p>

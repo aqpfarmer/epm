@@ -126,7 +126,7 @@
                   {% for item in componentInPipeline %}
                   <form action="{{ url_for('bom')}}" method="POST">
                 <tr>
-                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
+                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_64.png"></th>
                   <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
@@ -226,7 +226,7 @@
                     {% for item in tech1InPipeline %}
                     <form action="{{ url_for('bom')}}" method="POST">
                   <tr>
-                    <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
+                    <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_64.png"></th>
                     <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
                     <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
                     <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
