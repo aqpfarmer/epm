@@ -11,7 +11,16 @@
       <li class="list-group-item d-flex justify-content-between lh-condensed">
         <div class="col text-center">
           <a class="btn btn-primary" href="/fetch_assets">Fetch Current Assets On Hand</a></br>
-          <p class="text-muted">Quantities reflect the net if the material is on hand somewhere in your assets</p>
+          <form class="form" action="{{ url_for('bom')}}" method="POST">
+          <div class="form-check form-check-inline">
+            {% if subtract_oh_assets =='true'%}
+              <input class="form-check-input" type="checkbox" name="subtract_oh_assets" id="subtract_oh_assets" value="false" onChange="this.form.submit()" checked>
+            {% else %}
+              <input class="form-check-input" type="checkbox" name="subtract_oh_assets" id="subtract_oh_assets" value="true" onChange="this.form.submit()">
+            {% endif %}
+            <label class="form-check-label" for="subtract_oh_assets">Subtract on-hand assets</label>
+          </div>
+        </form>
         </div>
       </li>
     </ul>
@@ -21,7 +30,7 @@
 <div class="row px-0" id="row1">
   <div class="col">
     <ul class="list-group mb-1">
-      <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+      <li class="list-group-item d-flex justify-content-between lh-condensed py-0 text-primary">
         <h4 class="mx-auto">Datacores</h4>
       </li>
       <li class="list-group-item py-0">
@@ -64,7 +73,7 @@
 
     <div class="col">
       <ul class="list-group mb-1">
-        <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+        <li class="list-group-item d-flex justify-content-between lh-condensed py-0 text-primary">
           <h4 class="mx-auto">Planetary Commodities</h4>
         </li>
         <li class="list-group-item py-0">
@@ -105,8 +114,18 @@
   <div class="row px-0" id="row2">
     <div class="col">
       <ul class="list-group mb-1">
-        <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+        <li class="list-group-item d-flex justify-content-between lh-condensed py-0 text-primary">
           <h4 class="mx-auto">Advanced Components</h4>
+          <form action="{{ url_for('bom')}}" method="POST">
+            <div class="form-check form-check-inline pt-1">
+              <input class="form-check-input" type="radio" name="build_or_buy_all" value="buy" onChange="this.form.submit()">
+              <label class="form-check-label" for="buy">Buy All</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="build_or_buy_all" value="build" onChange="this.form.submit()">
+              <label class="form-check-label" for="build">Build All</label>
+            </div>
+        </form>
         </li>
         <li class="list-group-item py-0">
             <table class="table table-sm table-condensed table-hover table-responsive pl-3">
@@ -146,6 +165,7 @@
                         <div class="form-check form-check-inline">
                           <input class="form-check-input" type="radio" name="build_or_buy" value="build" checked>
                           <label class="form-check-label" for="build">Build</label>
+                        </div>
                       {% endif %}
                   </td>
                   <td><p class="mt-1 text-center"> {{ "{:,.0f}".format(item.material_vol * item.material_qty) }}</p> </td>
@@ -164,7 +184,7 @@
       </div> <!-- col -->
       <div class="col">
         <ul class="list-group mb-1">
-          <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+          <li class="list-group-item d-flex justify-content-between lh-condensed py-0 text-primary">
             <h4 class="mx-auto">Component Materials</h4>
           </li>
           <li class="list-group-item py-0">
@@ -205,8 +225,18 @@
     <div class="row px-0" id="row3">
       <div class="col">
         <ul class="list-group mb-1">
-          <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+          <li class="list-group-item d-flex justify-content-between lh-condensed py-0 text-primary">
             <h4 class="mx-auto">Tech I Products</h4>
+            <form action="{{ url_for('bom')}}" method="POST">
+              <div class="form-check form-check-inline pt-1">
+                <input class="form-check-input" type="radio" name="build_or_buy_all_t1" value="buy" onChange="this.form.submit()">
+                <label class="form-check-label" for="buy">Buy All</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="build_or_buy_all_t1" value="build" onChange="this.form.submit()">
+                <label class="form-check-label" for="build">Build All</label>
+              </div>
+          </form>
           </li>
           <li class="list-group-item py-0">
                 <table class="table table-sm table-condensed table-hover table-responsive pl-3">
@@ -264,7 +294,7 @@
         </div> <!-- col -->
         <div class="col">
           <ul class="list-group mb-1">
-            <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+            <li class="list-group-item d-flex justify-content-between lh-condensed py-0 text-primary">
               <h4 class="mx-auto">R.A.M. Tools</h4>
             </li>
             <li class="list-group-item py-0">
@@ -327,7 +357,7 @@
       <div class="row px-0" id="row4">
         <div class="col">
           <ul class="list-group mb-1">
-            <li class="list-group-item d-flex justify-content-between lh-condensed py-0">
+            <li class="list-group-item d-flex justify-content-between lh-condensed py-0 text-primary">
               <h4 class="mx-auto">Minerals</h4>
             </li>
             <li class="list-group-item py-0">

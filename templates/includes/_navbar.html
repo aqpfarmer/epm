@@ -34,14 +34,37 @@
               </div>
               <div class="modal-body">
                 {% if 'myUser_id' in session %}
-                <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/Character/{{session.myUser_id}}_256.jpg">
-                  <p class=""><strong>Builder: </strong>{{session.name}}</p>
-                  <p class=""><strong>Character ID: </strong>{{session.myUser_id}} - {{session.access_token}}</p>
-                  {% if 'wallet_balance' in session and session.wallet_balance is number %}
-                    <p class=""><strong>Wallet Balance: </strong>{{ "{:,.0f}".format(session.wallet_balance) }}</p>
-                  {% else %}
-                    <p class=""><strong>Wallet Balance: </strong> --</p>
-                  {% endif %}
+                <table class="table-responsive">
+                <tbody>
+                  <tr class="noborder">
+                    <td rowspan="1" colspan="1" class="text-center"> <strong>Builder: </strong>{{session.name}}</td>
+                  </tr>
+                  <tr class="noborder">
+                    <td rowspan="4"> <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/Character/{{session.myUser_id}}_256.jpg"> </td>
+                    <td class="text-right"><strong>ID:</td>
+                    <td>{{session.myUser_id}}</td>
+                  </tr>
+                  <tr class="noborder">
+                    <td class="text-right"><strong>Corp:</td>
+                    <td>{{session.corp_name}}</td>
+                  </tr>
+                  <tr class="noborder">
+                    <td class="text-center" colspan="2"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/Corporation/{{session.corp_id}}_128.png"></td>
+                  </tr>
+                  <tr class="noborder">
+                    <td class="text-right"><strong>Wallet:</td>
+                    {% if 'wallet_balance' in session and session.wallet_balance is number %}
+                      <td>{{ "{:,.0f}".format(session.wallet_balance) }} isk</td>
+                    {% else %}
+                      <td>--</td>
+                    {% endif %}
+                  </tr>
+                  <tr>
+                    <td colspan="2"> &nbsp; <td>
+                  </tr>
+                  </tbody>
+                </table>
+
                   <a class="btn btn-primary" href="/fetch_assets">Fetch Current Assets On Hand</a>
                   <a class="btn btn-secondary" href="/logout">Logout</a>
                 {% else %}
@@ -49,7 +72,7 @@
                   <h2 class="text-success"><input type="image" src="{{ url_for('static', filename='img/eve-sso-login-black-small.png') }}">
                   </h2>
                   <input type="hidden" name="response_type" value="code">
-                  <input type="hidden" name="redirect_uri" value="http://epm.mrchips.xyz/login">
+                  <input type="hidden" name="redirect_uri" value="http://catfish:5000/login">
                   <input type="hidden" name="client_id" value="353666b5e6d44a439878c514e45f82b0">
                   <input type="hidden" name="scope" value="esi-wallet.read_character_wallet.v1 esi-search.search_structures.v1 esi-universe.read_structures.v1 esi-assets.read_assets.v1 esi-fittings.read_fittings.v1 esi-fittings.write_fittings.v1 esi-markets.structure_markets.v1 esi-industry.read_character_jobs.v1 esi-markets.read_character_orders.v1 esi-characters.read_blueprints.v1 esi-contracts.read_character_contracts.v1">
                   <input type="hidden" name="state" value="epm101">
@@ -78,12 +101,25 @@
                   </button>
                 </div>
                 <div class="modal-body">
-                  ...
+                  <form class="form" action="{{ url_for('options')}}" method="POST">
+                    <div class="form-row">
+                    <label for="home_station_id" class="col-form-label text-black pr-1"><strong>Home Station:</strong></label>
+                      <input type="text" class="form-control text-center" id="home_station_id" name="home_station_id" value="{{session['home_station_id']}}" style="width: 175px;">
+                    </div>
+                    <div class="form-row">
+                    <label for="structure_role_bonus" class="col-form-label text-black pr-1"><strong>Structure Role Bonus:</strong></label>
+                      <input type="text" class="form-control text-center" id="structure_role_bonus" name="structure_role_bonus" value="{{session['structure_role_bonus']}}" style="width: 75px;">
+                    </div>
+                    <div class="form-row">
+                    <label for="default_bp_me" class="col-form-label text-black pr-1"><strong>Default Blueprint Material Efficiency:</strong></label>
+                      <input type="text" class="form-control text-center" id="default_bp_me" name="default_bp_me" value="{{session['default_bp_me']}}" style="width: 75px;">
+                    </div>
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button type="button" class="btn btn-primary">Save changes</button>
+                  <button type="submit" class="btn btn-primary">Save changes</button>
                 </div>
+                    </form>
               </div>
             </div>
           </div>

@@ -30,8 +30,12 @@ class users(db.Model):
     auth_code = db.Column(db.String(255))
     active = db.Column(db.Boolean())
     last_logged_in = db.Column(db.DateTime())
+    home_station_id = db.Column(db.String(100))
+    structure_role_bonus = db.Column(db.Numeric())
+    default_bp_me = db.Column(db.Numeric())
+    corp_id = db.Column(db.String(100))
 
-    def __init__(self, character_id, character_name, refresh_token, expiration, auth_code, active, last_logged_in):
+    def __init__(self, character_id, character_name, refresh_token, expiration, auth_code, active, last_logged_in, home_station_id, structure_role_bonus, default_bp_me, corp_id):
         self.character_id = character_id
         self.character_name = character_name
         self.refresh_token = refresh_token
@@ -39,6 +43,10 @@ class users(db.Model):
         self.auth_code = auth_code
         self.active = active
         self.last_logged_in = last_logged_in
+        self.home_station_id = home_station_id
+        self.structure_role_bonus = structure_role_bonus
+        self.default_bp_me = default_bp_me
+        self.corp_id = corp_id
 
 class eve_sso(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
@@ -703,30 +711,49 @@ def index():
 
     return render_template('home.html')
 
+@app.route("/options", methods=['GET','POST'])
+def options():
+    if 'myUser_id' in session:
+        home_station_id = request.form.get('home_station_id')
+        structure_role_bonus = request.form.get('structure_role_bonus')
+        default_bp_me = request.form.get('default_bp_me')
+
+        myUser = db.session.query(users).filter_by(character_id=session['myUser_id']).one()
+        myUser.home_station_id = home_station_id
+        myUser.structure_role_bonus = structure_role_bonus
+        myUser.default_bp_me = default_bp_me
+        db.session.add(myUser)
+        db.session.commit()
+
+        session['home_station_id'] = home_station_id
+        session['structure_role_bonus'] = structure_role_bonus
+        session['default_bp_me'] = default_bp_me
+        flash('Successfully updated global options', 'success')
+    else:
+        flash('You must be logged in to update options', 'danger')
+
+    return redirect(url_for('index'))
+
 @app.route("/fetch_assets")
 def fetch_assets():
     if 'myUser_id' in session:
+        existing = db.session.query(assets_onhand).filter_by(user_id=session['myUser_id']).delete()
+        db.session.commit()
+
         myAssets = get_assets_onhand()
         for item in myAssets:
-            print item
+            #print item
             if item =='error' or item=='timeout':
                 flash ('Problem fetching assets from EVE.', 'danger')
                 break
             else:
-                existing = db.session.query(assets_onhand).filter_by(item_id=str(item['item_id'])).all()
-                if not existing:
-                    entry = assets_onhand(session['myUser_id'], item['type_id'], item['item_id'], item['location_flag'], item['location_type'], item['location_id'], item['quantity'], item['is_singleton'])
-                    db.session.add(entry)
-                    db.session.commit()
-                else:
-                    entry = existing[0]
-                    db.session.add(entry)
-                    db.session.commit()
+                entry = assets_onhand(session['myUser_id'], item['type_id'], item['item_id'], item['location_flag'], item['location_type'], item['location_id'], item['quantity'], item['is_singleton'])
+                db.session.add(entry)
+                db.session.commit()
 
-            flash('Seccessfully pulled on hand assets for '+session['name'], 'success')
+        flash('Seccessfully pulled on hand assets for '+session['name'], 'success')
 
     return redirect(url_for('bom'))
-
 
 @app.route("/invent_jobs")
 def invent_jobs():
@@ -766,7 +793,7 @@ def financial():
             transactions = get_wallet_transactions()
 
             for item in journal:
-                print item
+                #print item
                 if item =='error' or item=='timeout':
                     flash ('Problem fetching financial data from EVE.', 'danger')
                     break
@@ -778,7 +805,7 @@ def financial():
                         db.session.commit()
 
             for item in transactions:
-                print item
+                #print item
                 if item =='error' or item=='timeout':
                     flash ('Problem fetching financial data from EVE.', 'danger')
                     break
@@ -897,6 +924,7 @@ def fittings():
         fittingCost = 0.0
         fittingPM = 0.0
         fitting_list = []
+        subtract_oh_assets = 'None'
 
         myFittingsCount = db.session.query(v_count_fittings).filter_by(user_id=user_id).order_by('ship_name').count()
         myFittings = db.session.query(v_count_fittings).filter_by(user_id=user_id).order_by('build_id').all()
@@ -954,7 +982,7 @@ def fittings():
                     buildableTotal += (float(bf.qty) * float(bf.component_qty) * float(bf.component_cost))
 
 
-                fittingCost = fitting_rollup_cost(shipFittings, fittingIndex)
+                fittingCost = fitting_rollup_cost(shipFittings)
                 if fittingCost > 0: fittingPM = ((float(shipFittings[fittingIndex].qty) * float(shipFittings[fittingIndex].contract_sell_price)) / float(fittingCost)) -1.0
 
         if ship_id > 0 :
@@ -1425,7 +1453,7 @@ def pipeline():
 
                             selected_product = db.session.query(v_product).filter_by(id = product_id).one()
                             querySell = get_marketValue(selected_product.t2_id,'buy')
-                            myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = product_id, product_id=selected_product.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id').all()
+                            myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = product_id, product_id=selected_product.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id', 'vol').all()
 
                             myBuildCost = 0
                             myMaterialCost = []
@@ -1438,12 +1466,13 @@ def pipeline():
                             for requirements in myBuildRequirements:
                                 myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty
 
-                                pipeline = build_pipeline(session['myUser_id'],  selected_product.t2_id, product_id, runs, requirements.material_id, requirements.qty, myCost, product_name, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2)
+                                pipeline = build_pipeline(session['myUser_id'],  selected_product.t2_id, product_id, runs, requirements.material_id, requirements.qty, myCost, product_name, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2, requirements.vol)
 
                                 db.session.add(pipeline)
                                 db.session.commit()
 
                             flash('Successfully converted invention to build product.', 'success')
+                            return redirect(url_for('pipeline'))
 
                     if request.form.get('action') == 'DEL':
                             bp_id = request.form.get('blueprint_id')
@@ -1496,12 +1525,49 @@ def bom():
     if 'myUser_id' in session:
         #try:
         build_or_buy = 0
+        build_or_buy_all = 99
+        build_or_buy_all_t1 = 99
+
+        subtract_oh_assets = request.form.get('subtract_oh_assets')
+        #print subtract_oh_assets
         if request.method == 'POST':
             if request.form.get('build_or_buy') == 'buy':
                 build_or_buy = 0
-
             elif request.form.get('build_or_buy') == 'build':
                 build_or_buy = 1
+
+            if request.form.get('build_or_buy_all'):
+                if request.form.get('build_or_buy_all') == 'buy':
+                    build_or_buy = 0
+                    build_or_buy_all = 0
+                    flash('Buying all Advanced Components.', 'success')
+                elif request.form.get('build_or_buy_all') == 'build':
+                    build_or_buy = 1
+                    build_or_buy_all = 1
+                    flash('Building all Advanced Components.', 'success')
+
+                pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],group_id=334, status=2).all()
+                for item in pipeline:
+                    item.build_or_buy = build_or_buy
+                    db.session.add(item)
+                    db.session.commit()
+
+            if request.form.get('build_or_buy_all_t1'):
+                if request.form.get('build_or_buy_all_t1') == 'buy':
+                    build_or_buy = 0
+                    build_or_buy_all_t1 = 0
+                    flash('Buying all Tech 1 components.', 'success')
+                elif request.form.get('build_or_buy_all_t1') == 'build':
+                    build_or_buy = 1
+                    build_or_buy_all_t1 = 1
+                    flash('Building all Tech 1 components.', 'success')
+
+                pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id']).filter(build_pipeline.group_id <> 334).filter(build_pipeline.group_id <> 18).filter(build_pipeline.group_id <> 1034).filter(build_pipeline.group_id <> 332).filter(build_pipeline.group_id <> 1040).filter(build_pipeline.group_id <> 429).all()
+
+                for item in pipeline:
+                    item.build_or_buy = build_or_buy
+                    db.session.add(item)
+                    db.session.commit()
 
             material_id = request.form.get('material_id')
             pipeline = db.session.query(build_pipeline).filter_by(material_id = material_id).all()
@@ -1529,7 +1595,7 @@ def bom():
 
                     comp_blueprint_id = item.blueprint_id
                     newcost_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],blueprint_id=comp_blueprint_id).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status').all()
-                    materialCost = build_pipeline_rollup_cost(newcost_pipeline)
+                    materialCost = build_pipeline_rollup_cost(newcost_pipeline, subtract_oh_assets)
                     for item1 in newcost_pipeline:
                         comp = db.session.query(build_pipeline).filter_by(id=item1.id).one()
                         comp.build_cost = materialCost / comp.runs
@@ -1544,6 +1610,8 @@ def bom():
 
         comp_blueprint_id = 0
         for component in component_pipeline:
+            #print 'comp build or buy=' + str(component.build_or_buy)
+            #print 'comp material cost=' + str(component.material_cost)
             if component.build_or_buy == 1 and component.material_cost > 0:
                 comp = db.session.query(build_pipeline).filter_by(id=component.id).one()
                 comp.material_cost = 0.0
@@ -1556,13 +1624,13 @@ def bom():
                 for requirements in myBuildComponents:
                     myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * component.material_qty
 
-                    pipeline = build_pipeline(session['myUser_id'],  component.product_id, component.blueprint_id, component.runs, requirements.material_id, requirements.quantity * component.material_qty, myCost, component.product_name, requirements.material, 429, 0, component.jita_sell_price, component.local_sell_price, component.build_cost, component.material_id, component.status, component.material_vol)
+                    pipeline = build_pipeline(session['myUser_id'],  component.product_id, component.blueprint_id, component.runs, requirements.material_id, requirements.quantity * component.material_qty, myCost, component.product_name, requirements.material, 429, 0, component.jita_sell_price, component.local_sell_price, component.build_cost, component.material_id, component.status, requirements.vol)
 
                     db.session.add(pipeline)
                     db.session.commit()
 
                 newcost_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],blueprint_id=comp_blueprint_id).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol').all()
-                materialCost = build_pipeline_rollup_cost(newcost_pipeline)
+                materialCost = build_pipeline_rollup_cost(newcost_pipeline, subtract_oh_assets)
                 for item in newcost_pipeline:
                     comp = db.session.query(build_pipeline).filter_by(id=item.id).one()
                     comp.build_cost = materialCost / comp.runs
@@ -1582,8 +1650,15 @@ def bom():
                     db.session.delete(mat)
                     db.session.commit()
 
+                if build_or_buy_all == 0:
+                    mats_all = db.session.query(build_pipeline).filter(build_pipeline.user_id==session['myUser_id']).filter(build_pipeline.group_id==429).filter(build_pipeline.status==2).filter(build_pipeline.material_comp_id > 0).all()
+                    for mat1 in mats_all:
+                        db.session.delete(mat1)
+                        db.session.commit()
+
+
                 newcost_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],blueprint_id=comp_blueprint_id).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol').all()
-                materialCost = build_pipeline_rollup_cost(newcost_pipeline)
+                materialCost = build_pipeline_rollup_cost(newcost_pipeline, subtract_oh_assets)
                 for item in newcost_pipeline:
                     comp = db.session.query(build_pipeline).filter_by(id=item.id).one()
                     comp.build_cost = materialCost / comp.runs
@@ -1603,19 +1678,19 @@ def bom():
                 db.session.add(comp)
                 db.session.commit()
 
-                myBuildComponents = db.session.query(v_build_components).filter_by(id = component1.material_id).with_entities('id','material','material_id','quantity').all()
+                myBuildComponents = db.session.query(v_build_components).filter_by(id = component1.material_id).with_entities('id','material','material_id','quantity', 'vol').all()
                 comp_blueprint_id = component1.blueprint_id
 
                 for requirements in myBuildComponents:
                     myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * component1.material_qty
 
-                    pipeline = build_pipeline(session['myUser_id'],  component1.product_id, component1.blueprint_id, component1.runs, requirements.material_id, requirements.quantity * component1.material_qty, myCost, component1.product_name, requirements.material, 18, 0, component1.jita_sell_price, component1.local_sell_price, component1.build_cost, component1.product_id, component1.status, component1.material_vol)
+                    pipeline = build_pipeline(session['myUser_id'],  component1.product_id, component1.blueprint_id, component1.runs, requirements.material_id, requirements.quantity * component1.material_qty, myCost, component1.product_name, requirements.material, 18, 0, component1.jita_sell_price, component1.local_sell_price, component1.build_cost, component1.product_id, component1.status, requirements.vol)
 
                     db.session.add(pipeline)
                     db.session.commit()
 
                 newcost_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],blueprint_id=comp_blueprint_id).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol').all()
-                materialCost = build_pipeline_rollup_cost(newcost_pipeline)
+                materialCost = build_pipeline_rollup_cost(newcost_pipeline, subtract_oh_assets)
                 for item in newcost_pipeline:
                     comp = db.session.query(build_pipeline).filter_by(id=item.id).one()
                     comp.build_cost = materialCost / comp.runs
@@ -1635,8 +1710,14 @@ def bom():
                     db.session.delete(mat)
                     db.session.commit()
 
+                if build_or_buy_all_t1 == 0:
+                    mats_all = db.session.query(build_pipeline).filter(build_pipeline.user_id==session['myUser_id']).filter(build_pipeline.group_id==18).filter(build_pipeline.material_comp_id > 0).filter(build_pipeline.status==2).all()
+                    for mat1 in mats_all:
+                        db.session.delete(mat1)
+                        db.session.commit()
+
                 newcost_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],blueprint_id=comp_blueprint_id).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol').all()
-                materialCost = build_pipeline_rollup_cost(newcost_pipeline)
+                materialCost = build_pipeline_rollup_cost(newcost_pipeline, subtract_oh_assets)
                 for item in newcost_pipeline:
                     comp = db.session.query(build_pipeline).filter_by(id=item.id).one()
                     comp.build_cost = materialCost / comp.runs
@@ -1654,12 +1735,12 @@ def bom():
                 db.session.add(comp)
                 db.session.commit()
 
-                myBuildComponents = db.session.query(v_build_components).filter_by(id = component2.material_id).with_entities('id','material','material_id','quantity').all()
+                myBuildComponents = db.session.query(v_build_components).filter_by(id = component2.material_id).with_entities('id','material','material_id','quantity', 'vol').all()
 
                 for requirements in myBuildComponents:
                     myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * component2.material_qty
 
-                    pipeline = build_pipeline(session['myUser_id'],  component2.product_id, component2.blueprint_id, component2.runs, requirements.material_id, requirements.quantity * component2.material_qty, myCost, component2.product_name, requirements.material, 18, 0, component2.jita_sell_price, component2.local_sell_price, component2.build_cost, component2.product_id,component2.status, component2.material_vol)
+                    pipeline = build_pipeline(session['myUser_id'],  component2.product_id, component2.blueprint_id, component2.runs, requirements.material_id, requirements.quantity * component2.material_qty, myCost, component2.product_name, requirements.material, 18, 0, component2.jita_sell_price, component2.local_sell_price, component2.build_cost, component2.product_id,component2.status, requirements.vol)
 
                     db.session.add(pipeline)
                     db.session.commit()
@@ -1681,7 +1762,7 @@ def bom():
         mineral_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=18, status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol').order_by('material_id').all()
 
         calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
-        mineralInPipeline = build_pipeline_rollup_qty(mineral_pipeline)
+        mineralInPipeline = build_pipeline_rollup_qty(mineral_pipeline, subtract_oh_assets)
         if request.form.get('add_mining'):
             trit_required = 0
             pye_required = 0
@@ -1732,28 +1813,32 @@ def bom():
                 db.session.commit()
                 flash('Successfully sent mineral requirements to mining calculator.','success')
 
+        component_vol_total = 0
+        tech1_vol_total = 0
         calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
-        datacoresInPipeline = invent_pipeline_rollup_qty(inv_pipeline)
-        dc_total = invent_pipeline_rollup_cost(inv_pipeline)
-        vol_total = invent_pipeline_rollup_vol(inv_pipeline)
-        planetaryInPipeline = build_pipeline_rollup_qty(planetary_pipeline)
-        planet_total = build_pipeline_rollup_cost(planetary_pipeline)
-        planet_vol_total = build_pipeline_rollup_vol(planetary_pipeline)
-        componentInPipeline = build_pipeline_rollup_qty(component_pipeline)
-        component_total = build_pipeline_rollup_cost(component_pipeline)
-        component_vol_total = build_pipeline_rollup_vol(component_pipeline)
-        materialInPipeline = build_pipeline_rollup_qty(material_pipeline)
-        material_total = build_pipeline_rollup_cost(material_pipeline)
-        material_vol_total = build_pipeline_rollup_vol(material_pipeline)
-        tech1InPipeline = build_pipeline_rollup_qty(tech1_pipeline)
-        tech1_total = build_pipeline_rollup_cost(tech1_pipeline)
-        tech1_vol_total = build_pipeline_rollup_vol(tech1_pipeline)
-        ramInPipeline = build_pipeline_rollup_qty(ram_pipeline)
-        ram_total = build_pipeline_rollup_cost(ram_pipeline)
-        ram_vol_total = build_pipeline_rollup_vol(ram_pipeline)
-        mineralInPipeline = build_pipeline_rollup_qty(mineral_pipeline)
-        mineral_total = build_pipeline_rollup_cost(mineral_pipeline)
-        mineral_vol_total = build_pipeline_rollup_vol(mineral_pipeline)
+        datacoresInPipeline = invent_pipeline_rollup_qty(inv_pipeline, subtract_oh_assets)
+        dc_total = invent_pipeline_rollup_cost(inv_pipeline, subtract_oh_assets)
+        vol_total = invent_pipeline_rollup_vol(inv_pipeline, subtract_oh_assets)
+        planetaryInPipeline = build_pipeline_rollup_qty(planetary_pipeline, subtract_oh_assets)
+        planet_total = build_pipeline_rollup_cost(planetary_pipeline, subtract_oh_assets)
+        planet_vol_total = build_pipeline_rollup_vol(planetary_pipeline, subtract_oh_assets)
+        componentInPipeline = build_pipeline_rollup_qty(component_pipeline, subtract_oh_assets)
+        component_total = build_pipeline_rollup_cost(component_pipeline, subtract_oh_assets)
+        if component_total > 0:
+            component_vol_total = build_pipeline_rollup_vol(component_pipeline, subtract_oh_assets)
+        materialInPipeline = build_pipeline_rollup_qty(material_pipeline, subtract_oh_assets)
+        material_total = build_pipeline_rollup_cost(material_pipeline, subtract_oh_assets)
+        material_vol_total = build_pipeline_rollup_vol(material_pipeline, subtract_oh_assets)
+        tech1InPipeline = build_pipeline_rollup_qty(tech1_pipeline, subtract_oh_assets)
+        tech1_total = build_pipeline_rollup_cost(tech1_pipeline, subtract_oh_assets)
+        if tech1_total > 0:
+            tech1_vol_total = build_pipeline_rollup_vol(tech1_pipeline, subtract_oh_assets)
+        ramInPipeline = build_pipeline_rollup_qty(ram_pipeline, subtract_oh_assets)
+        ram_total = build_pipeline_rollup_cost(ram_pipeline, subtract_oh_assets)
+        ram_vol_total = build_pipeline_rollup_vol(ram_pipeline, subtract_oh_assets)
+        mineralInPipeline = build_pipeline_rollup_qty(mineral_pipeline, subtract_oh_assets)
+        mineral_total = build_pipeline_rollup_cost(mineral_pipeline, subtract_oh_assets)
+        mineral_vol_total = build_pipeline_rollup_vol(mineral_pipeline, subtract_oh_assets)
         total_volume = ram_vol_total + tech1_vol_total + material_vol_total + component_vol_total + planet_vol_total + vol_total
 
         bom_total = 0
@@ -1765,7 +1850,7 @@ def bom():
         bom_total += ram_total
         bom_total += mineral_total
 
-        return render_template('shopping_list.html', datacoresInPipeline=datacoresInPipeline, planetaryInPipeline=planetaryInPipeline, componentInPipeline=componentInPipeline, materialInPipeline=materialInPipeline, tech1InPipeline=tech1InPipeline, ramInPipeline=ramInPipeline, mineralInPipeline=mineralInPipeline, bom_total=bom_total, dc_total=dc_total, planet_total=planet_total, component_total=component_total, material_total=material_total, tech1_total=tech1_total, ram_total=ram_total, mineral_total=mineral_total,calcs=calcs, vol_total=vol_total, planet_vol_total=planet_vol_total, component_vol_total=component_vol_total, material_vol_total=material_vol_total, tech1_vol_total=tech1_vol_total, ram_vol_total=ram_vol_total, mineral_vol_total=mineral_vol_total, total_volume=total_volume)
+        return render_template('shopping_list.html', datacoresInPipeline=datacoresInPipeline, planetaryInPipeline=planetaryInPipeline, componentInPipeline=componentInPipeline, materialInPipeline=materialInPipeline, tech1InPipeline=tech1InPipeline, ramInPipeline=ramInPipeline, mineralInPipeline=mineralInPipeline, bom_total=bom_total, dc_total=dc_total, planet_total=planet_total, component_total=component_total, material_total=material_total, tech1_total=tech1_total, ram_total=ram_total, mineral_total=mineral_total,calcs=calcs, vol_total=vol_total, planet_vol_total=planet_vol_total, component_vol_total=component_vol_total, material_vol_total=material_vol_total, tech1_vol_total=tech1_vol_total, ram_vol_total=ram_vol_total, mineral_vol_total=mineral_vol_total, total_volume=total_volume, subtract_oh_assets=subtract_oh_assets)
 
         #except Exception as e:
         #    flash('Problem with B.o.M. - see log.', 'danger')
@@ -1779,6 +1864,7 @@ def bom():
 @app.route('/build', methods=['GET','POST'])
 def build():
     myBlueprints = []
+    subtract_oh_assets = 'None'
     try:
         myBlueprints = db.session.query(v_build_product).all()
         bp_all = True
@@ -1817,8 +1903,8 @@ def build():
 
             pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id', 'runs', 'jita_sell_price','local_sell_price','build_cost','status')
 
-            materialInPipeline = build_pipeline_rollup_qty(pipeline)
-            materialCost = build_pipeline_rollup_cost(pipeline)
+            materialInPipeline = build_pipeline_rollup_qty(pipeline, subtract_oh_assets)
+            materialCost = build_pipeline_rollup_cost(pipeline, subtract_oh_assets)
 
             return render_template('build.html', blueprints=myBlueprints, bp_id=0, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, bp_all=bp_all)
         else:
@@ -1831,6 +1917,7 @@ def build():
 
 @app.route('/build_selected', methods=['POST','GET'])
 def build_selected():
+    subtract_oh_assets = 'None'
     runs = 1
     bp_all = True
     id = request.form.get('build_product')
@@ -1871,8 +1958,8 @@ def build_selected():
 
             pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost','status')
 
-            materialInPipeline = build_pipeline_rollup_qty(pipeline)
-            materialCost = build_pipeline_rollup_cost(pipeline)
+            materialInPipeline = build_pipeline_rollup_qty(pipeline, subtract_oh_assets)
+            materialCost = build_pipeline_rollup_cost(pipeline, subtract_oh_assets)
 
             return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, runs=runs, bp_all=bp_all)
 
@@ -1890,6 +1977,7 @@ def build_add_pipeline():
     if 'myUser_id' in session:
         #try:
         if id > 0:
+            subtract_oh_assets = 'None'
             myBlueprints = db.session.query(v_build_product).all()
             selected_bp = db.session.query(v_build_product).filter_by(id = id).one()
             myProduct = db.session.query(invtypes).filter_by(typeID = int(selected_bp.t2_id)).one()
@@ -1909,8 +1997,8 @@ def build_add_pipeline():
 
             pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost','status')
 
-            materialInPipeline = build_pipeline_rollup_qty(pipeline)
-            materialCost = build_pipeline_rollup_cost(pipeline)
+            materialInPipeline = build_pipeline_rollup_qty(pipeline, subtract_oh_assets)
+            materialCost = build_pipeline_rollup_cost(pipeline, subtract_oh_assets)
 
             if request.form.get('job_runs') <> '':
                 for requirements in myBuildRequirements:
@@ -1944,6 +2032,7 @@ def build_add_pipeline():
 def invent():
     runs = 20
     myBlueprints = []
+    subtract_oh_assets = 'None'
 
     try:
         myBlueprints = db.session.query(v_invention_product).all()
@@ -1983,8 +2072,8 @@ def invent():
 
             pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status')
 
-            materialInPipeline = invent_pipeline_rollup_qty(pipeline)
-            materialCost = invent_pipeline_rollup_cost(pipeline)
+            materialInPipeline = invent_pipeline_rollup_qty(pipeline, subtract_oh_assets)
+            materialCost = invent_pipeline_rollup_cost(pipeline, subtract_oh_assets)
 
             return render_template('invent.html', blueprints=myBlueprints, bp_id=0, pipeline=pipeline, materialInPipeline=materialInPipeline, pipeline_products=pipeline_products, materialCost=materialCost, runs=runs, bp_all=bp_all)
         else:
@@ -1997,6 +2086,7 @@ def invent():
 
 @app.route('/invent_selected', methods=['POST','GET'])
 def invent_selected():
+    subtract_oh_assets = 'None'
     queryByName = False
     runs = 20
     if request.form.get('bp_all'): bp_all = request.form.get('bp_all')
@@ -2042,8 +2132,8 @@ def invent_selected():
 
             pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status')
 
-            materialInPipeline = invent_pipeline_rollup_qty(pipeline)
-            materialCost = invent_pipeline_rollup_cost(pipeline)
+            materialInPipeline = invent_pipeline_rollup_qty(pipeline, subtract_oh_assets)
+            materialCost = invent_pipeline_rollup_cost(pipeline, subtract_oh_assets)
 
             return render_template('invent.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, probability=myProbPercent, sell_median=mySellMedian, time=myTime, datacoreRequirements = myDatacoreRequirements, datacoresCost=myDatacoresCost, baseProduct = myBaseProduct.material, pipeline=pipeline, materialInPipeline=materialInPipeline, materialCost=materialCost, pipeline_products=pipeline_products, runs=runs, bp_all=bp_all)
 
@@ -2062,6 +2152,7 @@ def invent_add_pipeline():
     if 'myUser_id' in session:
         try:
             if id > 0:
+                subtract_oh_assets = 'None'
                 myBlueprints = db.session.query(v_invention_product).all()
                 selected_bp = db.session.query(v_invention_product).filter_by(id = id).one()
                 selected_product = db.session.query(v_product).filter_by(id = selected_bp.t2_id).one()
@@ -2082,8 +2173,8 @@ def invent_add_pipeline():
 
                 pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status')
 
-                materialInPipeline = invent_pipeline_rollup_qty(pipeline)
-                materialCost = invent_pipeline_rollup_cost(pipeline)
+                materialInPipeline = invent_pipeline_rollup_qty(pipeline, subtract_oh_assets)
+                materialCost = invent_pipeline_rollup_cost(pipeline, subtract_oh_assets)
 
                 if request.form.get('job_runs') <> '':
                     for requirements in myDatacoreRequirements:
@@ -2114,42 +2205,6 @@ def invent_add_pipeline():
         return redirect(url_for('invent'))
 
 
-@app.route('/updateBuilder', methods=['POST'])
-def updateBuilder():
-    if request.method == 'POST':
-        try:
-            if 'email' in session:
-                email = session['email']
-                editedBuilder = db.session.query(User).filter_by(email = email).one()
-                if request.form['name']:
-                    editedBuilder.name = request.form['name']
-                if request.form['email']:
-                    editedBuilder.email = request.form['email']
-                if request.form['password']:
-                    editedBuilder.password = sha256_crypt.encrypt(str(request.form['password']))
-                if request.form['api_key']:
-                    editedBuilder.api_key = request.form['api_key']
-                if request.form['api_code']:
-                    editedBuilder.api_code = request.form['api_code']
-
-                editedBuilder.last_logged_in = datetime.now()
-                db.session.add(editedBuilder)
-                db.session.commit()
-                flash('Builder details successfully updated.', 'success')
-                session['logged_in'] = True
-                session['name'] = editedBuilder.name
-                session['email'] = editedBuilder.email
-                session['api_key'] = editedBuilder.api_key
-                session['api_code'] = editedBuilder.api_code
-
-                app.logger.info(editedBuilder.name + ' successfully updated.')
-
-            return redirect(url_for('index'))
-        except Exception as e:
-            flash('Builder update failed. See log', 'danger')
-            app.logger.info(str(e))
-            return redirect(url_for('index'))
-
 @app.route('/login', methods=['GET','POST'])
 def login():
     sso = db.session.query(eve_sso).all()
@@ -2172,12 +2227,25 @@ def login():
         headers1 = {'Authorization': 'Bearer ' + auth_code}
         response1 = requests.get('https://esi.tech.ccp.is/verify/', headers=headers1)
         jsonData1 = json.loads(response1.text)
+        #print jsonData1
 
         if jsonData1:
             character_id = str(jsonData1['CharacterID'])
+            #print character_id
+            payload = {'datasource':'tranquility'}
+            response2 = requests.get('https://esi.evetech.net/latest/characters/'+character_id, params=payload)
+            jsonData2 = json.loads(response2.text)
+            #print jsonData2
+            corp_id = str(jsonData2['corporation_id'])
+            response3 = requests.get('https://esi.evetech.net/latest/corporations/'+corp_id, params=payload)
+            jsonData3 = json.loads(response3.text)
+            corp_name = jsonData3['name']
             character_name = jsonData1['CharacterName']
             new_expiration = jsonData1['ExpiresOn']
             myUser = db.session.query(users).filter_by(character_id=character_id).all()
+            home_station_id = '0'
+            structure_role_bonus = 1.0
+            default_bp_me = 2.0
 
             if myUser:
                 lli = myUser[0].last_logged_in.strftime('%b %d, %Y')
@@ -2185,12 +2253,15 @@ def login():
                 myUser[0].expiration = new_expiration
                 myUser[0].last_logged_in = datetime.now()
                 myUser[0].active = True
+                home_station_id = myUser[0].home_station_id
+                structure_role_bonus = float(myUser[0].structure_role_bonus)
+                default_bp_me = float(myUser[0].default_bp_me)
                 db.session.add(myUser[0])
                 db.session.commit()
 
                 flash('Successful login. '+character_name+' last logged in on: ' + lli,  'success')
             else:
-                myUser = users(character_id, character_name, refresh_token, new_expiration, auth_code, True, datetime.now())
+                myUser = users(character_id, character_name, refresh_token, new_expiration, auth_code, True, datetime.now(), home_station_id, structure_role_bonus, default_bp_me, corp_id)
                 db.session.add(myUser)
                 db.session.commit()
 
@@ -2201,40 +2272,15 @@ def login():
             session['myUser_id'] = character_id
             session['access_token'] = auth_code
             session['expiration'] = new_expiration
+            session['corp_id'] = corp_id
+            session['home_station_id'] = home_station_id
+            session['structure_role_bonus'] = structure_role_bonus
+            session['default_bp_me'] = default_bp_me
+            session['corp_name'] = corp_name
 
 
     return redirect(url_for('index'))
 
-@app.route('/login_old', methods=['GET','POST'])
-def login_old():
-    if request.method == 'POST' and form.validate():
-        email = form.email.data
-        password_candidate = form.password.data
-        try:
-            myUser = db.session.query(User).filter_by(email = email).one()
-            lli = myUser.last_logged_in.strftime('%b %d, %Y')
-            if sha256_crypt.verify(password_candidate, myUser.password):
-                session['logged_in'] = True
-                session['name'] = myUser.name
-                session['myUser_id'] = myUser.id
-                session['email'] = myUser.email
-                session['api_key'] = myUser.api_key
-                session['api_code'] = myUser.api_code
-
-                myUser.last_logged_in = datetime.now()
-                db.session.add(myUser)
-                db.session.commit()
-                flash('Successful login. You last logged in on: ' + lli,  'success')
-                return redirect(url_for('index'))
-            else:
-                flash('Login denied. Wrong password. Try again', 'danger')
-                return render_template('login.html')
-        except Exception as e:
-            app.logger.info(str(e))
-            flash('Problem logging in. See log', 'danger')
-            return render_template('login.html')
-    else:
-        return render_template('login.html')
 
 @app.route('/registration', methods=['GET', 'POST'])
 def register():
@@ -2250,7 +2296,13 @@ def register():
 
 @app.route('/logout')
 def logout():
+    user_id = session['myUser_id']
     session.clear()
+    myUser = db.session.query(users).filter_by(character_id=user_id).all()
+    if myUser:
+        myUser[0].active = False
+        db.session.add(myUser[0])
+        db.session.commit()
     flash('You have logged out.', 'success')
     return redirect(url_for('index'))
 
@@ -2269,27 +2321,36 @@ def get_marketValue(typeID, buyOrSell):
         flash('Problem with Market API. See log', 'danger')
         return 0
 
+def calc_efficiency(qty):
+    wasteval = (1 - (float(session['structure_role_bonus']))/100) * (1 - (float(session['default_bp_me']))/100)
+    myQty = ceil(round(qty * wasteval, 3))
 
-def build_pipeline_rollup_cost(pipeline):
+def build_pipeline_rollup_cost(pipeline, subtract_oh_assets):
     buildCost = 0.0
+    mat_oh = 0
     for item in pipeline:
-        mat_oh = search_assets(session['myUser_id'], item.material_id)
+        if subtract_oh_assets == 'true':
+            mat_oh = search_assets(session['myUser_id'], item.material_id)
+
         if mat_oh == 0:
             buildCost += item.material_cost * item.runs
 
     return buildCost
 
-def build_pipeline_rollup_vol(pipeline):
+def build_pipeline_rollup_vol(pipeline, subtract_oh_assets):
     vol = 0.0
+    mat_oh = 0
 
     for item in pipeline:
-        mat_oh = search_assets(session['myUser_id'], item.material_id)
+        if subtract_oh_assets == 'true':
+            mat_oh = search_assets(session['myUser_id'], item.material_id)
+
         if mat_oh == 0:
             vol += (item.material_vol * item.runs * item.material_qty)
 
     return vol
 
-def fitting_rollup_cost(myFittings, fittingIndex):
+def fitting_rollup_cost(myFittings):
     buildCost = 0.0
     for item in myFittings:
         if item.component_qty > 0:
@@ -2297,7 +2358,7 @@ def fitting_rollup_cost(myFittings, fittingIndex):
 
     return buildCost
 
-def build_pipeline_rollup_qty(pipeline):
+def build_pipeline_rollup_qty(pipeline, subtract_oh_assets):
     materialInPipeline = []
     matchFound1 = False
 
@@ -2312,7 +2373,9 @@ def build_pipeline_rollup_qty(pipeline):
         if matchFound1 == True:
             matchFound1 = False
         else:
-            mat_oh = search_assets(session['myUser_id'], item.material_id)
+            if subtract_oh_assets == 'true':
+                mat_oh = search_assets(session['myUser_id'], item.material_id)
+
             mat_qty = (item.material_qty * item.runs) - mat_oh
             if mat_qty < 0: mat_qty = 0
             my_bom = BomMaterial(item.material_id, item.material, mat_qty, item.material_cost, item.runs, item.id, item.build_or_buy, item.blueprint_id, item.material_vol)
@@ -2320,25 +2383,31 @@ def build_pipeline_rollup_qty(pipeline):
 
     return materialInPipeline
 
-def invent_pipeline_rollup_cost(pipeline):
+def invent_pipeline_rollup_cost(pipeline, subtract_oh_assets):
     buildCost = 0.0
+    dc_oh = 0
     for item in pipeline:
-        dc_oh = search_assets(session['myUser_id'], item.datacore_id)
+        if subtract_oh_assets == 'true':
+            dc_oh = search_assets(session['myUser_id'], item.datacore_id)
+
         if dc_oh == 0:
             buildCost += (item.datacore_cost * item.runs)
 
     return buildCost
 
-def invent_pipeline_rollup_vol(pipeline):
+def invent_pipeline_rollup_vol(pipeline, subtract_oh_assets):
     vol = 0.0
+    dc_oh = 0
     for item in pipeline:
-        dc_oh = search_assets(session['myUser_id'], item.datacore_id)
+        if subtract_oh_assets == 'true':
+            dc_oh = search_assets(session['myUser_id'], item.datacore_id)
+
         if dc_oh == 0:
             vol += (item.datacore_vol * item.runs)
 
     return vol
 
-def invent_pipeline_rollup_qty(pipeline):
+def invent_pipeline_rollup_qty(pipeline, subtract_oh_assets):
     materialInPipeline = []
     matchFound1 = False
 
@@ -2353,7 +2422,9 @@ def invent_pipeline_rollup_qty(pipeline):
         if matchFound1 == True:
             matchFound1 = False
         else:
-            dc_oh = search_assets(session['myUser_id'], item.datacore_id)
+            if subtract_oh_assets == 'true':
+                dc_oh = search_assets(session['myUser_id'], item.datacore_id)
+
             dc_qty = (item.datacore_qty * item.runs) - dc_oh
             if dc_qty < 0: dc_qty = 0
             my_bom = BomDatacores(item.datacore_id, item.datacore, dc_qty, item.datacore_cost, item.runs, item.datacore_vol)
