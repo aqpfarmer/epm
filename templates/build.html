@@ -66,7 +66,7 @@
         <div>
           {% if bp_id > 0 %}
             {% if sell_median > 0 %}
-              <p>Profit Margin: {{ "{:.2%}".format((sell_median-buildCost)/sell_median) }} </p>
+              <p>Raw Profit Margin: {{ "{:.2%}".format((sell_median-(buildCost/product.portionSize))/sell_median) }} </p>
             {% endif %}
             <h6 class="my-0">Description </h6>
           {% else %}
@@ -215,7 +215,7 @@ style="width: 75px;">
                 {% for item in materialInPipeline %}
                 <tr>
                   <td colspan="2">{{ item.material }}</td>
-                  <td> {{ "{:,.0f}".format(item.material_qty ) }} </td>
+                  <td> {{ "{:,.0f}".format(item.material_qty) }} </td>
                 </tr>
                 {% endfor %}
               {% endif %}

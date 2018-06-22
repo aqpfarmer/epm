@@ -101,15 +101,15 @@
                   {% else %}
                     {% set mv.a = item.local_sell_price %}
                   {% endif %}
-                  <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(mv.a * item.runs) }}</p></td>
-                  <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.build_cost * item.runs) }}</p></td>
+                  <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(mv.a * item.runs * item.portion_size) }}</p></td>
+                  <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.build_cost/(item.portion_size*item.runs) * item.runs) }}</p></td>
                   <td>
-                  {% if (mv.a - item.build_cost) / mv.a < 0 %}
+                  {% if (mv.a - (item.build_cost/item.portion_size)) / mv.a < 0 %}
                     <p class="mt-1 text-center text-danger pt-1">
                   {% else %}
                     <p class="mt-1 text-center text-primary pt-1">
                   {% endif %}
-                  <strong>{{ "{:.2%}".format((mv.a - item.build_cost) / mv.a) }}</strong></p>
+                  <strong>{{ "{:.2%}".format((mv.a - (item.build_cost/(item.portion_size*item.runs) * item.runs)) / mv.a) }}</strong></p>
                   </td>
                   <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.jita_sell_price) }}</p></td>
                 </tr>

@@ -94,7 +94,7 @@
                 <tr>
                   <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
                   <td colspan="3"><p class="mt-2">{{ item.material }}</p></td>
-                  <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
+                  <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty )  }}</p></td>
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_vol * item.material_qty) }}</p> </td>
                 </tr>
@@ -147,8 +147,8 @@
                 <tr>
                   <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_64.png"></th>
                   <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
-                  <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
-                  <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
+                  <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty )  }}</p></td>
+                  <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost ) }}</p></td>
                   <td>
                     <div class="form-check form-check-inline">
                       {% if item.build_or_buy == 0 %}
@@ -206,7 +206,7 @@
                       <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
                       <td colspan="3"><p class="mt-2">{{ item.material }}</p></td>
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
-                      <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
+                      <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost) }}</p></td>
                       <td><p class="mt-1 text-center"> {{ "{:,.0f}".format(item.material_vol * item.material_qty) }}</p> </td>
                     </tr>
                     {% endfor %}
@@ -258,8 +258,8 @@
                   <tr>
                     <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_64.png"></th>
                     <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
-                    <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
-                    <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
+                    <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty )  }}</p></td>
+                    <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost) }}</p></td>
                     <td>
                       <div class="form-check form-check-inline">
                         {% if item.build_or_buy == 0 %}
@@ -317,8 +317,8 @@
                     <tr>
                       <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.material_id}}_32.png"></th>
                       <td colspan="3"><p class="mt-1">{{ item.material }}</p></td>
-                      <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
-                      <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost * item.runs) }}</p></td>
+                      <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty )  }}</p></td>
+                      <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost ) }}</p></td>
                       <td>
                         <div class="form-check form-check-inline">
                           {% if item.build_or_buy == 0 %}
@@ -337,7 +337,7 @@
                               <label class="form-check-label" for="build">Build</label>
                           {% endif %}
                       </td>
-                      <td><p class="mt-1 text-center"> {{ "{:,.0f}".format(item.material_vol * item.material_qty) }}</p> </td>
+                      <td><p class="mt-1 text-center"> {{ "{:,.0f}".format(item.material_vol * item.material_qty ) }}</p> </td>
                     </tr>
                     <input type="hidden" name="material_id" value="{{ item.material_id }}">
                   </form>
@@ -419,7 +419,7 @@
                             <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
                           {% endif %}
                           {% if item.material_id == 11399 and index == 7 %}
-                            <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
+                            <p class="pl-3">{{ "{:,.0f}".format(item.material_qty ) }}</p>
                            {% endif %}
                         {% endfor %}
                       {% endfor %}
