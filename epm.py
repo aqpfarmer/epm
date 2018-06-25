@@ -14,11 +14,12 @@ import math
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chris:funkytown@catfish/evesde'
 app.debug = True # disable this in production!
-app.config['SECRET_KEY'] = 'super-secret-foolish-fool'
+app.config['SECRET_KEY'] = 'super-secret-foolish-fool111'
 app.config['SECURITY_REGISTERABLE'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['POOL_SIZE'] = 20
+app.config['POOL_SIZE'] = 100
 app.config['MAX_OVERFLOW'] = 0
+app.config['ISOLATION_LEVEL'] = 'READ UNCOMMITTED'
 
 db = SQLAlchemy(app)
 
@@ -564,16 +565,16 @@ class v_my_invention_product(db.Model):
         self.qty = qty
 
 class v_my_build_product(db.Model):
-    id = db.Column(db.Integer(), primary_key=True)
+    id = db.Column(db.Integer())
     user_id = db.Column(db.Integer())
     t2_blueprint = db.Column(db.String(100))
-    t2_id = db.Column(db.Integer())
+    t2_id = db.Column(db.Integer(), primary_key=True)
     location_id = db.Column(db.String(100))
     qty = db.Column(db.Integer())
 
-    def __init__(user_id, t2_blueprint, t2_id, location_id, qty):
+    def __init__(id, user_id, t2_blueprint, t2_id, location_id, qty):
         self.user_id - user_id
-        self.t2_blueprint = str(t2_blueprint)
+        self.t2_blueprint = t2_blueprint
         self.t2_id = t2_id
         self.location_id = location_id
         self.qty = qty
@@ -1429,103 +1430,104 @@ def utility_processor():
 @app.route("/pipeline", methods=['GET','POST'])
 def pipeline():
     if 'myUser_id' in session:
-        try:
-            inv_pipeline = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name','user_id','runs','blueprint_id','status').order_by('product_name').all()
+        #try:
+        inv_pipeline = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name','user_id','runs','blueprint_id','status').order_by('product_name').all()
 
-            bld_pipeline = db.session.query(v_build_pipeline_products).filter_by(user_id= session['myUser_id']).with_entities('product_name','user_id','blueprint_id','product_id','runs','jita_sell_price','local_sell_price','build_cost','status', 'portion_size').order_by('product_name').all()
+        bld_pipeline = db.session.query(v_build_pipeline_products).filter_by(user_id= session['myUser_id']).with_entities('product_name','user_id','blueprint_id','product_id','runs','jita_sell_price','local_sell_price','build_cost','status', 'portion_size').order_by('product_name').all()
 
-            if request.method == 'POST':
-                if request.form.get('inv_pipeline_select'):
-                    if request.form.get('action') == 'UPD':
-                        bp_id = request.form.get('blueprint_id')
-                        runs = request.form.get('qty')
-                        status = request.form.get('inv_pipeline_select')
+        if request.method == 'POST':
+            if request.form.get('inv_pipeline_select'):
+                if request.form.get('action') == 'UPD':
+                    bp_id = request.form.get('blueprint_id')
+                    runs = request.form.get('qty')
+                    status = request.form.get('inv_pipeline_select')
+
+                    pipeline = db.session.query(invent_pipeline).filter_by(blueprint_id = bp_id).all()
+                    for item in pipeline:
+                        item.runs = runs
+                        item.status = status
+                        db.session.add(item)
+                        db.session.commit()
+                    #print request.form.get('inv_pipeline_select')
+                    if request.form.get('inv_pipeline_select') == '2':
 
                         pipeline = db.session.query(invent_pipeline).filter_by(blueprint_id = bp_id).all()
+                        product_id = 0
+                        blueprint_id = 0
+                        product_name = ''
                         for item in pipeline:
-                            item.runs = runs
-                            item.status = status
-                            db.session.add(item)
-                            db.session.commit()
-                        #print request.form.get('inv_pipeline_select')
-                        if request.form.get('inv_pipeline_select') == '2':
-
-                            pipeline = db.session.query(invent_pipeline).filter_by(blueprint_id = bp_id).all()
-                            product_id = 0
-                            blueprint_id = 0
-                            product_name = ''
-                            for item in pipeline:
-                                product_id = item.product_id
-                                blueprint_id = item.blueprint_id
-                                product_name = item.product_name
-                                db.session.delete(item)
-                                db.session.commit()
-
-                            selected_product = db.session.query(v_product).filter_by(id = product_id).one()
-                            querySell = get_marketValue(selected_product.t2_id,'buy')
-                            myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = product_id, product_id=selected_product.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id', 'vol').all()
-
-                            myBuildCost = 0
-                            myMaterialCost = []
-                            for requirements in myBuildRequirements:
-                                myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
-
-                            for cost in myMaterialCost:
-                                myBuildCost = myBuildCost + cost
-
-                            for requirements in myBuildRequirements:
-                                myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty
-
-                                pipeline = build_pipeline(session['myUser_id'],  selected_product.t2_id, product_id, runs, requirements.material_id, requirements.qty, myCost, product_name, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2, requirements.vol)
-
-                                db.session.add(pipeline)
-                                db.session.commit()
-
-                            flash('Successfully converted invention to build product.', 'success')
-                            return redirect(url_for('pipeline'))
-
-                    if request.form.get('action') == 'DEL':
-                            bp_id = request.form.get('blueprint_id')
-
-                            pipeline = db.session.query(invent_pipeline).filter_by(blueprint_id = bp_id).all()
-                            for item in pipeline:
-                                db.session.delete(item)
-                                db.session.commit()
-                            flash('Successfully deleted pipeline product.', 'success')
-
-                    inv_pipeline = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name','user_id','runs','blueprint_id','status').order_by('product_name').all()
-
-                if request.form.get('bld_pipeline_select'):
-                    if request.form.get('action') == 'UPD':
-                        bp_id = request.form.get('blueprint_id')
-                        runs = request.form.get('qty')
-                        status = request.form.get('bld_pipeline_select')
-                        local_sell_price = float(request.form.get('local_sell').replace(',', ''))
-                        pipeline = db.session.query(build_pipeline).filter_by(blueprint_id = bp_id).all()
-                        for item in pipeline:
-                            item.runs = runs
-                            item.status = status
-                            item.local_sell_price = local_sell_price
-                            db.session.add(item)
+                            product_id = item.product_id
+                            blueprint_id = item.blueprint_id
+                            product_name = item.product_name
+                            db.session.delete(item)
                             db.session.commit()
 
-                    if request.form.get('action') == 'DEL':
+                        selected_product = db.session.query(v_product).filter_by(id = product_id).one()
+                        querySell = get_marketValue(selected_product.t2_id,'buy')
+                        myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = product_id, product_id=selected_product.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id', 'vol').all()
+                        myProduct = db.session.query(invtypes).filter_by(typeID = int(selected_product.t2_id)).one()
+
+                        myBuildCost = 0
+                        myMaterialCost = []
+                        for requirements in myBuildRequirements:
+                            myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
+
+                        for cost in myMaterialCost:
+                            myBuildCost = myBuildCost + cost
+
+                        for requirements in myBuildRequirements:
+                            myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty
+
+                            pipeline = build_pipeline(session['myUser_id'],  selected_product.t2_id, product_id, runs, requirements.material_id, requirements.qty, myCost, product_name, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2, requirements.vol, myProduct.portionSize)
+
+                            db.session.add(pipeline)
+                            db.session.commit()
+
+                        flash('Successfully converted invention to build product.', 'success')
+                        return redirect(url_for('pipeline'))
+
+                if request.form.get('action') == 'DEL':
                         bp_id = request.form.get('blueprint_id')
 
-                        pipeline = db.session.query(build_pipeline).filter_by(blueprint_id = bp_id).all()
+                        pipeline = db.session.query(invent_pipeline).filter_by(blueprint_id = bp_id).all()
                         for item in pipeline:
                             db.session.delete(item)
                             db.session.commit()
                         flash('Successfully deleted pipeline product.', 'success')
 
-                    bld_pipeline = db.session.query(v_build_pipeline_products).filter_by(user_id= session['myUser_id']).with_entities('product_name','user_id','blueprint_id','product_id','runs','jita_sell_price','local_sell_price','build_cost','status', 'portion_size').order_by('product_name').all()
+                inv_pipeline = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name','user_id','runs','blueprint_id','status').order_by('product_name').all()
 
-            return render_template('pipeline.html', inv_pipeline=inv_pipeline, bld_pipeline=bld_pipeline)
+            if request.form.get('bld_pipeline_select'):
+                if request.form.get('action') == 'UPD':
+                    bp_id = request.form.get('blueprint_id')
+                    runs = request.form.get('qty')
+                    status = request.form.get('bld_pipeline_select')
+                    local_sell_price = float(request.form.get('local_sell').replace(',', ''))
+                    pipeline = db.session.query(build_pipeline).filter_by(blueprint_id = bp_id).all()
+                    for item in pipeline:
+                        item.runs = runs
+                        item.status = status
+                        item.local_sell_price = local_sell_price
+                        db.session.add(item)
+                        db.session.commit()
 
-        except Exception as e:
-            flash('Problem with Pipeline. - see log.', 'danger')
-            app.logger.info(str(e))
-            return redirect(url_for('pipeline'))
+                if request.form.get('action') == 'DEL':
+                    bp_id = request.form.get('blueprint_id')
+
+                    pipeline = db.session.query(build_pipeline).filter_by(blueprint_id = bp_id).all()
+                    for item in pipeline:
+                        db.session.delete(item)
+                        db.session.commit()
+                    flash('Successfully deleted pipeline product.', 'success')
+
+                bld_pipeline = db.session.query(v_build_pipeline_products).filter_by(user_id= session['myUser_id']).with_entities('product_name','user_id','blueprint_id','product_id','runs','jita_sell_price','local_sell_price','build_cost','status', 'portion_size').order_by('product_name').all()
+
+        return render_template('pipeline.html', inv_pipeline=inv_pipeline, bld_pipeline=bld_pipeline)
+
+        #except Exception as e:
+        #    flash('Problem with Pipeline. - see log.', 'danger')
+        #    app.logger.info(str(e))
+        #    return redirect(url_for('pipeline'))
     else:
         flash('You must be logged in to view the pipeline', 'danger')
         return redirect(url_for('index'))
@@ -1876,55 +1878,55 @@ def bom():
 def build():
     myBlueprints = []
     subtract_oh_assets = 'None'
-    try:
-        myBlueprints = db.session.query(v_build_product).all()
-        bp_all = True
+    #try:
+    myBlueprints = db.session.query(v_build_product).all()
+    bp_all = True
 
-        if request.method == 'POST':
-            if request.form['action'] == 'edit':
-                if request.form.get('product_id'):
-                    product_id = request.form.get('product_id')
-                    runs = request.form['runs']
-                    pipeline = db.session.query(build_pipeline).filter_by(blueprint_id = product_id).all()
-                    for item in pipeline:
-                        item.runs = runs
-                        db.session.add(item)
-                        db.session.commit()
+    if request.method == 'POST':
+        if request.form['action'] == 'edit':
+            if request.form.get('product_id'):
+                product_id = request.form.get('product_id')
+                runs = request.form['runs']
+                pipeline = db.session.query(build_pipeline).filter_by(blueprint_id = product_id).all()
+                for item in pipeline:
+                    item.runs = runs
+                    db.session.add(item)
+                    db.session.commit()
 
-                    flash('Successfully updated pipeline runs.', 'success')
-            elif request.form.get('action') == 'delete':
-                if request.form.get('product_id'):
-                    product_id = request.form.get('product_id')
-                    pipeline = db.session.query(build_pipeline).filter_by(blueprint_id = product_id).all()
-                    for item in pipeline:
-                        db.session.delete(item)
-                        db.session.commit()
+                flash('Successfully updated pipeline runs.', 'success')
+        elif request.form.get('action') == 'delete':
+            if request.form.get('product_id'):
+                product_id = request.form.get('product_id')
+                pipeline = db.session.query(build_pipeline).filter_by(blueprint_id = product_id).all()
+                for item in pipeline:
+                    db.session.delete(item)
+                    db.session.commit()
 
-                    flash('Successfully deleted pipeline product.', 'success')
+                flash('Successfully deleted pipeline product.', 'success')
 
-        if 'myUser_id' in session:
-            if request.args.get('bp_collection') == 'all':
-                myBlueprints = db.session.query(v_build_product).all()
-                bp_all = True
-            elif request.args.get('bp_collection') == 'mine':
-                myBlueprints = db.session.query(v_my_build_product).filter_by(user_id=session['myUser_id']).all()
-                bp_all = False
+    if 'myUser_id' in session:
+        if request.args.get('bp_collection') == 'all':
+            myBlueprints = db.session.query(v_build_product).all()
+            bp_all = True
+        elif request.args.get('bp_collection') == 'mine':
+            myBlueprints = db.session.query(v_my_build_product).filter_by(user_id=session['myUser_id']).all()
+            bp_all = False
 
-            pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material','material_vol','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status', 'portion_size').order_by('material').all()
+        pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material','material_vol','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status', 'portion_size').order_by('material').all()
 
-            pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id', 'runs', 'jita_sell_price','local_sell_price','build_cost','status')
+        pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id', 'runs', 'jita_sell_price','local_sell_price','build_cost','status')
 
-            materialInPipeline = build_pipeline_rollup_qty(pipeline, subtract_oh_assets)
-            materialCost = build_pipeline_rollup_cost(pipeline, subtract_oh_assets)
+        materialInPipeline = build_pipeline_rollup_qty(pipeline, subtract_oh_assets)
+        materialCost = build_pipeline_rollup_cost(pipeline, subtract_oh_assets)
 
-            return render_template('build.html', blueprints=myBlueprints, bp_id=0, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, bp_all=bp_all)
-        else:
-            return render_template('build.html', blueprints=myBlueprints, bp_id=0, bp_all=True)
+        return render_template('build.html', blueprints=myBlueprints, bp_id=0, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, bp_all=bp_all)
+    else:
+        return render_template('build.html', blueprints=myBlueprints, bp_id=0, bp_all=True)
 
-    except Exception as e:
-        flash('Problem with blueprint - see log.', 'danger')
-        app.logger.info(str(e))
-        return redirect(url_for('build'))
+    #except Exception as e:
+    #    flash('Problem with blueprint - see log.', 'danger')
+    #    app.logger.info(str(e))
+    #    return redirect(url_for('build'))
 
 @app.route('/build_selected', methods=['POST','GET'])
 def build_selected():
@@ -1941,46 +1943,47 @@ def build_selected():
 
     if request.form.get('bp_all'): bp_all = request.form.get('bp_all')
 
-    try:
-        myBlueprints = db.session.query(v_build_product).all()
-        selected_bp = db.session.query(v_build_product).filter_by(id = id).one()
-        myProduct = db.session.query(invtypes).filter_by(typeID = int(selected_bp.t2_id)).one()
-        querySell = get_marketValue(str(myProduct.typeID),'buy')
-        mySellMedian = "{:,.0f}".format(querySell)
-        buildTime = db.session.query(v_build_time).filter_by(id = id).one()
-        myTime = "{:,}".format(buildTime.time/60)
-        myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = id, product_id = selected_bp.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id', 'vol').all()
+    #try:
+    print id
+    myBlueprints = db.session.query(v_build_product).all()
+    selected_bp = db.session.query(v_build_product).filter_by(id = id).one()
+    myProduct = db.session.query(invtypes).filter_by(typeID = int(selected_bp.t2_id)).one()
+    querySell = get_marketValue(str(myProduct.typeID),'buy')
+    mySellMedian = "{:,.0f}".format(querySell)
+    buildTime = db.session.query(v_build_time).filter_by(id = id).one()
+    myTime = "{:,}".format(buildTime.time/60)
+    myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = id, product_id = selected_bp.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id', 'vol').all()
 
-        myBuildCost = 0
-        myMaterialCost = []
-        for requirements in myBuildRequirements:
-            myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
+    myBuildCost = 0
+    myMaterialCost = []
+    for requirements in myBuildRequirements:
+        myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
 
-        for cost in myMaterialCost:
-            myBuildCost = myBuildCost + cost
+    for cost in myMaterialCost:
+        myBuildCost = myBuildCost + cost
 
-        if 'myUser_id' in session:
-            myBlueprints = db.session.query(v_my_build_product).filter_by(user_id=session['myUser_id']).all()
-            if not myBlueprints:
-                myBlueprints = db.session.query(v_build_product).all()
-                bp_all = True
+    if 'myUser_id' in session:
+        myBlueprints = db.session.query(v_my_build_product).filter_by(user_id=session['myUser_id']).all()
+        if not myBlueprints:
+            myBlueprints = db.session.query(v_build_product).all()
+            bp_all = True
 
-            pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material','material_vol','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','status', 'portion_size').order_by('material').all()
+        pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material','material_vol','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','status', 'portion_size').order_by('material').all()
 
-            pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost','status', 'portion_size')
+        pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost','status', 'portion_size')
 
-            materialInPipeline = build_pipeline_rollup_qty(pipeline, subtract_oh_assets)
-            materialCost = build_pipeline_rollup_cost(pipeline, subtract_oh_assets)
+        materialInPipeline = build_pipeline_rollup_qty(pipeline, subtract_oh_assets)
+        materialCost = build_pipeline_rollup_cost(pipeline, subtract_oh_assets)
 
-            return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, runs=runs, bp_all=bp_all)
+        return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, runs=runs, bp_all=bp_all)
 
-        else:
-            return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, runs=runs, bp_all=False)
+    else:
+        return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, runs=runs, bp_all=False)
 
-    except Exception as e:
-        flash('Problem querying blueprint. See log', 'danger')
-        app.logger.info(str(e))
-        return redirect(url_for('build'))
+    #except Exception as e:
+    #    flash('Problem querying blueprint. See log', 'danger')
+    #    app.logger.info(str(e))
+    #    return redirect(url_for('build'))
 
 @app.route('/build_add_pipeline', methods=['POST'])
 def build_add_pipeline():
@@ -2362,6 +2365,7 @@ def build_pipeline_rollup_vol(pipeline, subtract_oh_assets):
     mat_oh = 0
 
     for item in pipeline:
+        mat_oh = 0
         if subtract_oh_assets == 'true':
             mat_oh = search_assets(session['myUser_id'], item.material_id)
 
