@@ -751,14 +751,16 @@ def fetch_assets():
 
         myAssets = get_assets_onhand()
         for item in myAssets:
-            #print item
+            #print item['type_id']
             if item =='error' or item=='timeout':
                 flash ('Problem fetching assets from EVE.', 'danger')
                 break
             else:
-                entry = assets_onhand(session['myUser_id'], item['type_id'], item['item_id'], item['location_flag'], item['location_type'], item['location_id'], item['quantity'], item['is_singleton'])
-                db.session.add(entry)
-                db.session.commit()
+                #print item['location_flag']
+                if item['location_flag'] == 'HangarAll' or item['location_flag'] == 'Hangar' or item['location_flag'] == 'Unlocked' or item['location_flag'] == 'AutoFit':
+                    entry = assets_onhand(session['myUser_id'], item['type_id'], item['item_id'], item['location_flag'], item['location_type'], item['location_id'], item['quantity'], item['is_singleton'])
+                    db.session.add(entry)
+                    db.session.commit()
 
         flash('Seccessfully pulled on hand assets for '+session['name'], 'success')
 
@@ -845,6 +847,7 @@ def financial():
         range_end = ''
         total_expenses = 0.0
         total_income = 0.0
+        total_industry_costs = 0.0
 
         current_day = datetime.now().day
         current_month = datetime.now().month
@@ -881,31 +884,36 @@ def financial():
                     total_donations_out += item.amount
                 else:
                     total_donations_in += item.amount
+            elif item.ref_type=='contract_reward':
+                total_donations_in += item.amount
+            elif item.ref_type=='contract_reward_deposited':
+                total_donations_out += item.amount
             elif item.ref_type=='market_escrow':
                 total_purchases += item.amount
-            elif item.ref_type=='contract_brokers_fee':
-                total_contract_broker_fees += item.amount
             elif item.ref_type=='contract_price':
                 if item.amount < 0 :
                     total_contract_buys += item.amount
                 else:
                     total_contract_sales += item.amount
             elif item.ref_type=='insurance':
-                total_insurance_fees += item.amount
-            elif item.ref_type=='insurance_payout':
-                total_insurance_payouts += item.amount
+                if item.amount < 0 :
+                    total_insurance_fees += item.amount
+                else:
+                    total_insurance_payouts += item.amount
             elif item.ref_type=='planetary_export' or item.ref_type=='planetary_import':
                 total_pi += item.amount
             elif item.ref_type=='bounty_prizes_corporate_tax':
                 total_bounty_tax += item.amount
+            elif item.ref_type=='copying' or item.ref_type=='manufacturing' or item.ref_type=='researching_technology':
+                total_industry_costs += item.amount
 
         total_income = total_donations_in + total_sales + total_bounties + total_contract_sales + total_insurance_payouts
-        total_expenses = total_transaction_taxes + total_broker_fees + total_contract_broker_fees + total_pi + total_donations_out + total_purchases + total_contract_buys + total_insurance_fees + total_bounty_tax
+        total_expenses = total_transaction_taxes + total_broker_fees + total_contract_broker_fees + total_pi + total_donations_out + total_purchases + total_contract_buys + total_insurance_fees + total_bounty_tax + total_industry_costs
 
         #print 'income: ' + str(total_income)
         #print 'expenses: ' + str(abs(total_expenses))
 
-        return render_template('financial.html',total_transaction_taxes=total_transaction_taxes,total_broker_fees=total_broker_fees,total_pi=total_pi,total_donations_out=total_donations_out,total_purchases=total_purchases,total_contract_buys=total_contract_buys,total_insurance_fees=total_insurance_fees,total_donations_in=total_donations_in,total_sales=total_sales,total_bounties=total_bounties,total_contract_sales=total_contract_sales,total_insurance_payouts=total_insurance_payouts,total_bounty_tax=total_bounty_tax,total_contract_broker_fees=total_contract_broker_fees,range_start=range_start,range_end=range_end, total_income=total_income, total_expenses=abs(total_expenses))
+        return render_template('financial.html',total_transaction_taxes=total_transaction_taxes,total_broker_fees=total_broker_fees,total_pi=total_pi,total_donations_out=total_donations_out,total_purchases=total_purchases,total_contract_buys=total_contract_buys,total_insurance_fees=total_insurance_fees,total_donations_in=total_donations_in,total_sales=total_sales,total_bounties=total_bounties,total_contract_sales=total_contract_sales,total_insurance_payouts=total_insurance_payouts,total_bounty_tax=total_bounty_tax,total_contract_broker_fees=total_contract_broker_fees,range_start=range_start,range_end=range_end, total_income=total_income, total_expenses=abs(total_expenses), total_industry_costs=total_industry_costs)
 
     else:
         flash('You must be logged in to use the financial report.', 'danger')
@@ -1944,7 +1952,7 @@ def build_selected():
     if request.form.get('bp_all'): bp_all = request.form.get('bp_all')
 
     #try:
-    print id
+    #print id
     myBlueprints = db.session.query(v_build_product).all()
     selected_bp = db.session.query(v_build_product).filter_by(id = id).one()
     myProduct = db.session.query(invtypes).filter_by(typeID = int(selected_bp.t2_id)).one()
@@ -1978,7 +1986,7 @@ def build_selected():
         return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, runs=runs, bp_all=bp_all)
 
     else:
-        return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, runs=runs, bp_all=False)
+        return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, runs=runs, bp_all=bp_all)
 
     #except Exception as e:
     #    flash('Problem querying blueprint. See log', 'danger')
@@ -2352,6 +2360,7 @@ def build_pipeline_rollup_cost(pipeline, subtract_oh_assets):
     buildCost = 0.0
     mat_oh = 0
     for item in pipeline:
+        mat_oh = 0
         if subtract_oh_assets == 'true':
             mat_oh = search_assets(session['myUser_id'], item.material_id)
 
@@ -2368,9 +2377,13 @@ def build_pipeline_rollup_vol(pipeline, subtract_oh_assets):
         mat_oh = 0
         if subtract_oh_assets == 'true':
             mat_oh = search_assets(session['myUser_id'], item.material_id)
+            #print 'mat oh = ' + str(mat_oh)
 
-        if mat_oh == 0:
-            vol += (item.material_vol * item.material_qty)
+        mat_vol = (item.material_vol * item.material_qty) - (mat_oh * item.material_vol)
+
+        if mat_vol > 0:
+            #print 'mat vol = ' + str(mat_vol)
+            vol += mat_vol
 
     return vol
 
@@ -2390,7 +2403,11 @@ def build_pipeline_rollup_qty(pipeline, subtract_oh_assets):
         mat_oh = 0
         for mat in materialInPipeline:
             if mat.material_id == item.material_id:
-                mat.material_qty += item.material_qty
+                if subtract_oh_assets == 'true':
+                    mat_oh = search_assets(session['myUser_id'], item.material_id)
+                mat_qty = (item.material_qty) - mat_oh
+                if mat_qty < 0: mat_qty = 0
+                mat.material_qty += mat_qty
                 mat.material_cost += item.material_cost
                 matchFound1 = True
 
@@ -2593,15 +2610,27 @@ def get_wallet_transactions():
     return jsonData
 
 def get_assets_onhand():
-    payload = {'datasource':'tranquility', 'token':session['access_token']}
-    response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/assets/', params=payload)
-    print 'Get Assets On Hand - ' + str(response.status_code)
-    if response.status_code <> 200 and response.status_code <> 504:
-        do_refresh_token(session['myUser_id'])
-        payload = {'datasource':'tranquility', 'token':session['access_token']}
+    jsonData = []
+    listLengthPrev = 0
+    listLengthCurrent = 0
+    for n in range(1, 10):
+        payload = {'datasource':'tranquility', 'token':session['access_token'], 'page':n}
         response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/assets/', params=payload)
+        print 'Get Assets On Hand - page: ' + str(n) + ' - ' + str(response.status_code)
+        if response.status_code <> 200 and response.status_code <> 504:
+            do_refresh_token(session['myUser_id'])
+            payload = {'datasource':'tranquility', 'token':session['access_token']}
+            response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/assets/', params=payload)
 
-    jsonData = json.loads(response.text)
+        jsonData += json.loads(response.text)
+        listLengthCurrent = len(jsonData)
+        if listLengthCurrent > listLengthPrev:
+            listLengthPrev = listLengthCurrent
+        else:
+            break
+
+            #print 'jsondata count: ' + str(len(jsonData))
+
     return jsonData
 
 def get_fittings():

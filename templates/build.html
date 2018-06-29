@@ -15,11 +15,12 @@
           {% if bp_all %}
             <option value="{{blueprint.id}}">{{blueprint.t2_blueprint}} </option>
           {% else %}
-            <option value="{{blueprint.t2_id}}">{{blueprint.t2_blueprint}} </option>
+            <option value="{{blueprint.id}}">{{blueprint.t2_blueprint}} </option>
           {% endif %}
         {% endfor %}
       </select>
     </div>
+    <input type="hidden" name="bp_all" value="{{bp_all}}">
   </form>
     <form action="{{ url_for('build')}}">
       {% if bp_all %}
