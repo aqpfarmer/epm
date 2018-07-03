@@ -809,7 +809,8 @@ def financial():
                     flash ('Problem fetching financial data from EVE.', 'danger')
                     break
                 else:
-                    existing = db.session.query(wallet_journal).filter_by(transaction_id=str(item['id'])).all()
+                    #print item['ref_type'] + ' - ' + str(item['amount'])
+                    existing = db.session.query(wallet_journal).filter_by(user_id=session['myUser_id'], transaction_id=str(item['id'])).all()
                     if not existing:
                         entry = wallet_journal(session['myUser_id'], item['amount'], item['date'], item['id'], item['ref_type'])
                         db.session.add(entry)
@@ -854,6 +855,7 @@ def financial():
         current_year = datetime.now().year
         current_range_start = str(current_year) + '-' + str(current_month)+ '-1'
         current_range_end = str(current_year) + '-' + str(current_month) + '-' + str(current_day)
+        #current_range_end = str(current_year) + '-' + str(current_month) + '-30'
         if request.form.get('action')=='prev':
             myDate = datetime.strptime(request.form.get('range_start'),'%Y-%m-%d')
             range_start = str(myDate.year) + '-' + str(myDate.month-1) + '-1'
@@ -868,44 +870,44 @@ def financial():
 
         #print range_start
         #print range_end
-        myQuery = db.session.query(wallet_journal).filter(wallet_journal.user_id==session['myUser_id']).filter(wallet_journal.date_transaction >= range_start).filter(wallet_journal.date_transaction <= range_end).order_by(wallet_journal.ref_type).with_entities('date_transaction', 'ref_type', 'amount').all()
+        myQuery = db.session.query(wallet_journal).filter(wallet_journal.user_id==session['myUser_id']).filter(wallet_journal.date_transaction >= range_start).filter(wallet_journal.date_transaction <= range_end).all()
         for item in myQuery:
-            #print item.ref_type
+            #print item.ref_type + ' date: ' + str(item.date_transaction)
             if item.ref_type=='transaction_tax':
-                total_transaction_taxes += item.amount
+                total_transaction_taxes += float(item.amount)
             elif item.ref_type=='market_transaction':
-                total_sales += item.amount
+                total_sales += float(item.amount)
             elif item.ref_type=='brokers_fee':
-                total_broker_fees += item.amount
+                total_broker_fees += float(item.amount)
             elif item.ref_type=='bounty_prizes':
-                total_bounties += item.amount
+                total_bounties += float(item.amount)
             elif item.ref_type=='player_donation':
                 if item.amount < 0 :
-                    total_donations_out += item.amount
+                    total_donations_out += float(item.amount)
                 else:
-                    total_donations_in += item.amount
+                    total_donations_in += float(item.amount)
             elif item.ref_type=='contract_reward':
-                total_donations_in += item.amount
+                total_donations_in += float(item.amount)
             elif item.ref_type=='contract_reward_deposited':
-                total_donations_out += item.amount
+                total_donations_out += float(item.amount)
             elif item.ref_type=='market_escrow':
-                total_purchases += item.amount
+                total_purchases += float(item.amount)
             elif item.ref_type=='contract_price':
                 if item.amount < 0 :
-                    total_contract_buys += item.amount
+                    total_contract_buys += float(item.amount)
                 else:
-                    total_contract_sales += item.amount
+                    total_contract_sales += float(item.amount)
             elif item.ref_type=='insurance':
                 if item.amount < 0 :
-                    total_insurance_fees += item.amount
+                    total_insurance_fees += float(item.amount)
                 else:
-                    total_insurance_payouts += item.amount
-            elif item.ref_type=='planetary_export' or item.ref_type=='planetary_import':
-                total_pi += item.amount
+                    total_insurance_payouts += float(item.amount)
+            elif item.ref_type=='planetary_export_tax' or item.ref_type=='planetary_import_tax':
+                total_pi += float(item.amount)
             elif item.ref_type=='bounty_prizes_corporate_tax':
-                total_bounty_tax += item.amount
+                total_bounty_tax += float(item.amount)
             elif item.ref_type=='copying' or item.ref_type=='manufacturing' or item.ref_type=='researching_technology':
-                total_industry_costs += item.amount
+                total_industry_costs += float(item.amount)
 
         total_income = total_donations_in + total_sales + total_bounties + total_contract_sales + total_insurance_payouts
         total_expenses = total_transaction_taxes + total_broker_fees + total_contract_broker_fees + total_pi + total_donations_out + total_purchases + total_contract_buys + total_insurance_fees + total_bounty_tax + total_industry_costs
@@ -1511,18 +1513,39 @@ def pipeline():
                     runs = request.form.get('qty')
                     status = request.form.get('bld_pipeline_select')
                     local_sell_price = float(request.form.get('local_sell').replace(',', ''))
-                    pipeline = db.session.query(build_pipeline).filter_by(blueprint_id = bp_id).all()
-                    for item in pipeline:
-                        item.runs = runs
-                        item.status = status
-                        item.local_sell_price = local_sell_price
-                        db.session.add(item)
+
+                    #pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'], blueprint_id = bp_id).all()
+                    pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'], blueprint_id = bp_id).delete()
+                    db.session.commit()
+
+                    selected_bp = db.session.query(v_build_product).filter_by(id = bp_id).one()
+                    myProduct = db.session.query(invtypes).filter_by(typeID = int(selected_bp.t2_id)).one()
+                    querySell = get_marketValue(str(myProduct.typeID),'buy')
+                    myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = bp_id, product_id=myProduct.typeID).with_entities('id','material','material_id','group_id','qty','product_id', 'vol').all()
+
+                    myBuildCost = 0
+                    myMaterialCost = []
+                    for requirements in myBuildRequirements:
+                        myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
+
+                    for cost in myMaterialCost:
+                        myBuildCost = myBuildCost + cost
+
+                    for requirements in myBuildRequirements:
+                        myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty * int(runs)
+                        compQty = calc_comp_efficiency(requirements.qty, runs)
+                        compQty = (compQty * int(runs)) / 10
+
+                        pipeline = build_pipeline(session['myUser_id'], myProduct.typeID, bp_id, int(runs), requirements.material_id, compQty, myCost, myProduct.typeName, requirements.material, requirements.group_id, 0, querySell, local_sell_price, myBuildCost, 0, status, requirements.vol, myProduct.portionSize)
+
+                        db.session.add(pipeline)
                         db.session.commit()
+                    flash('Successfully updated bill of materials.', 'success')
 
                 if request.form.get('action') == 'DEL':
                     bp_id = request.form.get('blueprint_id')
 
-                    pipeline = db.session.query(build_pipeline).filter_by(blueprint_id = bp_id).all()
+                    pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'], blueprint_id = bp_id).all()
                     for item in pipeline:
                         db.session.delete(item)
                         db.session.commit()
@@ -1938,23 +1961,33 @@ def build():
 
 @app.route('/build_selected', methods=['POST','GET'])
 def build_selected():
+    id = 0
+    myBlueprints = []
+    selected_bp = 0
     subtract_oh_assets = 'None'
     runs = 1
     bp_all = True
-    id = request.form.get('build_product')
-    if id == 'None':
-        id = request.args.get('build_product')
-    if request.args.get('build_product'):
-        id = request.args.get('build_product')
+    if request.form.get('build_product') is not None:
+        id = int(request.form.get('build_product'))
+    if request.args.get('build_product') is not None:
+        id = int(request.args.get('build_product'))
     if request.args.get('runs'):
         runs = int(request.args.get('runs'))
 
-    if request.form.get('bp_all'): bp_all = request.form.get('bp_all')
+    myBlueprints = db.session.query(v_build_product).all()
+    if request.form.get('bp_all') == 'False':
+        myBlueprints = db.session.query(v_my_build_product).filter_by(user_id=session['myUser_id']).all()
+        bp_all = False
 
     #try:
     #print id
-    myBlueprints = db.session.query(v_build_product).all()
-    selected_bp = db.session.query(v_build_product).filter_by(id = id).one()
+    #myBlueprints = db.session.query(v_build_product).all()
+    try:
+        selected_bp = db.session.query(v_build_product).filter_by(id = id).one()
+    except Exception as e:
+        id +=1
+        selected_bp = db.session.query(v_build_product).filter_by(id = id).one()
+
     myProduct = db.session.query(invtypes).filter_by(typeID = int(selected_bp.t2_id)).one()
     querySell = get_marketValue(str(myProduct.typeID),'buy')
     mySellMedian = "{:,.0f}".format(querySell)
@@ -1971,10 +2004,10 @@ def build_selected():
         myBuildCost = myBuildCost + cost
 
     if 'myUser_id' in session:
-        myBlueprints = db.session.query(v_my_build_product).filter_by(user_id=session['myUser_id']).all()
-        if not myBlueprints:
-            myBlueprints = db.session.query(v_build_product).all()
-            bp_all = True
+        #myBlueprints = db.session.query(v_my_build_product).filter_by(user_id=session['myUser_id']).all()
+        #if not myBlueprints:
+        #    myBlueprints = db.session.query(v_build_product).all()
+        #    bp_all = True
 
         pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material','material_vol','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','status', 'portion_size').order_by('material').all()
 
@@ -2025,7 +2058,7 @@ def build_add_pipeline():
             if request.form.get('job_runs') <> '':
                 for requirements in myBuildRequirements:
                     myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty * float(request.form.get('job_runs'))
-                    compQty = calc_comp_efficiency(requirements.qty)
+                    compQty = calc_comp_efficiency(requirements.qty, request.form.get('job_runs'))
                     compQty = (compQty * float(request.form.get('job_runs'))) / 10
 
                     pipeline = build_pipeline(session['myUser_id'], myProduct.typeID, id, request.form.get('job_runs'), requirements.material_id, compQty, myCost, myProduct.typeName, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2, requirements.vol, myProduct.portionSize)
@@ -2345,14 +2378,22 @@ def get_marketValue(typeID, buyOrSell):
         flash('Problem with Market API. See log', 'danger')
         return 0
 
-def calc_comp_efficiency(qty):
+def calc_comp_efficiency(qty, runs):
     wasteval = (1 - (float(session['structure_role_bonus']))/100) * (1 - (float(session['default_bp_me']))/100)
-    myQty = math.ceil(round(qty * wasteval * 10, 2))
+    if runs >= 10:
+        myQty = math.ceil(round(qty * wasteval * 10, 2))
+    else:
+        myQty = math.ceil(round(qty * wasteval, 2))
 
     return myQty
 
 def calc_mat_efficiency(compQty, matQty):
-    myQty = math.ceil(round(matQty * 0.891 * compQty, 2))
+    if matQty > 1:
+        myQty = math.ceil(round(matQty * 0.891 * compQty, 2))
+    elif matQty == 1:
+        myQty = math.ceil(round(matQty * compQty, 2))
+    else:
+        matQty = 0
 
     return myQty
 
