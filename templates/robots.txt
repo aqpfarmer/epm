@@ -1,0 +1,6 @@
+User-agent: Google
+Disallow:
+
+User-agent: *
+Disallow: /
+

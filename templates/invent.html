@@ -4,11 +4,27 @@
 {% if 'myUser_id' in session %}
   <p class="text-right pr-4"><a class="btn btn-warning" href="/invent_jobs">Check Invent Jobs</a></p>
 {% endif %}
-<form action="{{ url_for('invent_selected')}}" method="POST">
+<!-- <form action="{{ url_for('invent_selected')}}" method="POST"> -->
   <div class="form-group row bg-secondary mb-1">
-    <label for="invent_product" class="col-sm-3 col-form-label text-white text-right">Choose Product to Invent:</label>
-    <div class="col-sm-5"> <!-- this increases or decreases selectbox size -->
-      <select id="invent_product" name="invent_product" class="form-control" onChange="this.form.submit()">
+    <label for="invent_product" class="col-sm-4 col-form-label text-white text-right">Choose Product to Invent:</label>
+    <div class="col-sm-4"> <!-- this increases or decreases selectbox size -->
+
+      <div class="dropdown">
+        <button onclick="myFunction()" class="dropbtn pt-2 mb-1"> Click to Search / Browse Blueprints </button>
+          <div id="myDropdown" class="dropdown-content">
+            <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
+            {% if bp_id > 0 %}
+              <a href="#">{{selected_bp.t2_blueprint}} </a>
+            {% else %}
+              <a href="#" value="0">Choose Blueprint... </a>
+            {% endif %}
+            {% for blueprint in blueprints %}
+              <a href="/invent_selected?invent_productName={{blueprint.t2_blueprint}}&runs=1">{{blueprint.t2_blueprint}} </a>
+            {% endfor %}
+          </div>
+        </div>
+
+    <!--  <select id="invent_product" name="invent_product" class="form-control" onChange="this.form.submit()">
         {% if bp_id > 0 %}
           <option value="{{selected_bp.id}}" selected>{{selected_bp.t2_blueprint}} </option>
         {% else %}
@@ -18,8 +34,9 @@
           <option value="{{blueprint.id}}">{{blueprint.t2_blueprint}} </option>
         {% endfor %}
       </select>
+    -->
     </div>
-  </form>
+  <!-- </form> -->
   <form action="{{ url_for('invent')}}">
     {% if bp_all %}
       <div class="form-check form-check-inline pt-2">

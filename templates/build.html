@@ -1,11 +1,26 @@
 {% extends 'layout.html' %}
 {% block body %}
 
-<form action="{{ url_for('build_selected')}}" method="POST">
-  <div class="form-group row bg-secondary mb-1">
-    <label for="build_product" class="col-sm-3 col-form-label text-white text-right">Choose Product to Build:</label>
-    <div class="col-sm-5"> <!-- this increases or decreases selectbox size -->
-      <select id="build_product" name="build_product" class="form-control" onChange="this.form.submit()">
+<!-- <form action="{{ url_for('build_selected')}}" method="POST"> -->>
+  <div class="form-group row bg-secondary mb-1 px-0">
+    <label for="build_product" class="col-sm-4 col-form-label text-white text-right">Choose Product to Build:</label>
+    <div class="col-sm-4"> <!-- this increases or decreases selectbox size -->
+      <div class="dropdown">
+        <button onclick="myFunction()" class="dropbtn pt-2 mb-1"> Click to Search / Browse Blueprints </button>
+          <div id="myDropdown" class="dropdown-content">
+            <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
+            {% if bp_id > 0 %}
+              <a href="#">{{selected_bp.t2_blueprint}} </a>
+            {% else %}
+              <a href="#" value="0">Choose Blueprint... </a>
+            {% endif %}
+            {% for blueprint in blueprints %}
+              <a href="/build_selected?build_product={{blueprint.t2_id}}&runs=1">{{blueprint.t2_blueprint}} </a>
+            {% endfor %}
+          </div>
+        </div>
+
+<!--      <select id="build_product" name="build_product" class="form-control" onChange="this.form.submit()">
         {% if bp_id > 0 %}
           <option value="{{selected_bp.id}}" selected>{{selected_bp.t2_blueprint}} </option>
         {% else %}
@@ -18,26 +33,26 @@
             <option value="{{blueprint.t2_id}}">{{blueprint.t2_blueprint}} </option>
           {% endif %}
         {% endfor %}
-      </select>
+      </select> -->
     </div>
     <input type="hidden" name="bp_all" value="{{bp_all}}">
-  </form>
+  <!-- </form> -->
     <form action="{{ url_for('build')}}">
       {% if bp_all %}
-        <div class="form-check form-check-inline pt-1">
+        <div class="form-check form-check-inline pt-2">
           <input class="form-check-input" type="radio" name="bp_collection" value="mine" onChange="this.form.submit()">
           <label class="form-check-label text-warning" for="buy">My Blueprints</label>
         </div>
-        <div class="form-check form-check-inline pt-1">
+        <div class="form-check form-check-inline pt-2">
           <input class="form-check-input" type="radio" name="bp_collection" value="all" checked>
           <label class="form-check-label text-white" for="build">All Blueprints</label>
         </div>
       {% else %}
-        <div class="form-check form-check-inline pt-1">
+        <div class="form-check form-check-inline pt-2">
           <input class="form-check-input" type="radio" name="bp_collection" value="mine" checked>
           <label class="form-check-label text-warning" for="buy">My Blueprints</label>
         </div>
-        <div class="form-check form-check-inline pt-1">
+        <div class="form-check form-check-inline pt-2">
           <input class="form-check-input" type="radio" name="bp_collection" value="all" onChange="this.form.submit()">
           <label class="form-check-label text-white" for="build">All Blueprints</label>
         </div>

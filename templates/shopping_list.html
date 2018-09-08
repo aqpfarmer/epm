@@ -54,7 +54,7 @@
                   {% if item.datacore_qty > 0 %}
                     <td> {{ "{:,.0f}".format(item.datacore_qty) }} </td>
                     <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.datacore_cost * item.runs) }}</p></td>
-                    <td><p class="mt-1 text-center"> {{ (item.datacore_vol * item.runs) }}</p> </td>
+                    <td><p class="mt-1 text-center"> {{ (item.datacore_vol * item.datacore_qty) }}</p> </td>
                   {% else %}
                     <td><p class="mt-1 text-center">0</p></td>
                     <td><p class="mt-1 text-center">0</p></td>

@@ -1649,7 +1649,9 @@ def bom():
 
         planetary_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==1034, build_pipeline.group_id==1040))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
 
-        component_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=334, status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
+        component_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==334, build_pipeline.group_id==964, build_pipeline.group_id==536))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
+
+        #component_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=334, status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
 
         comp_blueprint_id = 0
         for component in component_pipeline:
@@ -1709,11 +1711,11 @@ def bom():
                     db.session.add(comp)
                     db.session.commit()
 
-        component_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=334,status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol','portion_size').order_by('material').all()
+        component_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==334, build_pipeline.group_id==964, build_pipeline.group_id==536))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol','portion_size').order_by('material').all()
 
         material_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=429,status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol','portion_size').order_by('material').all()
 
-        tech1_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id']).filter(build_pipeline.group_id <> 334).filter(build_pipeline.group_id <> 18).filter(build_pipeline.group_id <> 1034).filter(build_pipeline.group_id <> 332).filter(build_pipeline.group_id <> 1040).filter(build_pipeline.group_id <> 429).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
+        tech1_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id']).filter(build_pipeline.group_id <> 536).filter(build_pipeline.group_id <> 964).filter(build_pipeline.group_id <> 334).filter(build_pipeline.group_id <> 18).filter(build_pipeline.group_id <> 1034).filter(build_pipeline.group_id <> 332).filter(build_pipeline.group_id <> 1040).filter(build_pipeline.group_id <> 429).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
 
         for component1 in tech1_pipeline:
             if component1.build_or_buy == 1 and component1.material_cost > 0:
@@ -1728,7 +1730,7 @@ def bom():
                 for requirements in myBuildComponents:
                     myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * component1.material_qty
 
-                    pipeline = build_pipeline(session['myUser_id'],  component1.product_id, component1.blueprint_id, component1.runs, requirements.material_id, requirements.quantity * component1.material_qty, myCost, component1.product_name, requirements.material, 18, 0, component1.jita_sell_price, component1.local_sell_price, component1.build_cost, component1.product_id, component1.status, requirements.vol, component.portion_size)
+                    pipeline = build_pipeline(session['myUser_id'],  component1.product_id, component1.blueprint_id, component1.runs, requirements.material_id, requirements.quantity * component1.material_qty, myCost, component1.product_name, requirements.material, 18, 0, component1.jita_sell_price, component1.local_sell_price, component1.build_cost, component1.product_id, component1.status, requirements.vol, component1.portion_size)
 
                     db.session.add(pipeline)
                     db.session.commit()
@@ -1768,7 +1770,7 @@ def bom():
                     db.session.add(comp)
                     db.session.commit()
 
-        tech1_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id']).filter(build_pipeline.group_id <> 334).filter(build_pipeline.group_id <> 18).filter(build_pipeline.group_id <> 1034).filter(build_pipeline.group_id <> 332).filter(build_pipeline.group_id <> 1040).filter(build_pipeline.group_id <> 429).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
+        tech1_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id']).filter(build_pipeline.group_id <> 536).filter(build_pipeline.group_id <> 964).filter(build_pipeline.group_id <> 334).filter(build_pipeline.group_id <> 18).filter(build_pipeline.group_id <> 1034).filter(build_pipeline.group_id <> 332).filter(build_pipeline.group_id <> 1040).filter(build_pipeline.group_id <> 429).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
 
         ram_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=332,status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
 
@@ -2410,23 +2412,7 @@ def build_pipeline_rollup_cost(pipeline, subtract_oh_assets):
 
     return buildCost
 
-def build_pipeline_rollup_vol(pipeline, subtract_oh_assets):
-    vol = 0.0
-    mat_oh = 0
 
-    for item in pipeline:
-        mat_oh = 0
-        if subtract_oh_assets == 'true':
-            mat_oh = search_assets(session['myUser_id'], item.material_id)
-            #print 'mat oh = ' + str(mat_oh)
-
-        mat_vol = (item.material_vol * item.material_qty) - (mat_oh * item.material_vol)
-
-        if mat_vol > 0:
-            #print 'mat vol = ' + str(mat_vol)
-            vol += mat_vol
-
-    return vol
 
 def fitting_rollup_cost(myFittings):
     buildCost = 0.0
@@ -2477,15 +2463,35 @@ def invent_pipeline_rollup_cost(pipeline, subtract_oh_assets):
 
     return buildCost
 
+def build_pipeline_rollup_vol(pipeline, subtract_oh_assets):
+    vol = 0.0
+    mat_oh = 0
+
+    for item in pipeline:
+        mat_oh = 0
+        if subtract_oh_assets == 'true':
+            mat_oh = search_assets(session['myUser_id'], item.material_id)
+            #print 'mat oh = ' + str(mat_oh)
+
+        mat_vol = (item.material_vol * item.material_qty) - (mat_oh * item.material_vol)
+
+        if mat_vol > 0:
+            #print 'mat vol = ' + str(mat_vol)
+            vol += mat_vol
+
+    return vol
+
 def invent_pipeline_rollup_vol(pipeline, subtract_oh_assets):
     vol = 0.0
     dc_oh = 0
     for item in pipeline:
+        dc_oh = 0
         if subtract_oh_assets == 'true':
             dc_oh = search_assets(session['myUser_id'], item.datacore_id)
 
-        if dc_oh == 0:
-            vol += (item.datacore_vol * item.runs/10)
+        dc_vol = (item.datacore_vol * item.datacore_qty * item.runs) - (dc_oh * item.datacore_vol)
+        if dc_vol > 0:
+            vol += dc_vol
 
     return vol
 
@@ -2815,10 +2821,11 @@ def import_fitting(item):
     return 0
 
 def import_jobs(item):
-    print 'Importing job: ' + item['blueprint_type_id']
-    existingJob = db.session.query(job_journal).filter_by(job_id = item['job_id'], user_id=session['myUser_id']).all()
+    print 'Importing job: ' + str(item['blueprint_type_id'])
+    #print item
+    existingJob = db.session.query(job_journal).filter_by(job_id = str(item['job_id']), user_id=session['myUser_id']).all()
     if not existingJob:
-        myJob = job_journal(item['fitting_id'], session['myUser_id'], item['product_type_id'], item['activity_id'], item['facility_id'], item['station_id'], item['licensed_runs'], item['runs'], item['blueprint_location_id'], item['output_location_id'], item['start_date'], item['end_date'], item['status'], item['job_cost'])
+        myJob = job_journal(item['job_id'], session['myUser_id'], item['product_type_id'], item['activity_id'], item['facility_id'], item['station_id'], item['licensed_runs'], item['runs'], item['blueprint_location_id'], item['output_location_id'], item['start_date'], item['end_date'], item['status'], item['cost'])
         db.session.add(myJob)
         db.session.commit()
 
