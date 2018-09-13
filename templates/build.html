@@ -1,7 +1,10 @@
 {% extends 'layout.html' %}
 {% block body %}
 
-<!-- <form action="{{ url_for('build_selected')}}" method="POST"> -->>
+{% if 'myUser_id' in session %}
+  <p class="text-right pr-4"><a class="btn btn-warning" href="/build_jobs">Check Build Jobs</a></p>
+{% endif %}
+<!-- <form action="{{ url_for('build_selected')}}" method="POST"> -->
   <div class="form-group row bg-secondary mb-1 px-0">
     <label for="build_product" class="col-sm-4 col-form-label text-white text-right">Choose Product to Build:</label>
     <div class="col-sm-4"> <!-- this increases or decreases selectbox size -->

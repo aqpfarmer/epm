@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 from base64 import b64encode
 import requests
 import json
-from sqlalchemy import or_
+from sqlalchemy import or_, desc
 import math
 
 app = Flask(__name__)
@@ -712,6 +712,16 @@ class FittingList():
         self.build_id = build_id
         self.name = name
 
+class Jobs():
+    def __init__(self, product_id, product_name, job_type, status, runs, start_date, finish_date, job_cost):
+        self.product_id = product_id
+        self.product_name = product_name
+        self.job_type = job_type
+        self.status = status
+        self.runs = runs
+        self.start_date = start_date
+        self.finish_date =  finish_date
+        self.job_cost = job_cost
 
 @app.route("/")
 def index():
@@ -771,14 +781,85 @@ def invent_jobs():
     if 'myUser_id' in session:
         myAssets = get_job_journal()
         for item in myAssets:
-            print item
+            #print item
             if item =='error' or item=='timeout':
                 flash ('Problem fetching job status from EVE.', 'danger')
                 break
             else:
                 result = import_jobs(item)
+        inventJobs = []
+        current_day = datetime.now().day
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        myDay = str(current_year) + '-' + str(current_month) + '-' + str(current_day)
 
-    return render_template('invent_jobs.html')
+        myJobs = db.session.query(job_journal).filter(job_journal.user_id==session['myUser_id']).filter(or_(job_journal.activity_id==5, job_journal.activity_id==8)).order_by(desc('end_date')).all()
+        for job in myJobs:
+            #print job.activity_id
+            print days_between(myDay, job.end_date.strftime('%Y-%m-%d'))
+            if days_between(myDay, job.end_date.strftime('%Y-%m-%d')) >=0:
+                myProduct = db.session.query(invtypes).filter_by(typeID = int(job.product_id)).one()
+                start_date = datetime.strftime(job.start_date, '%b %d %Y .. %H:%M')
+                end_date = datetime.strftime(job.end_date, '%b %d %Y .. %H:%M')
+                if job.activity_id==5:
+                    job_type="Copying"
+                elif job.activity_id==8:
+                    job_type="Invention"
+
+                jobx = Jobs(job.product_id, myProduct.typeName, job_type, job.status, job.runs, start_date, end_date, job.job_cost)
+                inventJobs += [jobx]
+
+        myDay = datetime.strptime(myDay, '%Y-%m-%d')
+        myDay = datetime.strftime(myDay, '%b %d %Y')
+        return render_template('invent_jobs.html', myJobs=inventJobs, myDay=myDay, action='Invention')
+
+    else:
+        flash('You must be logged in to use the Job checker.', 'danger')
+        return redirect(url_for('invent'))
+
+@app.route("/build_jobs")
+def build_jobs():
+    if 'myUser_id' in session:
+        myAssets = get_job_journal()
+        for item in myAssets:
+            #print item
+            if item =='error' or item=='timeout':
+                flash ('Problem fetching job status from EVE.', 'danger')
+                break
+            else:
+                result = import_jobs(item)
+        buildJobs = []
+        current_day = datetime.now().day
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        myDay = str(current_year) + '-' + str(current_month) + '-' + str(current_day)
+
+        myJobs = db.session.query(job_journal).filter(job_journal.user_id==session['myUser_id']).filter(job_journal.activity_id==1).order_by(desc('end_date')).all()
+        for job in myJobs:
+            #print job.activity_id
+            #print days_between(myDay, job.end_date.strftime('%Y-%m-%d'))
+            if days_between(myDay, job.end_date.strftime('%Y-%m-%d')) >=0:
+                myProduct = db.session.query(invtypes).filter_by(typeID = int(job.product_id)).one()
+                start_date = datetime.strftime(job.start_date, '%b %d %Y .. %H:%M')
+                end_date = datetime.strftime(job.end_date, '%b %d %Y .. %H:%M')
+                if job.activity_id==1:
+                    job_type="Manufacturing"
+
+                jobx = Jobs(job.product_id, myProduct.typeName, job_type, job.status, job.runs, start_date, end_date, job.job_cost)
+                buildJobs += [jobx]
+
+        myDay = datetime.strptime(myDay, '%Y-%m-%d')
+        myDay = datetime.strftime(myDay, '%b %d %Y')
+        return render_template('invent_jobs.html', myJobs=buildJobs, myDay=myDay, action='Build')
+
+    else:
+        flash('You must be logged in to use the Job checker.', 'danger')
+        return redirect(url_for('build'))
+
+def days_between(d1, d2):
+    d1 = datetime.strptime(d1, "%Y-%m-%d")
+    d2 = datetime.strptime(d2, "%Y-%m-%d")
+    return (d2 - d1).days
 
 @app.route("/fetch_fittings")
 def fetch_fittings():
@@ -2821,7 +2902,7 @@ def import_fitting(item):
     return 0
 
 def import_jobs(item):
-    print 'Importing job: ' + str(item['blueprint_type_id'])
+    #print 'Importing job: ' + str(item['blueprint_type_id'])
     #print item
     existingJob = db.session.query(job_journal).filter_by(job_id = str(item['job_id']), user_id=session['myUser_id']).all()
     if not existingJob:

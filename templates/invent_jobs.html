@@ -5,7 +5,7 @@
   <div class="col-sm-12">
     <ul class="list-group mb-auto">
       <li class="list-group-item d-flex justify-content-between lh-condensed bg-secondary">
-        <h3 class="mx-auto text-white">Invention Job Status</h3>
+        <h3 class="mx-auto text-white">{{action}} Job Status for {{myDay}}</h3>
       </li>
       <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
           <table class="table table-sm table-condensed table-hover table-responsive pl-0">
@@ -13,125 +13,34 @@
               <tr>
                 <th scope="col"></th>
                 <th scope="col">Product</th>
+                <th scope="col">Job Type</th>
                 <th scope="col"><center>Status</th>
-                <th scope="col"><center>QTY</th>
-                <th scope="col"><center>Local Sell Price</th>
-                <th scope="col"><center>Total Value</th>
-                <th scope="col"><center>Prod Cost</th>
-                <th scope="col"><center>PM %</th>
-                <th scope="col"><center>Jita Sell Price</th>
+                <th scope="col"><center>Runs</th>
+                <th scope="col"><center>Start Date</th>
+                <th scope="col"><center>Finish Date</th>
+                <th scope="col"><center>Job Cost</th>
               </tr>
             </thead>
             <tbody>
-              {% set pipeline_value = namespace(b=0) %}
-              {% if 'myUser_id' in session %}
-                {% for item in inv_pipeline %}
-                <form action="{{ url_for('pipeline')}}" method="POST">
-                <tr>
-                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.blueprint_id}}_64.png"></th>
-                  <td><p class="mt-1">{{ item.product_name }}</p></td>
-                  <td>
-                    <select name="inv_pipeline_select" id="pipeline_select" class="form-control text-center mt-1" style="width:160px;">
-                      {% if item.status == 0 %}
-                        <option selected value="0">Future Invent</option>
-                      {% else %}
-                        <option value="0">Future Invent</option>
-                      {% endif %}
-                      {% if item.status == 2 %}
-                        <option selected value="2">Being Built</option>
-                      {% else %}
-                        <option value="2">Being Built</option>
-                      {% endif %}
-                      {% if item.status == 3 %}
-                        <option selected value="3">Being Invented</option>
-                      {% else %}
-                        <option value="3">Being Invented</option>
-                      {% endif %}
-                    </select>
-                    <input name="action" class="btn-sm btn-secondary" type="submit" value="UPD">
-                    <input name="action" class="btn-sm btn-danger" type="submit" value="DEL">
-                  </td>
-                  <td><p class="mt-1 text-center"><input type="text" class="form-control text-center" size="3" name="qty" value="{{ item.runs }}"></p></td>
-                  <td><p class="mt-1 text-center">--</p></td>
-                  <td><p class="mt-1 text-center">--</p></td>
-                  <td><p class="mt-1 text-center">--</p></td>
-                  <td><p class="mt-1 text-center text-primary"><strong>--</strong></p></td>
-                  <td><p class="mt-1 text-center">--</p></td>
-                </tr>
-                <input type="hidden" name="blueprint_id" value="{{item.blueprint_id}}">
-              </form>
-              {% endfor %}
-              {% for item in bld_pipeline %}
-                <form action="{{ url_for('pipeline')}}" method="POST">
-                <tr>
-                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.product_id}}_64.png"></th>
-                  <td><p class="mt-1">{{ item.product_name }}</p></td>
-                  <td>
-                    <select name="bld_pipeline_select" id="pipeline_select" class="form-control text-center mt-1" style="width:160px;">
-                      {% if item.status == 0 %}
-                        <option selected value="0">Future Build</option>
-                      {% else %}
-                        <option value="0">Future Build</option>
-                      {% endif %}
-                      {% if item.status == 1 %}
-                        <option selected value="1">On Market</option>
-                      {% else %}
-                        <option value="1">On Market</option>
-                      {% endif %}
-                      {% if item.status == 2 %}
-                        <option selected value="2">Being Built</option>
-                      {% else %}
-                        <option value="2">Being Built</option>
-                      {% endif %}
-                    </select>
-                    <input name="action" class="btn-sm btn-secondary" type="submit" value="UPD">
-                    <input name="action" class="btn-sm btn-danger" type="submit" value="DEL">
-                  </td>
-                  <td><p class="mt-1 text-center"><input type="text" class="form-control text-center" size="3" name="qty" value="{{ item.runs }}"></p></td>
-                  <td>
-                    {% if item.local_sell_price == 0%}
-                      <input type="text" class="form-control text-center mt-1" size="10" name="local_sell" value="{{ "{:,.0f}".format(item.jita_sell_price * 1.20) }}">
-                    {% else %}
-                      <input type="text" class="form-control text-center mt-1" size="10" name="local_sell" value="{{ "{:,.0f}".format(item.local_sell_price) }}">
-                    {% endif %}
-                  </td>
-                  {% set mv = namespace(a=0) %}
-                  {% if item.local_sell_price == 0 %}
-                    {% set mv.a = item.jita_sell_price * 1.20 %}
-                  {% else %}
-                    {% set mv.a = item.local_sell_price %}
-                  {% endif %}
-                  <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(mv.a * item.runs) }}</p></td>
-                  <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.build_cost * item.runs) }}</p></td>
-                  <td>
-                  {% if (mv.a - item.build_cost) / mv.a < 0 %}
-                    <p class="mt-1 text-center text-danger pt-1">
-                  {% else %}
-                    <p class="mt-1 text-center text-primary pt-1">
-                  {% endif %}
-                  <strong>{{ "{:.2%}".format((mv.a - item.build_cost) / mv.a) }}</strong></p>
-                  </td>
-                  <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.jita_sell_price) }}</p></td>
-                </tr>
-                <input type="hidden" name="blueprint_id" value="{{item.blueprint_id}}">
-              </form>
-              {% set pipeline_value.b = pipeline_value.b + (mv.a * item.runs) %}
-            {% endfor %}
-            {% endif %}
-
-            </tbody>
-          </table>
-        </form>
-      </li>
-      <li class="list-group-item d-flex justify-content-between lh-condensed">
-          <h5 class="text-center col-sm-12">
             {% if 'myUser_id' in session %}
-              Total Pipeline Value: {{ "{:,.0f}".format(pipeline_value.b) }}
-            {% else %}
-              Total Pipeline Value: --
+              {% for jobx in myJobs %}
+              <tr>
+                <td scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{ jobx.product_id }}_64.png"></td>
+                <td><p class="mt-1 px-2">{{ jobx.product_name }}</p></td>
+                <td><p class="mt-1 px-2">{{ jobx.job_type }}</p></td>
+                <td><p class="mt-1 px-2">{{ jobx.status }}</p></td>
+                <td><p class="mt-1 px-2">{{ "{:,.0f}".format(jobx.runs) }}</p></td>
+                <td><p class="mt-1 px-2">{{ jobx.start_date }}</p></td>
+                <td><p class="mt-1 px-2">{{ jobx.finish_date }}</p></td>
+                <td><p class="mt-1 px-2">{{ "{:,.0f}".format(jobx.job_cost) }}</p></td>
+              </tr>
+              {% endfor %}
             {% endif %}
-          </h5>
+            </tbody>
+            </table>
+
       </li>
+
     </div>
   </div>
 
