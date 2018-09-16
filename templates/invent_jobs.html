@@ -19,6 +19,7 @@
                 <th scope="col"><center>Start Date</th>
                 <th scope="col"><center>Finish Date</th>
                 <th scope="col"><center>Job Cost</th>
+                <th scope="col"><center>TIme Left</th>
               </tr>
             </thead>
             <tbody>
@@ -33,6 +34,7 @@
                 <td><p class="mt-1 px-2">{{ jobx.start_date }}</p></td>
                 <td><p class="mt-1 px-2">{{ jobx.finish_date }}</p></td>
                 <td><p class="mt-1 px-2">{{ "{:,.0f}".format(jobx.job_cost) }}</p></td>
+                <td><p class="mt-1 px-2">{{ jobx.remainder }}</p></td>
               </tr>
               {% endfor %}
             {% endif %}

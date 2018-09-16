@@ -713,7 +713,7 @@ class FittingList():
         self.name = name
 
 class Jobs():
-    def __init__(self, product_id, product_name, job_type, status, runs, start_date, finish_date, job_cost):
+    def __init__(self, product_id, product_name, job_type, status, runs, start_date, finish_date, job_cost, remainder):
         self.product_id = product_id
         self.product_name = product_name
         self.job_type = job_type
@@ -722,6 +722,7 @@ class Jobs():
         self.start_date = start_date
         self.finish_date =  finish_date
         self.job_cost = job_cost
+        self.remainder = remainder
 
 @app.route("/")
 def index():
@@ -792,6 +793,7 @@ def invent_jobs():
         current_month = datetime.now().month
         current_year = datetime.now().year
         myDay = str(current_year) + '-' + str(current_month) + '-' + str(current_day)
+        now = datetime.utcnow()
 
         myJobs = db.session.query(job_journal).filter(job_journal.user_id==session['myUser_id']).filter(or_(job_journal.activity_id==5, job_journal.activity_id==8)).order_by(desc('end_date')).all()
         for job in myJobs:
@@ -801,16 +803,17 @@ def invent_jobs():
                 myProduct = db.session.query(invtypes).filter_by(typeID = int(job.product_id)).one()
                 start_date = datetime.strftime(job.start_date, '%b %d %Y .. %H:%M')
                 end_date = datetime.strftime(job.end_date, '%b %d %Y .. %H:%M')
+                #remain = '{0:0>2}:{1:0>2}'.format((job.end_date - now).seconds%3600//60, (job.end_date - now).seconds%60)
                 if job.activity_id==5:
                     job_type="Copying"
                 elif job.activity_id==8:
                     job_type="Invention"
 
-                jobx = Jobs(job.product_id, myProduct.typeName, job_type, job.status, job.runs, start_date, end_date, job.job_cost)
+                jobx = Jobs(job.product_id, myProduct.typeName, job_type, job.status, job.runs, start_date, end_date, job.job_cost, (job.end_date - now))
                 inventJobs += [jobx]
 
-        myDay = datetime.strptime(myDay, '%Y-%m-%d')
-        myDay = datetime.strftime(myDay, '%b %d %Y')
+
+        myDay = datetime.strftime(now, '%b %d %Y at %H:%M')
         return render_template('invent_jobs.html', myJobs=inventJobs, myDay=myDay, action='Invention')
 
     else:
@@ -833,6 +836,7 @@ def build_jobs():
         current_month = datetime.now().month
         current_year = datetime.now().year
         myDay = str(current_year) + '-' + str(current_month) + '-' + str(current_day)
+        now = datetime.utcnow()
 
         myJobs = db.session.query(job_journal).filter(job_journal.user_id==session['myUser_id']).filter(job_journal.activity_id==1).order_by(desc('end_date')).all()
         for job in myJobs:
@@ -845,11 +849,10 @@ def build_jobs():
                 if job.activity_id==1:
                     job_type="Manufacturing"
 
-                jobx = Jobs(job.product_id, myProduct.typeName, job_type, job.status, job.runs, start_date, end_date, job.job_cost)
+                jobx = Jobs(job.product_id, myProduct.typeName, job_type, job.status, job.runs, start_date, end_date, job.job_cost, (job.end_date - now))
                 buildJobs += [jobx]
 
-        myDay = datetime.strptime(myDay, '%Y-%m-%d')
-        myDay = datetime.strftime(myDay, '%b %d %Y')
+        myDay = datetime.strftime(now, '%b %d %Y at %H:%M')
         return render_template('invent_jobs.html', myJobs=buildJobs, myDay=myDay, action='Build')
 
     else:
