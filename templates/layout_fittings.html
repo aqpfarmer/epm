@@ -9,7 +9,7 @@
   <link rel='stylesheet' href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-  <link href="{{ url_for('static', filename='css/carousel.css') }}" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/select2.css') }}">
 
   <script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js" integrity="sha384-8iPTk2s/jMVj81dnzb/iFR2sdA7u06vHJyyLlAd4snFpCl/SnyUjRrbdJsw1pGIl" crossorigin="anonymous"></script>
 
@@ -19,65 +19,7 @@
     background-color: #cccccc;
   }
   </style>
-
-  <style>
-  .dropbtn {
-      background-color: #4CAF50;
-      color: white;
-      padding: 10px;
-      font-size: 16px;
-      border: none;
-      cursor: pointer;
-  }
-
-  .dropbtn:hover, .dropbtn:focus {
-      background-color: #3e8e41;
-  }
-
-  #myInput {
-      border-box: box-sizing;
-      background-image: url({{ url_for('static', filename='img/searchicon.png') }});
-      background-position: 14px 12px;
-      background-repeat: no-repeat;
-      font-size: 16px;
-      padding: 14px 20px 12px 45px;
-      border: none;
-      border-bottom: 1px solid #ddd;
-  }
-
-  #myInput:focus {outline: 3px solid #ddd;}
-
-  .dropdown {
-      position: relative;
-      display: inline-block;
-  }
-
-  .dropdown-content {
-      display: none;
-      position: absolute;
-      background-color: #f6f6f6;
-      min-width: 230px;
-      overflow: auto;
-      border: 1px solid #ddd;
-      z-index: 1;
-  }
-
-  .dropdown-content a {
-      color: black;
-      padding: 10px 14px;
-      text-decoration: none;
-      display: block;
-  }
-
-  .dropdown a:hover {background-color: #ddd;}
-
-  .show {display: block;}
-  </style>
-
-
   <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}" type="image/x-icon">
-
-
 
 </head>
 
@@ -92,6 +34,18 @@
   <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/select2.js') }}"></script>
+    <script>
+    $(document).ready(function() { $("#ship").select2(); });
+    {% for n in range(1, 9) %}
+        $(document).ready(function() { $("#hi{{n}}").select2(); });
+        $(document).ready(function() { $("#med{{n}}").select2(); });
+        $(document).ready(function() { $("#low{{n}}").select2(); });
+        $(document).ready(function() { $("#rig{{n}}").select2(); });
+        $(document).ready(function() { $("#ammo{{n}}").select2(); });
+        $(document).ready(function() { $("#drone{{n}}").select2(); });
+    {% endfor %}
+    </script>
 
 
   <script>

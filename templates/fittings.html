@@ -1,4 +1,4 @@
-{% extends 'layout.html' %}
+{% extends 'layout_fittings.html' %}
 {% block body %}
 
 <div class="row px-0" id="row0">
@@ -167,7 +167,7 @@
                           {% for n in range(1, num_highslots+1) %}
                             <tr>
                               <td class="noBorder py-0 bg-white">
-                                <select name="hi{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
+                                <select id="hi{{n}}" name="hi{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
                                   {% if myFittingsHigh %}
                                     {% if myFittingsHigh[n-1].component_id > 0 %}
                                       <option selected value="{{myFittingsHigh[n-1].component_id}}">{{myFittingsHigh[n-1].component}}</option>
@@ -197,7 +197,7 @@
                           {% for n in range(1, num_medslots+1) %}
                             <tr>
                               <td class="noBorder py-0 bg-white">
-                                <select name="med{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
+                                <select id="med{{n}}" name="med{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
                                   {% if myFittingsMed %}
                                     {% if myFittingsMed[n-1].component_id > 0 %}
                                     <option selected value="{{myFittingsMed[n-1].component_id}}">{{myFittingsMed[n-1].component}}</option>
@@ -227,7 +227,7 @@
                           {% for n in range(1, num_lowslots+1) %}
                             <tr>
                               <td class="noBorder py-0 bg-white">
-                                <select name="low{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
+                                <select id="low{{n}}" name="low{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
                                   {% if myFittingsLow %}
                                     {% if myFittingsLow[n-1].component_id > 0 %}
                                     <option selected value="{{myFittingsLow[n-1].component_id}}">{{myFittingsLow[n-1].component}}</option>
@@ -265,7 +265,7 @@
                           {% for n in range(1, num_rigslots+1) %}
                             <tr>
                               <td class="noBorder py-0 bg-white">
-                                <select name="rig{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
+                                <select id="rig{{n}}" name="rig{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
                                   {% if myFittingsRig %}
                                     {% if myFittingsRig[n-1].component_id > 0 %}
                                     <option selected value="{{myFittingsRig[n-1].component_id}}">{{myFittingsRig[n-1].component}}</option>
@@ -295,7 +295,7 @@
                           {% for n in range(1, 6) %}
                             <tr>
                               <td class="noBorder py-0 bg-white">
-                                <select name="ammo{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
+                                <select id="ammo{{n}}" name="ammo{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
                                   {% if myFittingsAmmo %}
                                     {% if myFittingsAmmo[n-1].component_id > 0 %}
                                       <option selected value="{{myFittingsAmmo[n-1].component_id}}">{{myFittingsAmmo[n-1].component}}</option>
@@ -335,7 +335,7 @@
                           {% for n in range(1, 6) %}
                             <tr>
                               <td class="noBorder py-0 bg-white">
-                                <select name="drone{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
+                                <select id="drone{{n}}" name="drone{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
                                   {% if myFittingsDrone %}
                                     {% if myFittingsDrone[n-1].component_id > 0 %}
                                       <option selected value="{{myFittingsDrone[n-1].component_id}}">{{myFittingsDrone[n-1].component}}</option>
