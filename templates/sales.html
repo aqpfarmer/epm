@@ -1,286 +1,67 @@
-<!DOCTYPE html>
-<html class="no-js" lang="en">
-    <head>
-        <title>EVE Production Manager - By Frikkin Genius</title>
-        <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% extends 'layout.html' %}
+{% block body %}
 
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800">
-        <link rel='stylesheet' href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-        <link rel="stylesheet" href="/css/bootstrap.css">
-        <link rel="stylesheet" href="/css/styles.css">
-        <link href="/css/carousel.css" rel="stylesheet">
-    </head>
-    <body>
-      <div class="container" id = "main">
-        <div class="container" id="upperNav">
-          <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-            <a class="navbar-brand" href="/index.html">EVE Production Manager</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+<div class="row px-0" id="row1">
+  <div class="col-sm-12">
+    <ul class="list-group mb-auto">
+      <li class="list-group-item d-flex justify-content-between lh-condensed bg-success">
+        <h3 class="mx-auto text-white">{{report_type}} Report</h3>
+      </li>
+      <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
+        <div class="col-12">
+            <table class="table table-striped">
+              <form action="/{{report_type|lower}}" method="post">
+              <tbody>
+                <tr class="text-center">
+                  <td class="text-right text-secondary noBorder"><h4>Date Range:</td>
+                  <td class="text-left noBorder text-secondary"><strong><h4>{{range_start}}</strong> to <strong>{{range_end}}</strong>
 
-              <!-- Button trigger modal -->
-              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#builderModal">
-                Builder
-              </button>
-              <!-- End Button trigger modal -->
-              <!-- Modal -->
-              <div class="modal fade" id="builderModal" tabindex="-1" role="dialog" aria-labelledby="builderModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="builderModalLabel">Builder Details</h5>
-                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                    </div>
-                    <div class="modal-body">
-                      ...
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- End Modal -->
+                      <button class="btn btn" type="submit" name="action" value="prev">
+                      <i class="fas fa-angle-left" title="Previous Month"></i></button> -
 
-              <ul class="navbar-nav ml-auto">
-                <!-- Button trigger modal -->
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#optionModal">
-                  Options
-                </button>
-                <!-- End Button trigger modal -->
-                <!-- Modal -->
-                <div class="modal fade" id="optionModal" tabindex="-1" role="dialog" aria-labelledby="optionModalLabel" aria-hidden="true">
-                  <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5 class="modal-title" id="optionModalLabel">Options</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
-                        </button>
-                      </div>
-                      <div class="modal-body">
-                        ...
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <!-- End Modal -->
+                      <button class="btn btn" type="submit" name="action" value="next">
+                      <i class="fas fa-angle-right" title="Next Month"></i></button>
+                      <input type="hidden" name="range_start" value="{{range_start}}">
+                      <input type="hidden" name="range_end" value="{{range_end}}">
+                  </td>
+                  <tr><h4 class="text-center col-sm-12 text-success">
+                      Total {{report_type}} for Month: <p class="text-primary"> {{"{:,.0f}".format(grand_total) }} ISK
+                  </tr>
+                </tbody>
+                </form>
+              </table>
+              <table class="table table-sm table-condensed table-hover table-responsive pl-0">
+                <thead>
+                  <tr>
+                    <th scope="col"></th>
+                    <th scope="col"><h4>Product</th>
+                    <th scope="col"><h4><center>QTY</th>
+                    <th scope="col"><h4><center>Sale Price</th>
+                    <th scope="col"><h4><center>Total Sale</th>
+                    <th scope="col"><h4><center>Transaction Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if 'myUser_id' in session %}
+                    {% for item in mySales %}
+                    <tr>
+                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.type_id}}_64.png"></th>
+                      <td><p class="mt-1"><h5>{{ item.product_name }}</p></td>
+                      <td><p class="mt-1"><h5><center>{{ "{:,.0f}".format(item.qty) }}</p></td>
+                      <td><p class="mt-1"><h5><center>{{ "{:,.0f}".format(item.amount) }}</p></td>
+                      <td><p class="mt-1"><h5><center>{{ "{:,.0f}".format(item.qty * item.amount) }}</p></td>
+                      <td><p class="mt-1"><h5><center>{{ item.date_transaction }}</p></td>
+                    </tr>
 
-                <li class="nav-item"><a class="nav-link" href="#">Login</a></li>
-              </ul>
-            </div>
-        </div> <!-- upper nav -->
+                  {% endfor %}
+                {% endif %}
 
-        <div class="row">
-                <div class="col-md-4 order-md-2 mb-4">
-                  <h4 class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted">Your cart</span>
-                    <span class="badge badge-secondary badge-pill">3</span>
-                  </h4>
-                  <ul class="list-group mb-3">
-                    <li class="list-group-item d-flex justify-content-between lh-condensed">
-                      <div>
-                        <h6 class="my-0">Product name</h6>
-                        <small class="text-muted">Brief description</small>
-                      </div>
-                      <span class="text-muted">$12</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between lh-condensed">
-                      <div>
-                        <h6 class="my-0">Second product</h6>
-                        <small class="text-muted">Brief description</small>
-                      </div>
-                      <span class="text-muted">$8</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between lh-condensed">
-                      <div>
-                        <h6 class="my-0">Third item</h6>
-                        <small class="text-muted">Brief description</small>
-                      </div>
-                      <span class="text-muted">$5</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between bg-light">
-                      <div class="text-success">
-                        <h6 class="my-0">Promo code</h6>
-                        <small>EXAMPLECODE</small>
-                      </div>
-                      <span class="text-success">-$5</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                      <span>Total (USD)</span>
-                      <strong>$20</strong>
-                    </li>
-                  </ul>
+                </tbody>
+              </table>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
 
-                  <form class="card p-2">
-                    <div class="input-group">
-                      <input type="text" class="form-control" placeholder="Promo code">
-                      <div class="input-group-append">
-                        <button type="submit" class="btn btn-secondary">Redeem</button>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-                <div class="col-md-8 order-md-1">
-                  <h4 class="mb-3">Billing address</h4>
-                  <form class="needs-validation" novalidate>
-                    <div class="row">
-                      <div class="col-md-6 mb-3">
-                        <label for="firstName">First name</label>
-                        <input type="text" class="form-control" id="firstName" placeholder="" value="" required>
-                        <div class="invalid-feedback">
-                          Valid first name is required.
-                        </div>
-                      </div>
-                      <div class="col-md-6 mb-3">
-                        <label for="lastName">Last name</label>
-                        <input type="text" class="form-control" id="lastName" placeholder="" value="" required>
-                        <div class="invalid-feedback">
-                          Valid last name is required.
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="mb-3">
-                      <label for="username">Username</label>
-                      <div class="input-group">
-                        <div class="input-group-prepend">
-                          <span class="input-group-text">@</span>
-                        </div>
-                        <input type="text" class="form-control" id="username" placeholder="Username" required>
-                        <div class="invalid-feedback" style="width: 100%;">
-                          Your username is required.
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="mb-3">
-                      <label for="email">Email <span class="text-muted">(Optional)</span></label>
-                      <input type="email" class="form-control" id="email" placeholder="you@example.com">
-                      <div class="invalid-feedback">
-                        Please enter a valid email address for shipping updates.
-                      </div>
-                    </div>
-
-                    <div class="mb-3">
-                      <label for="address">Address</label>
-                      <input type="text" class="form-control" id="address" placeholder="1234 Main St" required>
-                      <div class="invalid-feedback">
-                        Please enter your shipping address.
-                      </div>
-                    </div>
-
-                    <div class="mb-3">
-                      <label for="address2">Address 2 <span class="text-muted">(Optional)</span></label>
-                      <input type="text" class="form-control" id="address2" placeholder="Apartment or suite">
-                    </div>
-
-                    <div class="row">
-                      <div class="col-md-5 mb-3">
-                        <label for="country">Country</label>
-                        <select class="custom-select d-block w-100" id="country" required>
-                          <option value="">Choose...</option>
-                          <option>United States</option>
-                        </select>
-                        <div class="invalid-feedback">
-                          Please select a valid country.
-                        </div>
-                      </div>
-                      <div class="col-md-4 mb-3">
-                        <label for="state">State</label>
-                        <select class="custom-select d-block w-100" id="state" required>
-                          <option value="">Choose...</option>
-                          <option>California</option>
-                        </select>
-                        <div class="invalid-feedback">
-                          Please provide a valid state.
-                        </div>
-                      </div>
-                      <div class="col-md-3 mb-3">
-                        <label for="zip">Zip</label>
-                        <input type="text" class="form-control" id="zip" placeholder="" required>
-                        <div class="invalid-feedback">
-                          Zip code required.
-                        </div>
-                      </div>
-                    </div>
-                    <hr class="mb-4">
-                    <div class="custom-control custom-checkbox">
-                      <input type="checkbox" class="custom-control-input" id="same-address">
-                      <label class="custom-control-label" for="same-address">Shipping address is the same as my billing address</label>
-                    </div>
-                    <div class="custom-control custom-checkbox">
-                      <input type="checkbox" class="custom-control-input" id="save-info">
-                      <label class="custom-control-label" for="save-info">Save this information for next time</label>
-                    </div>
-                    <hr class="mb-4">
-
-                    <h4 class="mb-3">Payment</h4>
-
-                    <div class="d-block my-3">
-                      <div class="custom-control custom-radio">
-                        <input id="credit" name="paymentMethod" type="radio" class="custom-control-input" checked required>
-                        <label class="custom-control-label" for="credit">Credit card</label>
-                      </div>
-                      <div class="custom-control custom-radio">
-                        <input id="debit" name="paymentMethod" type="radio" class="custom-control-input" required>
-                        <label class="custom-control-label" for="debit">Debit card</label>
-                      </div>
-                      <div class="custom-control custom-radio">
-                        <input id="paypal" name="paymentMethod" type="radio" class="custom-control-input" required>
-                        <label class="custom-control-label" for="paypal">Paypal</label>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-md-6 mb-3">
-                        <label for="cc-name">Name on card</label>
-                        <input type="text" class="form-control" id="cc-name" placeholder="" required>
-                        <small class="text-muted">Full name as displayed on card</small>
-                        <div class="invalid-feedback">
-                          Name on card is required
-                        </div>
-                      </div>
-                      <div class="col-md-6 mb-3">
-                        <label for="cc-number">Credit card number</label>
-                        <input type="text" class="form-control" id="cc-number" placeholder="" required>
-                        <div class="invalid-feedback">
-                          Credit card number is required
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-md-3 mb-3">
-                        <label for="cc-expiration">Expiration</label>
-                        <input type="text" class="form-control" id="cc-expiration" placeholder="" required>
-                        <div class="invalid-feedback">
-                          Expiration date required
-                        </div>
-                      </div>
-                      <div class="col-md-3 mb-3">
-                        <label for="cc-expiration">CVV</label>
-                        <input type="text" class="form-control" id="cc-cvv" placeholder="" required>
-                        <div class="invalid-feedback">
-                          Security code required
-                        </div>
-                      </div>
-                    </div>
-                    <hr class="mb-4">
-                    <button class="btn btn-primary btn-lg btn-block" type="submit">Continue to checkout</button>
-                  </form>
-                </div>
-              </div>
-      </div>
-      <script src="/js/jquery.min.js"></script>
-      <script src="/js/popper.min.js"></script>
-      <script src="/js/bootstrap.min.js"></script>
-    </body>
-</html>
+{% endblock %}

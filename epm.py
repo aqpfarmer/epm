@@ -636,6 +636,30 @@ class v_asteroid_groups(db.Model):
     def __init__(group):
         self.group = group
 
+class v_sales(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.Integer())
+    type_id = db.Column(db.Integer())
+    product_name = db.Column(db.String())
+    qty = db.Column(db.Integer())
+    amount = db.Column(db.Numeric())
+    date_transaction = db.Column(db.DateTime())
+
+    def __init__(user_id, type_id, product_name, qty, amount, date_transaction):
+        self.group = group
+
+class v_purchases(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.Integer())
+    type_id = db.Column(db.Integer())
+    product_name = db.Column(db.String())
+    qty = db.Column(db.Integer())
+    amount = db.Column(db.Numeric())
+    date_transaction = db.Column(db.DateTime())
+
+    def __init__(user_id, type_id, product_name, qty, amount, date_transaction):
+        self.group = group
+
 class RegisterForm(Form):
     name = StringField('Name', [validators.Length(min=1, max=50)])
     email = StringField('Email', [validators.Length(min=6, max=50)])
@@ -730,6 +754,72 @@ def index():
         session['wallet_balance'] = get_wallet_balance()
 
     return render_template('home.html')
+
+@app.route("/purchases", methods=['GET','POST'])
+def purchases():
+    if 'myUser_id' in session:
+
+        grand_total = 0.0
+
+        if request.args.get('range_start'):
+            current_range_start = datetime.strptime(request.args.get('range_start'),'%Y-%m-%d')
+            current_range_end = datetime.strptime(request.args.get('range_end'),'%Y-%m-%d')
+
+        if request.form.get('action')=='prev':
+            myDate = datetime.strptime(request.form.get('range_start'),'%Y-%m-%d')
+            range_start = str(myDate.year) + '-' + str(myDate.month-1) + '-1'
+            range_end = datetime.strftime(myDate - relativedelta(days=1),'%Y-%-m-%-d')
+        elif request.form.get('action')=='next':
+            myDate = datetime.strptime(request.form.get('range_end'),'%Y-%m-%d')
+            range_start = str(myDate.year) + '-' + str(myDate.month+1) + '-1'
+            range_end = datetime.strftime(myDate + relativedelta(months=1),'%Y-%-m-%-d')
+        else:
+            range_start = str(current_range_start).split(" ")[0]
+            range_end = str(current_range_end).split(" ")[0]
+
+        myPurchases = db.session.query(v_purchases).filter(v_purchases.user_id==session['myUser_id']).filter(v_purchases.date_transaction >= range_start).filter(v_purchases.date_transaction <= range_end).all()
+        for item in myPurchases:
+            grand_total += float(item.qty) * float(item.amount)
+
+
+        return render_template('sales.html', mySales=myPurchases, grand_total=grand_total, range_start=range_start, range_end=range_end, report_type='Purchases')
+
+    else:
+        flash('You must be logged in to see purchase transactions', 'danger')
+        return redirect(url_for('index'))
+
+@app.route("/sales", methods=['GET','POST'])
+def sales():
+    if 'myUser_id' in session:
+
+        grand_total = 0.0
+
+        if request.args.get('range_start'):
+            current_range_start = datetime.strptime(request.args.get('range_start'),'%Y-%m-%d')
+            current_range_end = datetime.strptime(request.args.get('range_end'),'%Y-%m-%d')
+
+        if request.form.get('action')=='prev':
+            myDate = datetime.strptime(request.form.get('range_start'),'%Y-%m-%d')
+            range_start = str(myDate.year) + '-' + str(myDate.month-1) + '-1'
+            range_end = datetime.strftime(myDate - relativedelta(days=1),'%Y-%-m-%-d')
+        elif request.form.get('action')=='next':
+            myDate = datetime.strptime(request.form.get('range_end'),'%Y-%m-%d')
+            range_start = str(myDate.year) + '-' + str(myDate.month+1) + '-1'
+            range_end = datetime.strftime(myDate + relativedelta(months=1),'%Y-%-m-%-d')
+        else:
+            range_start = str(current_range_start).split(" ")[0]
+            range_end = str(current_range_end).split(" ")[0]
+
+        mySales = db.session.query(v_sales).filter(v_sales.user_id==session['myUser_id']).filter(v_sales.date_transaction >= range_start).filter(v_sales.date_transaction <= range_end).all()
+        for item in mySales:
+            grand_total += float(item.qty) * float(item.amount)
+
+
+        return render_template('sales.html', mySales=mySales, grand_total=grand_total, range_start=range_start, range_end=range_end, report_type='Sales')
+
+    else:
+        flash('You must be logged in to see sales transactions', 'danger')
+        return redirect(url_for('index'))
 
 @app.route("/options", methods=['GET','POST'])
 def options():
@@ -957,11 +1047,11 @@ def financial():
         myQuery = db.session.query(wallet_journal).filter(wallet_journal.user_id==session['myUser_id']).filter(wallet_journal.date_transaction >= range_start).filter(wallet_journal.date_transaction <= range_end).all()
         for item in myQuery:
             #print item.ref_type + ' date: ' + str(item.date_transaction)
-            if item.ref_type=='transaction_tax':
+            if item.ref_type=='transaction_tax' or item.ref_type=='asset_safety_recovery_tax' or item.ref_type=='contract_sales_tax':
                 total_transaction_taxes += float(item.amount)
             elif item.ref_type=='market_transaction':
                 total_sales += float(item.amount)
-            elif item.ref_type=='brokers_fee':
+            elif item.ref_type=='brokers_fee' or item.ref_type=='clone_transfer' or item.ref_type=='contract_brokers_fee':
                 total_broker_fees += float(item.amount)
             elif item.ref_type=='bounty_prizes':
                 total_bounties += float(item.amount)
@@ -976,7 +1066,7 @@ def financial():
                 total_donations_out += float(item.amount)
             elif item.ref_type=='market_escrow':
                 total_purchases += float(item.amount)
-            elif item.ref_type=='contract_price':
+            elif item.ref_type=='contract_price' or item.ref_type=='contract_price_payment_corp':
                 if item.amount < 0 :
                     total_contract_buys += float(item.amount)
                 else:
@@ -986,11 +1076,11 @@ def financial():
                     total_insurance_fees += float(item.amount)
                 else:
                     total_insurance_payouts += float(item.amount)
-            elif item.ref_type=='planetary_export_tax' or item.ref_type=='planetary_import_tax':
+            elif item.ref_type=='planetary_export_tax' or item.ref_type=='planetary_import_tax' or item.ref_type=='planetary_construction':
                 total_pi += float(item.amount)
             elif item.ref_type=='bounty_prizes_corporate_tax':
                 total_bounty_tax += float(item.amount)
-            elif item.ref_type=='copying' or item.ref_type=='manufacturing' or item.ref_type=='researching_technology':
+            elif item.ref_type=='copying' or item.ref_type=='manufacturing' or item.ref_type=='researching_technology' or item.ref_type=='industry_job_tax' or item.ref_type=='reprocessing_tax':
                 total_industry_costs += float(item.amount)
 
         total_income = total_donations_in + total_sales + total_bounties + total_contract_sales + total_insurance_payouts
