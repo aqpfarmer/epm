@@ -1,34 +1,34 @@
 -- Views
-CREATE OR REPLACE VIEW evesde.v_asteroid_groups AS
- SELECT DISTINCT invgroups."groupID" AS id,
-    invgroups."groupName" AS "group"
-   FROM invgroups
-  WHERE invgroups."categoryID" = 25 AND invgroups."groupID" <> 903
-  ORDER BY invgroups."groupID";
+CREATE OR REPLACE VIEW public.v_asteroid_groups AS
+ SELECT DISTINCT "invGroups"."groupID" AS id,
+    "invGroups"."groupName" AS "group"
+   FROM public."invGroups"
+  WHERE "invGroups"."categoryID" = 25 AND ""invGroups""."groupID" <> 903
+  ORDER BY ""invGroups""."groupID";
 
-CREATE OR REPLACE VIEW evesde.v_asteroids AS
- SELECT invtypes."typeID" AS id,
-    invgroups."groupID" AS group_id,
-    invtypes."typeName" AS asteroid,
-    invtypes.volume AS vol,
-    invtypes."portionSize" AS portion
-   FROM invtypes,
-    invgroups
-  WHERE invgroups."groupID" = invtypes."groupID" AND invgroups."categoryID" = 25 AND invgroups."groupID" <> 903 AND invtypes."portionSize" > 1
-  ORDER BY invgroups."groupID", invtypes."typeID";
+CREATE OR REPLACE VIEW public.v_asteroids AS
+ SELECT "invTypes"."typeID" AS id,
+    "invGroups"."groupID" AS group_id,
+    "invTypes"."typeName" AS asteroid,
+    "invTypes".volume AS vol,
+    "invTypes"."portionSize" AS portion
+   FROM public."invTypes",
+    public."invGroups"
+  WHERE "invGroups"."groupID" = "invTypes"."groupID" AND "invGroups"."categoryID" = 25 AND "invGroups"."groupID" <> 903 AND "invTypes"."portionSize" > 1
+  ORDER BY "invGroups"."groupID", "invTypes"."typeID";
 
-CREATE OR REPLACE VIEW evesde.v_build_components AS
+CREATE OR REPLACE VIEW public.v_build_components AS
  SELECT t."typeID" AS id,
     t2."typeName" AS material,
     t2."typeID" AS material_id,
     m.quantity,
     t2.volume AS vol
-   FROM invtypes t,
-    "invTypeMaterials" m,
-    invtypes t2
+   FROM public."invTypes" t,
+    public."invTypeMaterials" m,
+    public."invTypes" t2
   WHERE m."typeID" = t."typeID" AND t2."typeID" = m."materialTypeID";
 
-CREATE OR REPLACE VIEW evesde.v_build_pipeline_products AS
+CREATE OR REPLACE VIEW public.v_build_pipeline_products AS
  SELECT DISTINCT build_pipeline.product_name,
     build_pipeline.user_id,
     build_pipeline.blueprint_id,
@@ -39,19 +39,19 @@ CREATE OR REPLACE VIEW evesde.v_build_pipeline_products AS
     build_pipeline.build_cost,
     build_pipeline.status,
     build_pipeline.portion_size
-   FROM build_pipeline;
+   FROM public.build_pipeline;
 
-CREATE OR REPLACE VIEW evesde.v_build_product AS
+CREATE OR REPLACE VIEW public.v_build_product AS
  SELECT t."typeID" AS id,
     t2."typeName" AS t2_blueprint,
     p."productTypeID" AS t2_id
-   FROM invtypes t,
-    "industryActivityProducts" p,
-    invtypes t2
+   FROM public."invTypes" t,
+    public."industryActivityProducts" p,
+    public."invTypes" t2
   WHERE t."typeID" = p."typeID" AND p."productTypeID" = t2."typeID" AND p."activityID" = 1
   ORDER BY t2."typeName";
 
-CREATE OR REPLACE VIEW evesde.v_build_requirements AS
+CREATE OR REPLACE VIEW public.v_build_requirements AS
  SELECT t."typeID" AS id,
     t2."typeName" AS material,
     t2."typeID" AS material_id,
@@ -59,21 +59,21 @@ CREATE OR REPLACE VIEW evesde.v_build_requirements AS
     m.quantity AS qty,
     ap."productTypeID" AS product_id,
     t2.volume AS vol
-   FROM "industryActivityMaterials" m,
-    invtypes t,
-    invtypes t2,
-    "industryActivityProducts" ap
+   FROM public."industryActivityMaterials" m,
+    public."invTypes" t,
+    public."invTypes" t2,
+    public."industryActivityProducts" ap
   WHERE t."typeID" = m."typeID" AND t2."typeID" = m."materialTypeID" AND ap."typeID" = t."typeID" AND m."activityID" = 1
   ORDER BY t."typeID";
 
-CREATE OR REPLACE VIEW evesde.v_build_time AS
- SELECT invtypes."typeID" AS id,
+CREATE OR REPLACE VIEW public.v_build_time AS
+ SELECT "invTypes"."typeID" AS id,
     "industryActivity"."time"
-   FROM "industryActivity",
-    invtypes
-  WHERE "industryActivity"."typeID" = invtypes."typeID" AND "industryActivity"."activityID" = 1;
+   FROM public."industryActivity",
+    public."invTypes"
+  WHERE "industryActivity"."typeID" = "invTypes"."typeID" AND "industryActivity"."activityID" = 1;
 
-CREATE OR REPLACE VIEW evesde.v_buildable_fittings AS
+CREATE OR REPLACE VIEW public.v_buildable_fittings AS
  SELECT ship_fittings.build_id,
     ship_fittings.ship_id,
     ship_fittings.ship_name,
@@ -89,12 +89,12 @@ CREATE OR REPLACE VIEW evesde.v_buildable_fittings AS
     ship_fittings.rollup,
     ship_fittings.user_id,
     0 AS bp_id
-   FROM ship_fittings,
-    "invMetaTypes" mt
+   FROM public.ship_fittings,
+    public."invMetaTypes" mt
   WHERE mt."typeID" = ship_fittings.component_id
   ORDER BY ship_fittings.component;
 
-CREATE OR REPLACE VIEW evesde.v_buildable_fittings_all AS
+CREATE OR REPLACE VIEW public.v_buildable_fittings_all AS
  SELECT ship_fittings.build_id,
     ship_fittings.ship_id,
     ship_fittings.ship_name,
@@ -110,12 +110,12 @@ CREATE OR REPLACE VIEW evesde.v_buildable_fittings_all AS
     ship_fittings.rollup,
     ship_fittings.user_id,
     "industryActivityProducts"."typeID" AS bp_id
-   FROM ship_fittings,
-    "industryActivityProducts"
+   FROM public.ship_fittings,
+    public."industryActivityProducts"
   WHERE "industryActivityProducts"."productTypeID" = ship_fittings.component_id
   ORDER BY ship_fittings.component;
 
-CREATE OR REPLACE VIEW evesde.v_count_fittings AS
+CREATE OR REPLACE VIEW public.v_count_fittings AS
  SELECT DISTINCT ship_fittings.build_id,
     ship_fittings.ship_id,
     ship_fittings.ship_name,
@@ -125,143 +125,143 @@ CREATE OR REPLACE VIEW evesde.v_count_fittings AS
     ship_fittings.qty,
     ship_fittings.rollup,
     ship_fittings.jita_buy
-   FROM ship_fittings;
+   FROM public.ship_fittings;
 
-CREATE OR REPLACE VIEW evesde.v_datacore_requirements AS
+CREATE OR REPLACE VIEW public.v_datacore_requirements AS
  SELECT t."typeID" AS id,
     t2."typeName" AS datacore,
     m.quantity,
     m."materialTypeID" AS dc_id,
     t2.volume AS vol
-   FROM invtypes t,
-    "industryActivityMaterials" m,
-    invtypes t2
+   FROM public."invTypes" t,
+    public."industryActivityMaterials" m,
+    public."invTypes" t2
   WHERE t."typeID" = m."typeID" AND m."materialTypeID" = t2."typeID" AND m."activityID" = 8
   ORDER BY t."typeName";
 
-CREATE OR REPLACE VIEW evesde.v_invent_pipeline_products AS
+CREATE OR REPLACE VIEW public.v_invent_pipeline_products AS
  SELECT DISTINCT invent_pipeline.product_name,
     invent_pipeline.user_id,
     invent_pipeline.runs,
     invent_pipeline.blueprint_id,
     invent_pipeline.status
-   FROM invent_pipeline;
+   FROM public.invent_pipeline;
 
-CREATE OR REPLACE VIEW evesde.v_invent_time AS
- SELECT invtypes."typeID" AS id,
+CREATE OR REPLACE VIEW public.v_invent_time AS
+ SELECT "invTypes"."typeID" AS id,
     "industryActivity"."time"
-   FROM "industryActivity",
-    invtypes
-  WHERE "industryActivity"."typeID" = invtypes."typeID" AND "industryActivity"."activityID" = 8;
+   FROM public."industryActivity",
+    public."invTypes"
+  WHERE "industryActivity"."typeID" = "invTypes"."typeID" AND "industryActivity"."activityID" = 8;
 
-CREATE OR REPLACE VIEW evesde.v_invention_product AS
+CREATE OR REPLACE VIEW public.v_invention_product AS
  SELECT t."typeID" AS id,
     t2."typeName" AS t2_blueprint,
     p."productTypeID" AS t2_id
-   FROM invtypes t,
-    "industryActivityProducts" p,
-    invtypes t2
+   FROM public."invTypes" t,
+    public."industryActivityProducts" p,
+    public."invTypes" t2
   WHERE t."typeID" = p."typeID" AND p."productTypeID" = t2."typeID" AND p."activityID" = 8
   ORDER BY t2."typeName";
 
-CREATE OR REPLACE VIEW evesde.v_item_by_cat AS
+CREATE OR REPLACE VIEW public.v_item_by_cat AS
  SELECT t."typeID" AS id,
     t."typeName" AS item,
     g."categoryID" AS category
-   FROM invtypes t,
-    invgroups g
+   FROM public."invTypes" t,
+    public."invGroups" g
   WHERE g."groupID" = t."groupID"
   ORDER BY t."typeName";
 
-CREATE OR REPLACE VIEW evesde.v_modules AS
+CREATE OR REPLACE VIEW public.v_modules AS
  SELECT t."typeID" AS id,
     t."typeName" AS item,
     te."effectID" AS category
-   FROM invtypes t,
-    "dgmTypeEffects" te
+   FROM public."invTypes" t,
+    public."dgmTypeEffects" te
   WHERE te."typeID" = t."typeID"
   ORDER BY t."typeName";
 
-CREATE OR REPLACE VIEW evesde.v_my_build_product AS
+CREATE OR REPLACE VIEW public.v_my_build_product AS
  SELECT a.user_id,
     a.product_id AS id,
     t2."typeName" AS t2_blueprint,
     p."productTypeID" AS t2_id,
     a.location_id,
     a.qty
-   FROM assets_onhand a,
-    "industryActivityProducts" p,
-    invtypes t2
+   FROM public.assets_onhand a,
+    public."industryActivityProducts" p,
+    public."invTypes" t2
   WHERE a.product_id = p."typeID" AND p."productTypeID" = t2."typeID"
   ORDER BY t2."typeName";
 
-CREATE OR REPLACE VIEW evesde.v_my_build_product1 AS
+CREATE OR REPLACE VIEW public.v_my_build_product1 AS
  SELECT a.user_id,
     a.product_id AS id,
     t2."typeName" AS t2_blueprint,
     p."productTypeID" AS t2_id,
     a.location_id,
     a.qty
-   FROM assets_onhand a,
-    "industryActivityProducts" p,
-    invtypes t2
+   FROM public.assets_onhand a,
+    public."industryActivityProducts" p,
+    public."invTypes" t2
   WHERE a.product_id = p."typeID" AND p."productTypeID" = t2."typeID"
   ORDER BY t2."typeName";
 
-CREATE OR REPLACE VIEW evesde.v_my_invention_product AS
+CREATE OR REPLACE VIEW public.v_my_invention_product AS
  SELECT assets_onhand.user_id,
     assets_onhand.product_id AS id,
     v_invention_product.t2_blueprint,
     v_invention_product.t2_id,
     assets_onhand.location_id,
     assets_onhand.qty
-   FROM assets_onhand,
-    v_invention_product
+   FROM public.assets_onhand,
+    public.v_invention_product
   WHERE v_invention_product.id = assets_onhand.product_id
   ORDER BY v_invention_product.t2_blueprint;
 
-CREATE OR REPLACE VIEW evesde.v_probability AS
+CREATE OR REPLACE VIEW public.v_probability AS
  SELECT t."typeID" AS id,
     prob.probability
-   FROM invtypes t,
-    "industryActivityProbabilities" prob
+   FROM public."invTypes" t,
+    public."industryActivityProbabilities" prob
   WHERE prob."typeID" = t."typeID" AND prob."activityID" = 8;
 
-CREATE OR REPLACE VIEW evesde.v_product AS
+CREATE OR REPLACE VIEW public.v_product AS
  SELECT t."typeID" AS id,
     p."productTypeID" AS t2_id
-   FROM invtypes t,
-    "industryActivityProducts" p,
-    invtypes t2
+   FROM public."invTypes" t,
+    public."industryActivityProducts" p,
+    public."invTypes" t2
   WHERE t."typeID" = p."typeID" AND p."productTypeID" = t2."typeID" AND p."activityID" = 1;
 
-CREATE OR REPLACE VIEW evesde.v_rigs AS
+CREATE OR REPLACE VIEW public.v_rigs AS
  SELECT t."typeID" AS id,
     t."typeName" AS item,
     ta."valueFloat" AS size
-   FROM invtypes t,
-    "dgmTypeEffects" te,
-    "dgmTypeAttributes" ta
+   FROM public."invTypes" t,
+    public."dgmTypeEffects" te,
+    public."dgmTypeAttributes" ta
   WHERE te."typeID" = ta."typeID" AND ta."typeID" = t."typeID" AND te."effectID" = 2663 AND ta."attributeID" = 1547
   ORDER BY t."typeName";
 
-CREATE OR REPLACE VIEW evesde.v_ships AS
+CREATE OR REPLACE VIEW public.v_ships AS
  SELECT t."typeID" AS id,
     t."typeName" AS ship
-   FROM invtypes t,
-    invgroups g,
-    "invCategories" c
+   FROM public."invTypes" t,
+    public."invGroups" g,
+    public."invCategories" c
   WHERE g."groupID" = t."groupID" AND c."categoryID" = g."categoryID" AND c."categoryID" = 6
   ORDER BY t."typeName";
 
-CREATE OR REPLACE VIEW evesde.v_shipslots AS
+CREATE OR REPLACE VIEW public.v_shipslots AS
  SELECT at."attributeID" AS id,
     ta."typeID" AS ship_id,
     ta."valueInt" AS valint,
     ta."valueFloat" AS valfloat
-   FROM "dgmTypeAttributes" ta,
-    "dgmAttributeTypes" at
-  WHERE at."attributeID" = ta."attributeID";
+   FROM public."dgmTypeAttributes" ta,
+    public."dgmAttributeTypes" at
+  WHERE at.attributeID" = ta."attributeID";
 
 --EPM Tables. Add these after importing EVE SDE
 CREATE TABLE evesde.assets_onhand
