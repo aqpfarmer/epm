@@ -2461,82 +2461,7 @@ def invent_add_pipeline():
         return redirect(url_for('invent'))
 
 
-@app.route('/login', methods=['GET','POST'])
-def login():
-    sso = db.session.query(eve_sso).all()
-    client_id = sso[0].client_id
-    secret_key = sso[0].secret_key
-    code = request.args.get('code')
-    state = request.args.get('state')
-    auth = b64encode("{0}:{1}".format(client_id, secret_key))
 
-    headers = {'Authorization': 'Basic ' + auth}
-    payload = {'grant_type':'authorization_code', 'code':code}
-
-    response = requests.post('https://login.eveonline.com/oauth/token', headers=headers, params=payload)
-    jsonData = json.loads(response.text)
-
-    if jsonData:
-        #print jsonData
-        refresh_token = jsonData['refresh_token']
-        auth_code = jsonData['access_token']
-        headers1 = {'Authorization': 'Bearer ' + auth_code}
-        response1 = requests.get('https://esi.tech.ccp.is/verify/', headers=headers1)
-        jsonData1 = json.loads(response1.text)
-        #print jsonData1
-
-        if jsonData1:
-            character_id = str(jsonData1['CharacterID'])
-            #print character_id
-            payload = {'datasource':'tranquility'}
-            response2 = requests.get('https://esi.evetech.net/latest/characters/'+character_id, params=payload)
-            jsonData2 = json.loads(response2.text)
-            #print jsonData2
-            corp_id = str(jsonData2['corporation_id'])
-            response3 = requests.get('https://esi.evetech.net/latest/corporations/'+corp_id, params=payload)
-            jsonData3 = json.loads(response3.text)
-            corp_name = jsonData3['name']
-            character_name = jsonData1['CharacterName']
-            new_expiration = jsonData1['ExpiresOn']
-            myUser = db.session.query(users).filter_by(character_id=character_id).all()
-            home_station_id = '0'
-            structure_role_bonus = 1.0
-            default_bp_me = 2.0
-
-            if myUser:
-                lli = myUser[0].last_logged_in.strftime('%b %d, %Y')
-                myUser[0].auth_code = auth_code
-                myUser[0].expiration = new_expiration
-                myUser[0].last_logged_in = datetime.now()
-                myUser[0].active = True
-                myUser[0].refresh_token = refresh_token
-                home_station_id = myUser[0].home_station_id
-                structure_role_bonus = float(myUser[0].structure_role_bonus)
-                default_bp_me = float(myUser[0].default_bp_me)
-                db.session.add(myUser[0])
-                db.session.commit()
-
-                flash('Successful login. '+character_name+' last logged in on: ' + lli,  'success')
-            else:
-                myUser = users(character_id, character_name, refresh_token, new_expiration, auth_code, True, datetime.now(), home_station_id, structure_role_bonus, default_bp_me, corp_id)
-                db.session.add(myUser)
-                db.session.commit()
-
-                flash('Successfully created new login. Welcome, '+character_name+ '!',  'success')
-
-            session['logged_in'] = True
-            session['name'] = character_name
-            session['myUser_id'] = character_id
-            session['access_token'] = auth_code
-            session['expiration'] = new_expiration
-            session['corp_id'] = corp_id
-            session['home_station_id'] = home_station_id
-            session['structure_role_bonus'] = structure_role_bonus
-            session['default_bp_me'] = default_bp_me
-            session['corp_name'] = corp_name
-
-
-    return redirect(url_for('index'))
 
 
 @app.route('/registration', methods=['GET', 'POST'])
@@ -2765,6 +2690,82 @@ def refine_asteroid(min_id, calcs, asteroid_stats):
             mined_mins.morph = mined
     return mined_mins
 
+@app.route('/login', methods=['GET','POST'])
+def login():
+    sso = db.session.query(eve_sso).all()
+    client_id = sso[0].client_id
+    secret_key = sso[0].secret_key
+    code = request.args.get('code')
+    state = request.args.get('state')
+    auth = b64encode("{0}:{1}".format(client_id, secret_key))
+
+    headers = {'Authorization': 'Basic ' + auth}
+    payload = {'grant_type':'authorization_code', 'code':code}
+
+    response = requests.post('https://login.eveonline.com/oauth/token', headers=headers, params=payload)
+    jsonData = json.loads(response.text)
+
+    if jsonData:
+        #print jsonData
+        refresh_token = jsonData['refresh_token']
+        auth_code = jsonData['access_token']
+        headers1 = {'Authorization': 'Bearer ' + auth_code}
+        response1 = requests.get('https://esi.tech.ccp.is/verify/', headers=headers1)
+        jsonData1 = json.loads(response1.text)
+        #print jsonData1
+
+        if jsonData1:
+            character_id = str(jsonData1['CharacterID'])
+            #print character_id
+            payload = {'datasource':'tranquility'}
+            response2 = requests.get('https://esi.evetech.net/latest/characters/'+character_id, params=payload)
+            jsonData2 = json.loads(response2.text)
+            #print jsonData2
+            corp_id = str(jsonData2['corporation_id'])
+            response3 = requests.get('https://esi.evetech.net/latest/corporations/'+corp_id, params=payload)
+            jsonData3 = json.loads(response3.text)
+            corp_name = jsonData3['name']
+            character_name = jsonData1['CharacterName']
+            new_expiration = jsonData1['ExpiresOn']
+            myUser = db.session.query(users).filter_by(character_id=character_id).all()
+            home_station_id = '0'
+            structure_role_bonus = 1.0
+            default_bp_me = 2.0
+
+            if myUser:
+                lli = myUser[0].last_logged_in.strftime('%b %d, %Y')
+                myUser[0].auth_code = auth_code
+                myUser[0].expiration = new_expiration
+                myUser[0].last_logged_in = datetime.now()
+                myUser[0].active = True
+                myUser[0].refresh_token = refresh_token
+                home_station_id = myUser[0].home_station_id
+                structure_role_bonus = float(myUser[0].structure_role_bonus)
+                default_bp_me = float(myUser[0].default_bp_me)
+                db.session.add(myUser[0])
+                db.session.commit()
+
+                flash('Successful login. '+character_name+' last logged in on: ' + lli,  'success')
+            else:
+                myUser = users(character_id, character_name, refresh_token, new_expiration, auth_code, True, datetime.now(), home_station_id, structure_role_bonus, default_bp_me, corp_id)
+                db.session.add(myUser)
+                db.session.commit()
+
+                flash('Successfully created new login. Welcome, '+character_name+ '!',  'success')
+
+            session['logged_in'] = True
+            session['name'] = character_name
+            session['myUser_id'] = character_id
+            session['access_token'] = auth_code
+            session['expiration'] = new_expiration
+            session['corp_id'] = corp_id
+            session['home_station_id'] = home_station_id
+            session['structure_role_bonus'] = structure_role_bonus
+            session['default_bp_me'] = default_bp_me
+            session['corp_name'] = corp_name
+
+
+    return redirect(url_for('index'))
 
 def do_refresh_token(character_id):
     sso = db.session.query(eve_sso).all()

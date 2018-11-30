@@ -263,6 +263,34 @@ CREATE OR REPLACE VIEW public.v_shipslots AS
     public."dgmAttributeTypes" at
   WHERE at.attributeID" = ta."attributeID";
 
+CREATE OR REPLACE VIEW public.v_purchases AS
+   SELECT wallet_transactions.id,
+      wallet_transactions.user_id,
+      "invTypes"."typeID" AS type_id,
+      "invTypes"."typeName" AS product_name,
+      wallet_transactions.qty,
+      wallet_transactions.amount,
+      wallet_transactions.date_transaction
+     FROM wallet_journal,
+      wallet_transactions,
+      "invTypes"
+    WHERE wallet_journal.user_id::text = wallet_transactions.user_id::text AND wallet_journal.date_transaction = wallet_transactions.date_transaction AND wallet_journal.date_transaction = wallet_transactions.date_transaction AND "invTypes"."typeID" = wallet_transactions.product_id AND wallet_journal.ref_type::text = 'market_escrow'::text
+    ORDER BY wallet_transactions.date_transaction, "invTypes"."typeName";
+
+CREATE OR REPLACE VIEW public.v_sales AS
+     SELECT wallet_transactions.id,
+        wallet_transactions.user_id,
+        "invTypes"."typeID" AS type_id,
+        "invTypes"."typeName" AS product_name,
+        wallet_transactions.qty,
+        wallet_transactions.amount,
+        wallet_transactions.date_transaction
+       FROM wallet_journal,
+        wallet_transactions,
+        "invTypes"
+      WHERE wallet_journal.user_id::text = wallet_transactions.user_id::text AND wallet_journal.date_transaction = wallet_transactions.date_transaction AND wallet_journal.date_transaction = wallet_transactions.date_transaction AND "invTypes"."typeID" = wallet_transactions.product_id AND wallet_journal.ref_type::text = 'market_transaction'::text
+      ORDER BY wallet_transactions.date_transaction, "invTypes"."typeName";
+
 --EPM Tables. Add these after importing EVE SDE
 CREATE TABLE evesde.assets_onhand
 (
