@@ -12,7 +12,7 @@ from sqlalchemy import or_, desc
 import math
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chris:funkytown@catfish.mrchips.xyz/evesde'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chris:funkytown@catfish.eastus.cloudapp.azure.com/evesde'
 app.debug = True # disable this in production!
 app.config['SECRET_KEY'] = 'super-secret-foolish-fool112'
 app.config['SECURITY_REGISTERABLE'] = True
@@ -2710,7 +2710,7 @@ def login():
         refresh_token = jsonData['refresh_token']
         auth_code = jsonData['access_token']
         headers1 = {'Authorization': 'Bearer ' + auth_code}
-        response1 = requests.get('https://esi.tech.ccp.is/verify/', headers=headers1)
+        response1 = requests.get('https://esi.evetech.net/verify/', headers=headers1)
         jsonData1 = json.loads(response1.text)
         #print jsonData1
 
@@ -2803,7 +2803,7 @@ def check_token(character_id):
         refresh_token = myUser[0].refresh_token
         auth_code = myUser[0].auth_code
         headers1 = {'Authorization': 'Bearer ' + auth_code}
-        response1 = requests.get('https://esi.tech.ccp.is/verify/', headers=headers1)
+        response1 = requests.get('https://esi.evetech.net/verify/', headers=headers1)
         jsonData1 = json.loads(response1.text)
         print 'Get Check Token - ' + str(response1.status_code)
         print jsonData1
