@@ -1053,8 +1053,9 @@ def financial():
             range_start = current_range_start
             range_end = current_range_end
 
-        #print range_start
-        #print range_end
+
+        print range_start
+        print range_end
         myQuery = db.session.query(wallet_journal).filter(wallet_journal.user_id==session['myUser_id']).filter(wallet_journal.date_transaction >= range_start).filter(wallet_journal.date_transaction <= range_end).all()
         for item in myQuery:
             #print item.ref_type + ' date: ' + str(item.date_transaction)
