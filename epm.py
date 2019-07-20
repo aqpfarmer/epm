@@ -1036,14 +1036,14 @@ def financial():
         #current_range_end = str(current_year) + '-' + str(current_month) + '-30'
         if request.form.get('action')=='prev':
             myDate = datetime.strptime(request.form.get('range_start'),'%Y-%m-%d')
-            if str(myDate.month-1)=='12':
+            if str(myDate.month)=='1':
                 range_start = str(myDate.year-1) + '-' + str(12) + '-1'
             else:
                 range_start = str(myDate.year) + '-' + str(myDate.month-1) + '-1'
             range_end = datetime.strftime(myDate - relativedelta(days=1),'%Y-%-m-%-d')
         elif request.form.get('action')=='next':
             myDate = datetime.strptime(request.form.get('range_end'),'%Y-%m-%d')
-            if str(myDate.month+1)=='1':
+            if str(myDate.month)=='12':
                 range_start = str(myDate.year+1) + '-' + str(1) + '-1'
             else:
                 range_start = str(myDate.year) + '-' + str(myDate.month+1) + '-1'
