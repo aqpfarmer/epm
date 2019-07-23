@@ -1,10 +1,306 @@
--- Views
+DROP SEQUENCE if exists public.assets_onhand_id_seq;
+DROP SEQUENCE if exists public.build_pipeline_id_seq;
+DROP SEQUENCE if exists public.invent_pipeline_id_seq;
+DROP SEQUENCE if exists public.job_journal_id_seq;
+DROP SEQUENCE if exists public.mining_calc_id_seq;
+DROP SEQUENCE if exists public.ship_fittings_id_seq;
+DROP SEQUENCE if exists public.users_id_seq;
+DROP SEQUENCE if exists public.wallet_journal_id_seq;
+DROP SEQUENCE if exists public.wallet_transactions_id_seq;
+
+DROP TABLE if exists public.assets_onhand;
+DROP TABLE if exists public.build_pipeline;
+DROP TABLE if exists public.eve_sso;
+DROP TABLE if exists public.invent_pipeline;
+DROP TABLE if exists public.job_journal;
+DROP TABLE if exists public.mining_calc;
+DROP TABLE if exists public.ship_fittings;
+DROP TABLE if exists public.users;
+DROP TABLE if exists public.wallet_journal;
+DROP TABLE if exists public.wallet_transactions;
+
+CREATE SEQUENCE public.assets_onhand_id_seq
+    INCREMENT 1
+    START 45333
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE public.assets_onhand_id_seq
+    OWNER TO chris;
+CREATE SEQUENCE public.build_pipeline_id_seq
+    INCREMENT 1
+    START 7441
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE public.build_pipeline_id_seq
+    OWNER TO chris;
+CREATE SEQUENCE public.invent_pipeline_id_seq
+    INCREMENT 1
+    START 164
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE public.invent_pipeline_id_seq
+    OWNER TO chris;
+CREATE SEQUENCE public.job_journal_id_seq
+    INCREMENT 1
+    START 135
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE public.job_journal_id_seq
+    OWNER TO chris;
+CREATE SEQUENCE public.mining_calc_id_seq
+    INCREMENT 1
+    START 14
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE public.mining_calc_id_seq
+    OWNER TO chris;
+CREATE SEQUENCE public.ship_fittings_id_seq
+    INCREMENT 1
+    START 2442
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE public.ship_fittings_id_seq
+    OWNER TO chris;
+CREATE SEQUENCE public.users_id_seq
+    INCREMENT 1
+    START 20
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE public.users_id_seq
+    OWNER TO chris;
+CREATE SEQUENCE public.wallet_journal_id_seq
+    INCREMENT 1
+    START 3668
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE public.wallet_journal_id_seq
+    OWNER TO chris;
+CREATE SEQUENCE public.wallet_transactions_id_seq
+    INCREMENT 1
+    START 1245
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+
+ALTER SEQUENCE public.wallet_transactions_id_seq
+    OWNER TO chris;
+CREATE TABLE public.assets_onhand
+(
+    id integer NOT NULL DEFAULT nextval('assets_onhand_id_seq'::regclass),
+    user_id integer,
+    product_id integer,
+    item_id character varying(100) COLLATE pg_catalog."default",
+    location_flag character varying(100) COLLATE pg_catalog."default",
+    location_type character varying(100) COLLATE pg_catalog."default",
+    location_id character varying(100) COLLATE pg_catalog."default",
+    qty integer,
+    is_singleton boolean,
+    CONSTRAINT b_assets_oh_pkey PRIMARY KEY (id)
+)
+WITH (
+    OIDS = FALSE
+);
+CREATE TABLE public.build_pipeline
+(
+    id integer NOT NULL DEFAULT nextval('build_pipeline_id_seq'::regclass),
+    user_id integer,
+    product_id integer,
+    blueprint_id integer,
+    runs integer,
+    material_id integer,
+    material_qty integer,
+    material_cost double precision,
+    product_name character varying(100) COLLATE pg_catalog."default",
+    material character varying(100) COLLATE pg_catalog."default",
+    group_id integer,
+    build_or_buy integer,
+    jita_sell_price double precision,
+    local_sell_price double precision,
+    build_cost double precision,
+    material_comp_id integer,
+    status integer,
+    material_vol double precision,
+    portion_size integer,
+    CONSTRAINT b_pipeline_pkey PRIMARY KEY (id)
+)
+WITH (
+    OIDS = FALSE
+);
+CREATE TABLE public.eve_sso
+(
+    id integer NOT NULL,
+    client_id character varying(100) COLLATE pg_catalog."default",
+    secret_key character varying(100) COLLATE pg_catalog."default",
+    scope character varying(100) COLLATE pg_catalog."default",
+    CONSTRAINT evesso_pkey PRIMARY KEY (id)
+)
+WITH (
+    OIDS = FALSE
+);
+CREATE TABLE public.invent_pipeline
+(
+    id integer NOT NULL DEFAULT nextval('invent_pipeline_id_seq'::regclass),
+    user_id integer,
+    product_id integer,
+    blueprint_id integer,
+    runs integer,
+    product_name character varying(100) COLLATE pg_catalog."default",
+    datacore_id integer,
+    datacore_qty integer,
+    datacore_cost double precision,
+    datacore character varying(100) COLLATE pg_catalog."default",
+    datacore_vol double precision,
+    status integer,
+    CONSTRAINT i_pipeline_pkey PRIMARY KEY (id)
+)
+WITH (
+    OIDS = FALSE
+);
+CREATE TABLE public.job_journal
+(
+    id integer NOT NULL DEFAULT nextval('job_journal_id_seq'::regclass),
+    job_id character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    user_id integer,
+    product_id integer,
+    activity_id integer,
+    facility_id character varying(100) COLLATE pg_catalog."default",
+    station_id character varying(100) COLLATE pg_catalog."default",
+    licensed_runs integer,
+    runs integer,
+    blueprint_location_id character varying(100) COLLATE pg_catalog."default",
+    output_location_id character varying(100) COLLATE pg_catalog."default",
+    start_date timestamp without time zone,
+    end_date timestamp without time zone,
+    status character varying(50) COLLATE pg_catalog."default",
+    job_cost double precision,
+    CONSTRAINT b_job_journal_pkey PRIMARY KEY (job_id)
+)
+WITH (
+    OIDS = FALSE
+);
+CREATE TABLE public.mining_calc
+(
+    id integer NOT NULL DEFAULT nextval('mining_calc_id_seq'::regclass),
+    user_id integer,
+    m3_per_cycle integer,
+    cycle_time integer,
+    num_cycles integer,
+    refinery double precision,
+    trit_required integer,
+    pye_required integer,
+    mex_required integer,
+    iso_required integer,
+    nox_required integer,
+    zyd_required integer,
+    meg_required integer,
+    morph_required integer,
+    asteroid1_id integer,
+    asteroid2_id integer,
+    asteroid3_id integer,
+    asteroid4_id integer,
+    CONSTRAINT b_mining_pkey PRIMARY KEY (id)
+)
+WITH (
+    OIDS = FALSE
+);
+
+CREATE TABLE public.ship_fittings
+(
+    id integer NOT NULL DEFAULT nextval('ship_fittings_id_seq'::regclass),
+    build_id integer,
+    user_id integer,
+    ship_id integer,
+    ship_name character varying(100) COLLATE pg_catalog."default",
+    fitting_name character varying(100) COLLATE pg_catalog."default",
+    qty integer,
+    num_rigslots integer,
+    num_lowslots integer,
+    num_medslots integer,
+    num_highslots integer,
+    component_id integer,
+    component_qty integer,
+    component_cost double precision,
+    component character varying(100) COLLATE pg_catalog."default",
+    component_slot character varying(20) COLLATE pg_catalog."default",
+    contract_sell_price double precision,
+    build_cost double precision,
+    jita_buy double precision,
+    rollup integer,
+    CONSTRAINT b_shipfittings_pkey PRIMARY KEY (id)
+)
+WITH (
+    OIDS = FALSE
+);
+CREATE TABLE public.users
+(
+    id integer NOT NULL DEFAULT nextval('users_id_seq'::regclass),
+    character_id character varying(100) COLLATE pg_catalog."default",
+    character_name character varying(100) COLLATE pg_catalog."default",
+    refresh_token character varying(255) COLLATE pg_catalog."default",
+    expiration timestamp without time zone,
+    auth_code character varying(255) COLLATE pg_catalog."default",
+    active boolean,
+    last_logged_in timestamp without time zone,
+    home_station_id character varying(100) COLLATE pg_catalog."default",
+    structure_role_bonus double precision,
+    default_bp_me double precision,
+    corp_id character varying(100) COLLATE pg_catalog."default",
+    CONSTRAINT user_pkey PRIMARY KEY (id)
+)
+WITH (
+    OIDS = FALSE
+);
+CREATE TABLE public.wallet_journal
+(
+    id integer NOT NULL DEFAULT nextval('wallet_journal_id_seq'::regclass),
+    user_id character varying(100) COLLATE pg_catalog."default",
+    amount double precision,
+    date_transaction timestamp without time zone,
+    transaction_id character varying(100) COLLATE pg_catalog."default",
+    ref_type character varying(100) COLLATE pg_catalog."default",
+    CONSTRAINT wallet_journal_pkey PRIMARY KEY (id)
+)
+WITH (
+    OIDS = FALSE
+);
+CREATE TABLE public.wallet_transactions
+(
+    id integer NOT NULL DEFAULT nextval('wallet_transactions_id_seq'::regclass),
+    user_id character varying(100) COLLATE pg_catalog."default",
+    amount double precision,
+    date_transaction timestamp without time zone,
+    transaction_id character varying(100) COLLATE pg_catalog."default",
+    client_id character varying(100) COLLATE pg_catalog."default",
+    location_id character varying(100) COLLATE pg_catalog."default",
+    qty integer,
+    product_id integer,
+    CONSTRAINT wallet_transaction_pkey PRIMARY KEY (id)
+)
+WITH (
+    OIDS = FALSE
+);
 CREATE OR REPLACE VIEW public.v_asteroid_groups AS
  SELECT DISTINCT "invGroups"."groupID" AS id,
     "invGroups"."groupName" AS "group"
    FROM public."invGroups"
-  WHERE "invGroups"."categoryID" = 25 AND ""invGroups""."groupID" <> 903
-  ORDER BY ""invGroups""."groupID";
+  WHERE "invGroups"."categoryID" = 25 AND "invGroups"."groupID" <> 903
+  ORDER BY "invGroups"."groupID";
 
 CREATE OR REPLACE VIEW public.v_asteroids AS
  SELECT "invTypes"."typeID" AS id,
@@ -261,8 +557,7 @@ CREATE OR REPLACE VIEW public.v_shipslots AS
     ta."valueFloat" AS valfloat
    FROM public."dgmTypeAttributes" ta,
     public."dgmAttributeTypes" at
-  WHERE at.attributeID" = ta."attributeID";
-
+  WHERE at."attributeID" = ta."attributeID";
 CREATE OR REPLACE VIEW public.v_purchases AS
    SELECT wallet_transactions.id,
       wallet_transactions.user_id,
@@ -276,7 +571,6 @@ CREATE OR REPLACE VIEW public.v_purchases AS
       "invTypes"
     WHERE wallet_journal.user_id::text = wallet_transactions.user_id::text AND wallet_journal.date_transaction = wallet_transactions.date_transaction AND wallet_journal.date_transaction = wallet_transactions.date_transaction AND "invTypes"."typeID" = wallet_transactions.product_id AND wallet_journal.ref_type::text = 'market_escrow'::text
     ORDER BY wallet_transactions.date_transaction, "invTypes"."typeName";
-
 CREATE OR REPLACE VIEW public.v_sales AS
      SELECT wallet_transactions.id,
         wallet_transactions.user_id,
@@ -291,235 +585,3 @@ CREATE OR REPLACE VIEW public.v_sales AS
       WHERE wallet_journal.user_id::text = wallet_transactions.user_id::text AND wallet_journal.date_transaction = wallet_transactions.date_transaction AND wallet_journal.date_transaction = wallet_transactions.date_transaction AND "invTypes"."typeID" = wallet_transactions.product_id AND wallet_journal.ref_type::text = 'market_transaction'::text
       ORDER BY wallet_transactions.date_transaction, "invTypes"."typeName";
 
---EPM Tables. Add these after importing EVE SDE
-CREATE TABLE evesde.assets_onhand
-(
-    id integer NOT NULL DEFAULT nextval('assets_onhand_id_seq'::regclass),
-    user_id integer,
-    product_id integer,
-    item_id character varying(100) COLLATE pg_catalog."default",
-    location_flag character varying(100) COLLATE pg_catalog."default",
-    location_type character varying(100) COLLATE pg_catalog."default",
-    location_id character varying(100) COLLATE pg_catalog."default",
-    qty integer,
-    is_singleton boolean,
-    CONSTRAINT b_assets_oh_pkey PRIMARY KEY (id)
-)
-WITH (
-    OIDS = FALSE
-)
-
-CREATE TABLE evesde.build_pipeline
-(
-    id integer NOT NULL DEFAULT nextval('build_pipeline_id_seq'::regclass),
-    user_id integer,
-    product_id integer,
-    blueprint_id integer,
-    runs integer,
-    material_id integer,
-    material_qty integer,
-    material_cost double precision,
-    product_name character varying(100) COLLATE pg_catalog."default",
-    material character varying(100) COLLATE pg_catalog."default",
-    group_id integer,
-    build_or_buy integer,
-    jita_sell_price double precision,
-    local_sell_price double precision,
-    build_cost double precision,
-    material_comp_id integer,
-    status integer,
-    material_vol double precision,
-    portion_size integer,
-    CONSTRAINT b_pipeline_pkey PRIMARY KEY (id)
-)
-WITH (
-    OIDS = FALSE
-)
-
-CREATE TABLE evesde.eve_sso
-(
-    id integer NOT NULL,
-    client_id character varying(100) COLLATE pg_catalog."default",
-    secret_key character varying(100) COLLATE pg_catalog."default",
-    scope character varying(100) COLLATE pg_catalog."default",
-    CONSTRAINT evesso_pkey PRIMARY KEY (id)
-)
-WITH (
-    OIDS = FALSE
-)
-
-CREATE TABLE evesde.invent_pipeline
-(
-    id integer NOT NULL DEFAULT nextval('invent_pipeline_id_seq'::regclass),
-    user_id integer,
-    product_id integer,
-    blueprint_id integer,
-    runs integer,
-    product_name character varying(100) COLLATE pg_catalog."default",
-    datacore_id integer,
-    datacore_qty integer,
-    datacore_cost double precision,
-    datacore character varying(100) COLLATE pg_catalog."default",
-    datacore_vol double precision,
-    status integer,
-    CONSTRAINT i_pipeline_pkey PRIMARY KEY (id)
-)
-WITH (
-    OIDS = FALSE
-)
-
-CREATE TABLE evesde.job_journal
-(
-    id integer NOT NULL DEFAULT nextval('job_journal_id_seq'::regclass),
-    job_id character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    user_id integer,
-    product_id integer,
-    activity_id integer,
-    facility_id character varying(100) COLLATE pg_catalog."default",
-    station_id character varying(100) COLLATE pg_catalog."default",
-    licensed_runs integer,
-    runs integer,
-    blueprint_location_id character varying(100) COLLATE pg_catalog."default",
-    output_location_id character varying(100) COLLATE pg_catalog."default",
-    start_date timestamp without time zone,
-    end_date timestamp without time zone,
-    status character varying(50) COLLATE pg_catalog."default",
-    job_cost double precision,
-    CONSTRAINT b_job_journal_pkey PRIMARY KEY (job_id)
-)
-WITH (
-    OIDS = FALSE
-)
-
-CREATE TABLE evesde.mining_calc
-(
-    id integer NOT NULL DEFAULT nextval('mining_calc_id_seq'::regclass),
-    user_id integer,
-    m3_per_cycle integer,
-    cycle_time integer,
-    num_cycles integer,
-    refinery double precision,
-    trit_required integer,
-    pye_required integer,
-    mex_required integer,
-    iso_required integer,
-    nox_required integer,
-    zyd_required integer,
-    meg_required integer,
-    morph_required integer,
-    asteroid1_id integer,
-    asteroid2_id integer,
-    asteroid3_id integer,
-    asteroid4_id integer,
-    CONSTRAINT b_mining_pkey PRIMARY KEY (id)
-)
-WITH (
-    OIDS = FALSE
-)
-
-CREATE TABLE evesde.role
-(
-    id integer NOT NULL DEFAULT nextval('role_id_seq'::regclass),
-    name character varying(80) COLLATE pg_catalog."default",
-    description character varying(255) COLLATE pg_catalog."default",
-    CONSTRAINT role_pkey PRIMARY KEY (id),
-    CONSTRAINT role_name_key UNIQUE (name)
-)
-WITH (
-    OIDS = FALSE
-)
-
-
-CREATE TABLE evesde.roles_users
-(
-    user_id integer,
-    role_id integer,
-    CONSTRAINT roles_users_role_id_fkey FOREIGN KEY (role_id)
-        REFERENCES evesde.role (id) MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
-)
-WITH (
-    OIDS = FALSE
-)
-
-CREATE TABLE evesde.ship_fittings
-(
-    id integer NOT NULL DEFAULT nextval('ship_fittings_id_seq'::regclass),
-    build_id integer,
-    user_id integer,
-    ship_id integer,
-    ship_name character varying(100) COLLATE pg_catalog."default",
-    fitting_name character varying(100) COLLATE pg_catalog."default",
-    qty integer,
-    num_rigslots integer,
-    num_lowslots integer,
-    num_medslots integer,
-    num_highslots integer,
-    component_id integer,
-    component_qty integer,
-    component_cost double precision,
-    component character varying(100) COLLATE pg_catalog."default",
-    component_slot character varying(20) COLLATE pg_catalog."default",
-    contract_sell_price double precision,
-    build_cost double precision,
-    jita_buy double precision,
-    rollup integer,
-    CONSTRAINT b_shipfittings_pkey PRIMARY KEY (id)
-)
-WITH (
-    OIDS = FALSE
-)
-
-CREATE TABLE evesde.users
-(
-    id integer NOT NULL DEFAULT nextval('users_id_seq'::regclass),
-    character_id character varying(100) COLLATE pg_catalog."default",
-    character_name character varying(100) COLLATE pg_catalog."default",
-    refresh_token character varying(255) COLLATE pg_catalog."default",
-    expiration timestamp without time zone,
-    auth_code character varying(255) COLLATE pg_catalog."default",
-    active boolean,
-    last_logged_in timestamp without time zone,
-    home_station_id character varying(100) COLLATE pg_catalog."default",
-    structure_role_bonus double precision,
-    default_bp_me double precision,
-    corp_id character varying(100) COLLATE pg_catalog."default",
-    CONSTRAINT user_pkey PRIMARY KEY (id)
-)
-WITH (
-    OIDS = FALSE
-)
-
-CREATE TABLE evesde.wallet_journal
-(
-    id integer NOT NULL DEFAULT nextval('wallet_journal_id_seq'::regclass),
-    user_id character varying(100) COLLATE pg_catalog."default",
-    amount double precision,
-    date_transaction timestamp without time zone,
-    transaction_id character varying(100) COLLATE pg_catalog."default",
-    ref_type character varying(100) COLLATE pg_catalog."default",
-    CONSTRAINT wallet_journal_pkey PRIMARY KEY (id)
-)
-WITH (
-    OIDS = FALSE
-)
-
-CREATE TABLE evesde.wallet_transactions
-(
-    id integer NOT NULL DEFAULT nextval('wallet_transactions_id_seq'::regclass),
-    user_id character varying(100) COLLATE pg_catalog."default",
-    amount double precision,
-    date_transaction timestamp without time zone,
-    transaction_id character varying(100) COLLATE pg_catalog."default",
-    client_id character varying(100) COLLATE pg_catalog."default",
-    location_id character varying(100) COLLATE pg_catalog."default",
-    qty integer,
-    product_id integer,
-    CONSTRAINT wallet_transaction_pkey PRIMARY KEY (id)
-)
-WITH (
-    OIDS = FALSE
-)
-
---FUNCTIONS
