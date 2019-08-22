@@ -318,7 +318,8 @@ CREATE OR REPLACE VIEW public.v_build_components AS
     t2."typeName" AS material,
     t2."typeID" AS material_id,
     m.quantity,
-    t2.volume AS vol
+    t2.volume AS vol,
+    t2."groupID" as group_id
    FROM public."invTypes" t,
     public."invTypeMaterials" m,
     public."invTypes" t2
