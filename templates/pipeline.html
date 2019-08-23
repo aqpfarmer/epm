@@ -5,8 +5,14 @@
   <div class="col-sm-12">
     <ul class="list-group mb-auto">
       <li class="list-group-item d-flex justify-content-between lh-condensed bg-secondary">
-        <h3 class="mx-auto text-white">Production Pipeline</h3>
+        <h3 class="mx-auto text-white">Production Pipeline</h3>     
       </li>
+      <li class="list-group-item text-center lh-condensed">
+          <form action="{{ url_for('pipeline')}}" method="POST">
+              <p class="text-center"><input name="action" class="btn-sm btn-danger" type="submit" value="Delete All"></p>
+            </form>
+      </li>
+      
       <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
           <table class="table table-sm table-condensed table-hover table-responsive pl-0">
             <thead>
