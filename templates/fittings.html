@@ -286,7 +286,39 @@
                           {% endif %}
                         </tbody>
                       </table>
-                    </td>
+
+                      <table class="table table-light">
+                          <tbody>
+                              <tr>
+                                  <td class="text-center bg-white"><strong>Tech3 Slots</td>
+                              </tr>
+                            {% if ship_id >0 %}
+                            {% for n in range(1, 5) %}
+                            <tr>
+                                <td class="noBorder py-0 bg-white">
+                                  <select id="tech3{{n}}" name="tech3{{n}}" class="form-control form-control-sm" style="max-width: 400px;">
+                                    {% if myFittingsTech3 %}
+                                      {% if myFittingsTech3[n-1].component_id > 0 %}
+                                        <option selected value="{{myFittingsTech3[n-1].component_id}}">{{myFittingsTech3[n-1].component}}</option>
+                                      {% else %}
+                                        <option selected value="0">Choose...</option>
+                                      {% endif %}
+                                    {% else %}
+                                      <option selected value="0">Choose...</option>
+                                    {% endif %}
+                                    {% for module in tech3 %}
+                                      <option value="{{module.id}}">{{module.item}}</option>
+                                    {% endfor %}
+                                    <option value="0">--</option>
+                                  </select>
+                                </td>
+                              </tr>
+                              {% endfor %}
+                            {% endif %}
+                          </tbody>
+                        </table>
+
+                    </td>                
 
                     <td>
                       <table class="table table-light">

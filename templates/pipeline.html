@@ -9,7 +9,7 @@
       </li>
       <li class="list-group-item text-center lh-condensed">
           <form action="{{ url_for('pipeline')}}" method="POST">
-              <p class="text-center"><input name="action" class="btn-sm btn-danger" type="submit" value="Delete All"></p>
+              <p class="text-center"><input name="action" class="btn-sm btn-danger" type="submit" value="Delete Everything Being Built"></p>
             </form>
       </li>
       
@@ -31,6 +31,27 @@
             <tbody>
               {% set pipeline_value = namespace(b=0) %}
               {% if 'myUser_id' in session %}
+
+              {% for item in my_orders %}
+                <tr>
+                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.type_id}}_64.png"></th>
+                  <td><p class="mt-1">{{ item.product_name }}</p></td>
+                  <td>
+                      <p class="mt-1">On Market</p>
+                  </td>
+                  <td><p class="mt-1 text-center"><input type="text" class="form-control text-center readonly" size="3" name="qty" value="{{ item.volume_remain }}"></p></td>
+                  <td>
+                    <input type="text" class="form-control text-center mt-1 readonly" size="10" name="local_sell" value="{{ "{:,.0f}".format(item.price) }}">
+                  </td>
+                  <td>
+                    <p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.price * item.volume_remain) }}</p>
+                  </td>
+                  <td><p class="mt-1 text-center">--</p></td>
+                  <td><p class="mt-1 text-center text-primary"><strong>--</strong></p></td>
+                  <td><p class="mt-1 text-center">--</p></td>
+                </tr>
+              {% endfor %}
+
                 {% for item in inv_pipeline %}
                 <form action="{{ url_for('pipeline')}}" method="POST">
                 <tr>
@@ -81,8 +102,6 @@
                       {% endif %}
                       {% if item.status == 1 %}
                         <option selected value="1">On Market</option>
-                      {% else %}
-                        <option value="1">On Market</option>
                       {% endif %}
                       {% if item.status == 2 %}
                         <option selected value="2">Being Built</option>
@@ -140,7 +159,8 @@
       <li class="list-group-item d-flex justify-content-between lh-condensed">
           <h5 class="text-center col-sm-12">
             {% if 'myUser_id' in session %}
-              Total Pipeline Value: {{ "{:,.0f}".format(pipeline_value.b) }}
+            {% set total_pipeline = (pipeline_value.b  + my_order_total) %}
+              Total Pipeline Value: {{ "{:,.0f}".format(total_pipeline) }}
             {% else %}
               Total Pipeline Value: --
             {% endif %}
