@@ -137,6 +137,10 @@ CREATE TABLE public.build_pipeline
     status integer,
     material_vol double precision,
     portion_size integer,
+    mat_eff double precision,
+    time_eff double precision,
+    eng_rig double precision,
+    eng_role double precision,
     CONSTRAINT b_pipeline_pkey PRIMARY KEY (id)
 )
 WITH (
@@ -261,6 +265,8 @@ CREATE TABLE public.users
     structure_role_bonus double precision,
     default_bp_me double precision,
     corp_id character varying(100) COLLATE pg_catalog."default",
+    default_bp_te double precision,
+    structure_rig_bonus double precision,
     CONSTRAINT user_pkey PRIMARY KEY (id)
 )
 WITH (

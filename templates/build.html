@@ -131,8 +131,30 @@
 
           <div class="col">
             <form class="form-inline" action="{{ url_for('build_add_pipeline')}}" method="POST">
-              <label for="job_runs" class="col-form-label text-black pr-1"><strong>Runs:</strong></label>
-              <input type="text" size="1" class="form-control
+                <label for="mat_eff" class="col-form-label text-black pr-1 text-center"><strong>ME %:</strong></label>
+                {% if bp_id > 0 %}
+                  <input type="text" size="1" class="
+  text-center" id="mat_eff" name="mat_eff" value="{{ me }}"
+  style="width: 75px;">
+                {% else %}
+                  <input type="text" size="1" class="
+                text-center" id="mat_eff" name="mat_eff" value="{{ session['default_bp_me'] }}"
+                style="width: 75px;">
+                {% endif %}
+
+                <label for="time_eff" class="col-form-label text-black pr-1 text-center"><strong>&nbsp;TE %:</strong></label>
+                {% if bp_id > 0 %}
+                  <input type="text" size="1" class="
+              text-center" id="time_eff" name="time_eff" value="{{ te }}"
+              style="width: 75px;">
+                {% else %}
+                  <input type="text" size="1" class="
+              text-center" id="time_eff" name="time_eff" value="{{ session['default_bp_te'] }}"
+              style="width: 75px;">
+                {% endif %}
+   
+              <label for="job_runs" class="col-form-label text-black pr-1 text-center"><strong>&nbsp;Runs:</strong></label>
+              <input type="text" size="1" class="
 text-center" id="job_runs" name="job_runs" value="{{ runs }}"
 style="width: 75px;">
                 {% if bp_id > 0 %}
@@ -166,7 +188,7 @@ style="width: 75px;">
                   <tr>
                     <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{requirement.material_id}}_32.png"></th>
                     <td>{{requirement.material}}</td>
-                    <td>{{ "{:,.0f}".format(requirement.qty * runs) }}</td>
+                    <td>{{ "{:,.0f}".format(requirement.qty * calcMe * runs) }}</td>
                     <td>{{ "{:,.0f}".format(materialCost[count.a] * runs) }}</td>
                   </tr>
                   {% set count.a = count.a + 1 %}
@@ -209,7 +231,7 @@ style="width: 75px;">
                 {% for item in pipeline_products %}
                     <tr>
                       <form action="{{ url_for('build')}}" method="post">
-                      <td colspan="4"><a href="/build_selected?build_product={{ item.blueprint_id }}&runs={{item.runs}}">{{item.product_name}}</td>
+                      <td colspan="4"><a href="/build_selected?build_product={{ item.blueprint_id }}&runs={{item.runs}}&me={{me}}&te={{te}}">{{item.product_name}}</td>
                       <td><input type="text" class="form-control-sm py-0" size="1" name="runs" id="runs" value="{{item.runs}}"></td>
                       <td><div class="btn-group px-1">
                         <button class="btn btn-sm" type="submit" name="action" value="edit">

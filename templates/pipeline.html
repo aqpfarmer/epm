@@ -46,8 +46,17 @@
                   <td>
                     <p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.price * item.volume_remain) }}</p>
                   </td>
-                  <td><p class="mt-1 text-center">--</p></td>
-                  <td><p class="mt-1 text-center text-primary"><strong>--</strong></p></td>
+                  <td><p class="mt-2 text-center">{{ "{:,.0f}".format(item.build_cost) }}</p></td>
+                  {% if item.build_runs > 0 %}
+                    <td>{% if (item.price - (item.build_cost/item.build_runs * item.build_runs)) / item.price > 0 %}
+                          <p class="mt-2 text-center text-primary"><strong>
+                        {% else %}
+                          <p class="mt-2 text-center text-danger"><strong>
+                        {% endif %}
+                        {{ "{:.2%}".format((item.price - (item.build_cost/item.build_runs * item.build_runs)) / item.price) }}</strong></p></td>
+                  {% else %}
+                    <td><p class="mt-1 text-center text-primary"><strong>--</strong></p></td>
+                  {% endif %}
                   <td><p class="mt-1 text-center">--</p></td>
                 </tr>
               {% endfor %}
@@ -114,14 +123,14 @@
                   </td>
                   <td><p class="mt-1 text-center"><input type="text" class="form-control text-center" size="3" name="qty" value="{{ item.runs }}"></p></td>
                   <td>
-                    {% if item.local_sell_price == 0%}
+                    {% if item.local_sell_price == 0 and item.jita_sell_price != None %}
                       <input type="text" class="form-control text-center mt-1" size="10" name="local_sell" value="{{ "{:,.0f}".format(item.jita_sell_price * 1.20) }}">
                     {% else %}
                       <input type="text" class="form-control text-center mt-1" size="10" name="local_sell" value="{{ "{:,.0f}".format(item.local_sell_price) }}">
                     {% endif %}
                   </td>
                   {% set mv = namespace(a=0) %}
-                  {% if item.local_sell_price == 0 %}
+                  {% if item.local_sell_price == 0 and item.jita_sell_price != None %}
                     {% set mv.a = item.jita_sell_price * 1.20 %}
                   {% else %}
                     {% set mv.a = item.local_sell_price %}
@@ -139,12 +148,20 @@
                     <p class="mt-1 text-center text-primary pt-1">  
                   {% endif %}
                   {% if (mv.a != 0) %}
-                      <strong>{{ "{:.2%}".format((mv.a - (item.build_cost/(item.portion_size*item.runs) * item.runs)) / mv.a) }}</strong></p>
+                      {% if item.jita_sell_price != None %}
+                        <strong>{{ "{:.2%}".format((mv.a - (item.build_cost/(item.portion_size*item.runs) * item.runs)) / mv.a) }}</strong></p>
+                      {% else %}
+                        <strong>{{ "{:.2%}".format((mv.a - (0 * item.runs)) / mv.a) }}</strong></p>
+                      {% endif %}
                     {% else %}
                       <strong></strong></p>
                     {% endif %}
                   </td>
-                  <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.jita_sell_price) }}</p></td>
+                  {% if item.jita_sell_price != None %}
+                      <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.jita_sell_price) }}</p></td>
+                    {% else %}
+                      <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(0) }}</p></td>
+                  {% endif %}
                 </tr>
                 <input type="hidden" name="blueprint_id" value="{{item.blueprint_id}}">
               </form>

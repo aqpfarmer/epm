@@ -1,6 +1,13 @@
 User-agent: Google
-Disallow:
+Disallow: /build_selected
+Disallow: /invent_selected
+Allow: /
+
 
 User-agent: *
-Disallow: /
+Disallow: /build_selected
+Disallow: /invent_selected
+
+Allow: /
+
 
