@@ -188,7 +188,7 @@ style="width: 75px;">
                   <tr>
                     <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{requirement.material_id}}_32.png"></th>
                     <td>{{requirement.material}}</td>
-                    <td>{{ "{:,.0f}".format(requirement.qty * calcMe * runs) }}</td>
+                    <td>{{ "{:,.0f}".format((requirement.qty * calcMe) * runs) }}</td>
                     <td>{{ "{:,.0f}".format(materialCost[count.a] * runs) }}</td>
                   </tr>
                   {% set count.a = count.a + 1 %}
