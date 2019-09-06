@@ -79,7 +79,7 @@
       <li class="list-group-item d-flex justify-content-between lh-condensed">
         {% if bp_id > 0 %}
           <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{product.typeID}}_64.png">
-          <p class="text-right text-success">Jita Market Value: {{ "{:,.0f}".format(sell_median) }} isk</p>
+          <p class="text-right text-success">Jita Market Value: {{ "{:,.0f}".format(sell_median * product.portionSize) }} isk</p>
         {% else %}
           <img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/build.png') }}">
         {% endif %}
@@ -219,10 +219,9 @@ style="width: 75px;">
           <table class="table table-sm table-condensed table-hover table-responsive">
             <thead>
               <tr>
-                <th scope="col" colspan="3"><strong>Product</th>
-                <th scope="col"> </th>
+                <th scope="col" colspan="2"><strong>Product</th>
                 <th scope="col"><strong>Runs</th>
-                <th scope="col"><strong>Action</th>
+                
               </tr>
             </thead>
             <tbody>
@@ -231,15 +230,9 @@ style="width: 75px;">
                 {% for item in pipeline_products %}
                     <tr>
                       <form action="{{ url_for('build')}}" method="post">
-                      <td colspan="4"><a href="/build_selected?build_product={{ item.blueprint_id }}&runs={{item.runs}}&me={{me}}&te={{te}}">{{item.product_name}}</td>
-                      <td><input type="text" class="form-control-sm py-0" size="1" name="runs" id="runs" value="{{item.runs}}"></td>
-                      <td><div class="btn-group px-1">
-                        <button class="btn btn-sm" type="submit" name="action" value="edit">
-                          <i class="fas fa-pencil-alt"></i></button>
-                        <button class="btn btn-sm" type="submit" name="action" value="delete">
-                          <i class="fas fa-trash-alt"></i></button>
-                        </div>
-                      </td>
+                      <td colspan="2"><a href="/build_selected?build_product={{ item.blueprint_id }}&runs={{item.runs}}&me={{me}}&te={{te}}">{{item.product_name}}</td>
+                      <td><input type="text" class="form-control-sm py-0" size="3" name="runs" id="runs" value="{{item.runs}}"></td>
+                
                       <input type="hidden" name="product_id" id="product_id" value="{{item.blueprint_id}}">
                       </form>
                     </tr>

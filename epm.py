@@ -834,6 +834,30 @@ class MinedMinerals():
         self.meg = meg
         self.morph = morph
 
+class MinedMoons():
+    def __init__(self, atmo_gas, cadmium, caesium, chromium, cobalt, dysprosium, evap_dep, hafnium, hydrocarbons, mercury, neodymium, platinum, promethium, scandium, silicates, technetium, thulium, titanium, tungsten, vanadium):
+        self.atmo_gas = atmo_gas
+        self.cadmium = cadmium
+        self.caesium = caesium
+        self.chromium = chromium
+        self.cobalt = cobalt
+        self.dysprosium = dysprosium
+        self.evap_dep = evap_dep
+        self.hafnium = hafnium
+        self.hydrocarbons = hydrocarbons
+        self.mercury = mercury
+        self.neodymium = neodymium
+        self.platinum = platinum
+        self.promethium = promethium
+        self.scandium = scandium
+        self.silicates=silicates 
+        self.technetium = technetium
+        self.thulium = thulium
+        self.titanium = titanium
+        self.tungsten = tungsten
+        self.vanadium = vanadium
+
+
 class FittingRigs():
     def __init__(self, id, component, component_qty, component_cost, qty):
         self.id = id
@@ -1702,100 +1726,122 @@ def fittings():
 def mining():
     asteroid_groups = db.session.query(v_asteroid_groups).all()
     if 'myUser_id' in session:
-        try:
-            calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
-            if not calcs:
-                calc = mining_calc(session['myUser_id'],  300, 120, 30, .5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-                db.session.add(calc)
-                db.session.commit()
+        #try:
+        calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
+        if not calcs:
+            calc = mining_calc(session['myUser_id'],  300, 120, 30, .5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+            db.session.add(calc)
+            db.session.commit()
 
 
-            if request.method == 'POST':
-                if request.form.get('m3_per_cycle'):
-                    for calc in calcs:
-                        calc.m3_per_cycle = request.form.get('m3_per_cycle',type=int)
-                        calc.cycle_time = request.form.get('cycle_time',type=int)
-                        calc.num_cycles = request.form.get('num_cycles')
-                        calc.refinery = float(request.form.get('refinery'))/100
-                        db.session.add(calc)
-                        db.session.commit()
+        if request.method == 'POST':
+            if request.form.get('m3_per_cycle'):
+                for calc in calcs:
+                    calc.m3_per_cycle = request.form.get('m3_per_cycle',type=int)
+                    calc.cycle_time = request.form.get('cycle_time',type=int)
+                    calc.num_cycles = request.form.get('num_cycles')
+                    calc.refinery = float(request.form.get('refinery'))/100
+                    db.session.add(calc)
+                    db.session.commit()
 
-                if request.form.get('clear'):
-                    for calc in calcs:
-                        calc.trit_required = 0
-                        calc.pye_required = 0
-                        calc.mex_required = 0
-                        calc.iso_required = 0
-                        calc.nox_required = 0
-                        calc.zyd_required = 0
-                        calc.meg_required = 0
-                        calc.morph_required = 0
-                        db.session.add(calc)
-                        db.session.commit()
+            if request.form.get('clear'):
+                for calc in calcs:
+                    calc.trit_required = 0
+                    calc.pye_required = 0
+                    calc.mex_required = 0
+                    calc.iso_required = 0
+                    calc.nox_required = 0
+                    calc.zyd_required = 0
+                    calc.meg_required = 0
+                    calc.morph_required = 0
+                    db.session.add(calc)
+                    db.session.commit()
 
-                mined_mins1 = MinedMinerals(0,0,0,0,0,0,0,0)
-                mined_mins2 = MinedMinerals(0,0,0,0,0,0,0,0)
-                mined_mins3 = MinedMinerals(0,0,0,0,0,0,0,0)
-                mined_mins4 = MinedMinerals(0,0,0,0,0,0,0,0)
-                min_id1 = 0
-                min_id2 = 0
-                min_id3 = 0
-                min_id4 = 0
-                group_id1 = 0
-                group_id2 = 0
-                group_id3 = 0
-                group_id4 = 0
-                asteroid_name1 = ''
-                asteroid_name2 = ''
-                asteroid_name3 = ''
-                asteroid_name4 = ''
+            mined_mins1 = MinedMinerals(0,0,0,0,0,0,0,0)
+            mined_mins2 = MinedMinerals(0,0,0,0,0,0,0,0)
+            mined_mins3 = MinedMinerals(0,0,0,0,0,0,0,0)
+            mined_mins4 = MinedMinerals(0,0,0,0,0,0,0,0)
 
-                if request.form.get('asteroid'):
-                    if int(request.form.get('asteroid')) > 0:
-                        min_id1 = request.form.get('asteroid')
-                        #print (min_id1)
-                        asteroid_stats1 = db.session.query(v_asteroids).filter_by(id=min_id1).one()
-                        mined_mins1 = refine_asteroid(min_id1, calcs, asteroid_stats1)
-                        group_id1 = asteroid_stats1.group_id
-                        asteroid_name1 = asteroid_stats1.asteroid
+            mined_moons1 = MinedMoons(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+            mined_moons2 = MinedMoons(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+            mined_moons3 = MinedMoons(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+            mined_moons4 = MinedMoons(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+            min_id1 = 0
+            min_id2 = 0
+            min_id3 = 0
+            min_id4 = 0
+            group_id1 = 0
+            group_id2 = 0
+            group_id3 = 0
+            group_id4 = 0
+            asteroid_name1 = ''
+            asteroid_name2 = ''
+            asteroid_name3 = ''
+            asteroid_name4 = ''
 
-                if request.form.get('asteroid1'):
-                    if int(request.form.get('asteroid1')) > 0:
-                        min_id2 = request.form.get('asteroid1')
-                        asteroid_stats2 = db.session.query(v_asteroids).filter_by(id=min_id2).one()                    
-                        mined_mins2 = refine_asteroid(min_id2, calcs, asteroid_stats2)
-                        group_id2 = asteroid_stats2.group_id
-                        asteroid_name2 = asteroid_stats2.asteroid
+            if request.form.get('asteroid'):
+                if int(request.form.get('asteroid')) > 0:
+                    min_id1 = request.form.get('asteroid')
+                    #print (min_id1)
+                    asteroid_stats1 = db.session.query(v_asteroids).filter_by(id=min_id1).one()
+                    mined_mins1 = refine_asteroid(min_id1, calcs, asteroid_stats1)
+                    mined_moons1 = refine_moon(min_id1, calcs, asteroid_stats1)
+                    group_id1 = asteroid_stats1.group_id
+                    asteroid_name1 = asteroid_stats1.asteroid
 
-                if request.form.get('asteroid2'):
-                    if int(request.form.get('asteroid2')) > 0:
-                        min_id3 = request.form.get('asteroid2')
-                        asteroid_stats3 = db.session.query(v_asteroids).filter_by(id=min_id3).one()
-                        mined_mins3 = refine_asteroid(min_id3, calcs, asteroid_stats3)
-                        group_id3 = asteroid_stats3.group_id
-                        asteroid_name3 = asteroid_stats3.asteroid
+            if request.form.get('asteroid1'):
+                if int(request.form.get('asteroid1')) > 0:
+                    min_id2 = request.form.get('asteroid1')
+                    asteroid_stats2 = db.session.query(v_asteroids).filter_by(id=min_id2).one()                    
+                    mined_mins2 = refine_asteroid(min_id2, calcs, asteroid_stats2)
+                    mined_moons2 = refine_moon(min_id2, calcs, asteroid_stats2)
+                    group_id2 = asteroid_stats2.group_id
+                    asteroid_name2 = asteroid_stats2.asteroid
 
-                if request.form.get('asteroid3'):
-                    if int(request.form.get('asteroid3')) > 0:
-                        min_id4 = request.form.get('asteroid3')
-                        asteroid_stats4 = db.session.query(v_asteroids).filter_by(id=min_id4).one()
-                        mined_mins4 = refine_asteroid(min_id4, calcs, asteroid_stats4)
-                        group_id4 = asteroid_stats4.group_id
-                        asteroid_name4 = asteroid_stats4.asteroid
+            if request.form.get('asteroid2'):
+                if int(request.form.get('asteroid2')) > 0:
+                    min_id3 = request.form.get('asteroid2')
+                    asteroid_stats3 = db.session.query(v_asteroids).filter_by(id=min_id3).one()
+                    mined_mins3 = refine_asteroid(min_id3, calcs, asteroid_stats3)
+                    mined_moons3 = refine_moon(min_id3, calcs, asteroid_stats3)
+                    group_id3 = asteroid_stats3.group_id
+                    asteroid_name3 = asteroid_stats3.asteroid
 
-                mined_mins = MinedMinerals(mined_mins1.trit +mined_mins2.trit +mined_mins3.trit +mined_mins4.trit, mined_mins1.pye +mined_mins2.pye +mined_mins3.pye +mined_mins4.pye, mined_mins1.mex +mined_mins2.mex +mined_mins3.mex +mined_mins4.mex, mined_mins1.iso +mined_mins2.iso +mined_mins3.iso +mined_mins4.iso, mined_mins1.nox +mined_mins2.nox +mined_mins3.nox +mined_mins4.nox, mined_mins1.zyd +mined_mins2.zyd +mined_mins3.zyd +mined_mins4.zyd, mined_mins1.meg +mined_mins2.meg +mined_mins3.meg +mined_mins4.meg, mined_mins1.morph +mined_mins2.morph +mined_mins3.morph +mined_mins4.morph)
-                #print group_id1
+            if request.form.get('asteroid3'):
+                if int(request.form.get('asteroid3')) > 0:
+                    min_id4 = request.form.get('asteroid3')
+                    asteroid_stats4 = db.session.query(v_asteroids).filter_by(id=min_id4).one()
+                    mined_mins4 = refine_asteroid(min_id4, calcs, asteroid_stats4)
+                    mined_moons4 = refine_moon(min_id4, calcs, asteroid_stats4)
+                    group_id4 = asteroid_stats4.group_id
+                    asteroid_name4 = asteroid_stats4.asteroid
 
-                return render_template('mining.html', asteroid_groups=asteroid_groups, calcs=calcs, min_id1=min_id1, min_id2=min_id2, min_id3=min_id3, min_id4=min_id4, group_id1=group_id1, group_id2=group_id2, group_id3=group_id3, group_id4=group_id4, asteroid_name1=asteroid_name1, asteroid_name2=asteroid_name2, asteroid_name3=asteroid_name3, asteroid_name4=asteroid_name4, mined_mins=mined_mins)
+            mined_mins = MinedMinerals(mined_mins1.trit +mined_mins2.trit +mined_mins3.trit +mined_mins4.trit, mined_mins1.pye +mined_mins2.pye +mined_mins3.pye +mined_mins4.pye, mined_mins1.mex +mined_mins2.mex +mined_mins3.mex +mined_mins4.mex, mined_mins1.iso +mined_mins2.iso +mined_mins3.iso +mined_mins4.iso, mined_mins1.nox +mined_mins2.nox +mined_mins3.nox +mined_mins4.nox, mined_mins1.zyd +mined_mins2.zyd +mined_mins3.zyd +mined_mins4.zyd, mined_mins1.meg +mined_mins2.meg +mined_mins3.meg +mined_mins4.meg, mined_mins1.morph +mined_mins2.morph +mined_mins3.morph +mined_mins4.morph)
+            #print group_id1
+            mined_moons = MinedMoons(
+                mined_moons1.atmo_gas + mined_moons2.atmo_gas + mined_moons3.atmo_gas + mined_moons4.atmo_gas, 
+                mined_moons1.cadmium + mined_moons2.cadmium + mined_moons3.cadmium + mined_moons4.cadmium, mined_moons1.caesium + mined_moons2.caesium + mined_moons3.caesium + mined_moons4.caesium, 
+                mined_moons1.chromium + mined_moons2.chromium +mined_moons3.chromium +mined_moons4.chromium, 
+                mined_moons1.cobalt + mined_moons2.cobalt +mined_moons3.cobalt +mined_moons4.cobalt, 
+                mined_moons1.dysprosium + mined_moons2.dysprosium + mined_moons3.dysprosium + mined_moons4.dysprosium, mined_moons1.evap_dep + mined_moons2.evap_dep + mined_moons3.evap_dep + mined_moons4.evap_dep, 
+                mined_moons1.hafnium + mined_moons3.hafnium + mined_moons3.hafnium + mined_moons4.hafnium, 
+                mined_moons1.hydrocarbons + mined_moons2.hydrocarbons + mined_moons3.hydrocarbons + mined_moons4.hydrocarbons, mined_moons1.mercury + mined_moons2.mercury + mined_moons3.mercury + mined_moons4.mercury, 
+                mined_moons1.neodymium + mined_moons2.neodymium + mined_moons3.neodymium + mined_moons4.neodymium, mined_moons1.platinum + mined_moons2.platinum + mined_moons3.platinum + mined_moons4.platinum, mined_moons1.promethium + mined_moons2.promethium + mined_moons3.promethium + mined_moons4.promethium, mined_moons1.scandium + mined_moons2.scandium + mined_moons3.scandium + mined_moons4.scandium, 
+                mined_moons1.silicates + mined_moons2.silicates + mined_moons3.silicates + mined_moons4.silicates, mined_moons1.technetium + mined_moons2.technetium + mined_moons3.technetium + mined_moons4.technetium, mined_moons1.thulium + mined_moons2.thulium + mined_moons3.thulium + mined_moons4.thulium, 
+                mined_moons1.titanium + mined_moons2.titanium + mined_moons3.titanium + mined_moons4.titanium, 
+                mined_moons1.tungsten + mined_moons2.tungsten + mined_moons3.tungsten + mined_moons4.tungsten, 
+                mined_moons1.vanadium + mined_moons2.vanadium + mined_moons3.vanadium + mined_moons4.vanadium )
 
-            calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
+            return render_template('mining.html', asteroid_groups=asteroid_groups, calcs=calcs, min_id1=min_id1, min_id2=min_id2, min_id3=min_id3, min_id4=min_id4, group_id1=group_id1, group_id2=group_id2, group_id3=group_id3, group_id4=group_id4, asteroid_name1=asteroid_name1, asteroid_name2=asteroid_name2, asteroid_name3=asteroid_name3, asteroid_name4=asteroid_name4, mined_mins=mined_mins, mined_moons=mined_moons)
 
-            return render_template('mining.html', asteroid_groups=asteroid_groups, calcs=calcs)
+        calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
 
-        except Exception as e:
-            flash('Problem with Mining Calculator - see log.', 'danger')
-            app.logger.info(str(e))
-            return redirect(url_for('mining'))
+        return render_template('mining.html', asteroid_groups=asteroid_groups, calcs=calcs)
+
+        #except Exception as e:
+        #    flash('Problem with Mining Calculator - see log.', 'danger')
+        #    app.logger.info(str(e))
+        #    return redirect(url_for('mining'))
     else:
         flash('You must be logged in to use mining calculator.', 'danger')
         return redirect(url_for('index'))
@@ -1815,10 +1861,10 @@ def pipeline():
         try:
             inv_pipeline = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name','user_id','runs','blueprint_id','status').order_by('product_name').all()
 
-            bld_pipeline = db.session.query(v_build_pipeline_products).filter_by(user_id= session['myUser_id']).with_entities('product_name','user_id','blueprint_id','product_id','runs','jita_sell_price','local_sell_price','build_cost','status', 'portion_size').order_by('status').all()
+            bld_pipeline = db.session.query(v_build_pipeline_products).filter_by(user_id= session['myUser_id']).with_entities('product_name','user_id','blueprint_id','product_id','runs','jita_sell_price','local_sell_price','build_cost','status', 'portion_size').order_by('product_name').all()
 
             fetch_orders()            
-            my_orders = db.session.query(user_orders).filter_by(user_id=session['myUser_id']).order_by('issued')
+            my_orders = db.session.query(user_orders).filter_by(user_id=session['myUser_id']).order_by('product_name')
             my_order_total = 0
             
             for item in my_orders:
@@ -2111,24 +2157,33 @@ def bom():
 
             component_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==334, build_pipeline.group_id==964, build_pipeline.group_id==754, build_pipeline.group_id==536))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
 
-            #component_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=334, status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
-
             comp_blueprint_id = 0 
             for component in component_pipeline:
-                #print 'comp build or buy=' + str(component.build_or_buy)
-                #print 'comp material cost=' + str(component.material_cost)
-                if component.build_or_buy == 1 and component.material_cost > 0:
+
+                compQty = component.material_qty
+
+                if component.build_or_buy == 1 and component.material_qty > 0:
                     comp = db.session.query(build_pipeline).filter_by(id=component.id).one()
                     comp.material_cost = 0.0
                     db.session.add(comp)
                     db.session.commit()
 
                     myBuildComponents = db.session.query(v_build_components).filter_by(id = component.material_id).with_entities('id','material','material_id','quantity','vol', 'group_id').all()
-                    comp_blueprint_id = component.blueprint_id
+                    comp_blueprint_id = component.blueprint_id                    
 
-                    for requirements in myBuildComponents:
-                        myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * component.material_qty
-                        matQty = calc_mat_efficiency(component.material_qty, requirements.quantity)
+                    subtract_oh_assets = request.form.get('subtract_oh_assets')
+
+                    for requirements in myBuildComponents:                        
+                        #print ('Building component... OH Assets: ' + str(subtract_oh_assets))
+                        if subtract_oh_assets:
+                            compQty -= search_assets(session['myUser_id'], component.material_id)
+                            mat_oh = search_assets(session['myUser_id'], requirements.material_id)                    
+                            compQty = compQty - mat_oh
+                            #print ('Compy QTY:' + str(compQty) + ', MAT OH:' +str(mat_oh))
+                            if compQty < 0: compQty = 0 
+                        myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * compQty
+                        matQty = calc_mat_efficiency(compQty, requirements.quantity)
+                        
                         me = session['default_bp_me']
                         te = session['default_bp_te']
                         eng_rig = session['structure_rig_bonus'] 
@@ -2141,6 +2196,7 @@ def bom():
 
                         db.session.add(pipeline)
                         db.session.commit()
+
 
                     newcost_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],blueprint_id=comp_blueprint_id).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').all()
                     materialCost = build_pipeline_rollup_cost(newcost_pipeline, subtract_oh_assets)
@@ -2632,7 +2688,7 @@ def build_selected():
         eng_role = float(session['structure_role_bonus'])
         calcMe = (1 - (float(eng_role)/100)) * (1 - (float(eng_rig)/100)) * (1 - (float(me)/100))   
 
-        return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, runs=runs, calcMe=calcMe, me=me, te=te, eng_rig=eng_rig, eng_role=eng_role, bp_all=bp_all)
+        return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=int(querySell), time=myTime, buildRequirements = myBuildRequirements, buildCost = int(myBuildCost), materialCost = myMaterialCost, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, runs=runs, calcMe=calcMe, me=me, te=te, eng_rig=eng_rig, eng_role=eng_role, bp_all=bp_all)
 
     else:
         me = 2.0
@@ -2971,23 +3027,6 @@ def calc_mat_efficiency(compQty, matQty):
 
     return myQty
 
-def build_pipeline_rollup_cost(pipeline, subtract_oh_assets):
-    buildCost = 0.0
-    mat_oh = 0
-    for item in pipeline:
-        #mat_oh = 0
-        if subtract_oh_assets == 'true':
-            mat_oh = search_assets(session['myUser_id'], item.material_id)
-
-        #if mat_oh == 0:
-        if mat_oh - item.material_qty > 0:
-            buildCost += item.material_cost - item.material_cost
-        else:
-            buildCost += item.material_cost
-
-    return buildCost
-
-
 
 def fitting_rollup_cost(myFittings):
     buildCost = 0.0
@@ -3018,23 +3057,43 @@ def build_pipeline_rollup_qty(pipeline, subtract_oh_assets):
                 mat_qty = item.material_qty - mat_oh
                 if mat_qty < 0: mat_qty = 0
                 mat.material_qty += mat_qty
-                mat.material_cost += item.material_cost
+                mat.material_cost += item.material_cost * mat_qty
                 matchFound1 = True
 
         if matchFound1 == True:
             matchFound1 = False
         else:
+            mat_cost = item.material_cost 
             if subtract_oh_assets == 'true':
                 mat_oh = search_assets(session['myUser_id'], item.material_id)
-
+                mat_cost = (item.material_qty - mat_oh) * int(get_marketValue(str(item.material_id),'buy'))
+                if mat_cost < 0: mat_cost = 0
+            
             mat_qty = item.material_qty - mat_oh
             if mat_qty < 0: mat_qty = 0
-            my_bom = BomMaterial(item.material_id, item.material, mat_qty, item.material_cost, item.runs, item.id, item.build_or_buy, item.blueprint_id, item.material_vol, item.portion_size)
+            my_bom = BomMaterial(item.material_id, item.material, mat_qty, mat_cost, item.runs, item.id, item.build_or_buy, item.blueprint_id, item.material_vol, item.portion_size)
 
             materialInPipeline += [my_bom]
 
     return materialInPipeline
 
+def build_pipeline_rollup_cost(pipeline, subtract_oh_assets):
+    buildCost = 0.0
+    mat_qty = 0
+    mat_oh = 0
+    for item in pipeline:
+        #mat_oh = 0
+        if subtract_oh_assets == 'true':
+            mat_qty = item.material_qty
+            mat_oh = search_assets(session['myUser_id'], item.material_id)
+            mat_cost = get_marketValue(str(item.material_id),'buy')
+            if mat_qty - mat_oh > 0:
+                buildCost += (mat_qty - mat_oh) * int(mat_cost)
+        else:           
+            buildCost += item.material_cost        
+
+    return buildCost
+    
 def invent_pipeline_rollup_cost(pipeline, subtract_oh_assets):
     buildCost = 0.0
     dc_oh = 0
@@ -3126,14 +3185,12 @@ def refine_asteroid(min_id, calcs, asteroid_stats):
     asteroid_mins = db.session.query(v_build_components).filter_by(id=min_id).with_entities('id','material','material_id','quantity').all()
     yield1 = calcs[0].m3_per_cycle * calcs[0].num_cycles
     qty = yield1 / asteroid_stats.vol
-    #print ' m3 yield = ' +str(yield1) + ' , refinery % = ' + str(calcs[0].refinery)
 
     mined_mins = MinedMinerals(0,0,0,0,0,0,0,0)
     for mins in asteroid_mins:
-        #mined = (mins.quantity * qty * calcs[0].refinery) / asteroid_stats.portion
         mined = (mins.quantity * qty * calcs[0].refinery) / asteroid_stats.portion
-        #remain = yield1 % (asteroid_stats.portion * mins.quantity)
-        remain = mined % asteroid_stats.portion
+        remain = float(mined) * 0.015
+        mined -= int(remain)
         #print 'from ' + str(qty) + ', we refine - ' + str(mins.material) + ', qty = ' + str(mined) + ' , with remainder = ' + str(remain)
         if mins.material_id == 34:
             mined_mins.trit = mined
@@ -3153,6 +3210,60 @@ def refine_asteroid(min_id, calcs, asteroid_stats):
             mined_mins.morph = mined
     return mined_mins
 
+def refine_moon(min_id, calcs, asteroid_stats):
+    moon_mins = db.session.query(v_build_components).filter_by(id=min_id).with_entities('id','material','material_id','quantity').all()
+    yield1 = calcs[0].m3_per_cycle * calcs[0].num_cycles
+    qty = yield1 / asteroid_stats.vol
+
+    mined_moons = MinedMoons(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+    for mins in moon_mins:
+        mined = (mins.quantity * qty * calcs[0].refinery) / asteroid_stats.portion
+        remain = float(mined) * 0.015
+        mined -= int(remain)
+        print 'from ' + str(qty) + ', we refine - ' + str(mins.material) + ', qty = ' + str(mined) + ' , with remainder = ' + str(remain)
+        if mins.material == 'Atmospheric Gases':
+            mined_moons.atmo_gas = mined
+        elif mins.material == 'Cadmium':
+            mined_moons.cadmium = mined
+        elif mins.material == 'Caesium':
+            mined_moons.caesium = mined
+        elif mins.material == 'Chromium':
+            mined_moons.chromium = mined
+        elif mins.material == 'Cobalt':
+            mined_moons.cobalt = mined
+        elif mins.material == 'Dysprosium':
+            mined_moons.dysprosium = mined
+        elif mins.material == 'Evaporite Deposits':
+            mined_moons.evap_dep = mined
+        elif mins.material == 'Hafnium':
+            mined_moons.hafnium = mined
+        elif mins.material == 'Hydrocarbons':
+            mined_moons.hydrocarbons = mined
+        elif mins.material == 'Mercury':
+            mined_moons.mercury = mined
+        elif mins.material == 'Neodymium':
+            mined_moons.neodymium = mined
+        elif mins.material == 'Platinum':
+            mined_moons.platinum = mined
+        elif mins.material == 'Promethium':
+            mined_moons.promethium = mined
+        elif mins.material == 'Scandium':
+            mined_moons.scandium = mined
+        elif mins.material == 'Silicates':
+            mined_moons.silicates = mined
+        elif mins.material == 'Technetium':
+            mined_moons.technetium = mined
+        elif mins.material == 'Thulium':
+            mined_moons.thulium = mined
+        elif mins.material == 'Titanium':
+            mined_moons.titanium = mined
+        elif mins.material == 'Tungsten':
+            mined_moons.tungsten = mined
+        elif mins.material == 'Vanadium':
+            mined_moons.vanadium = mined
+        
+    return mined_moons
+
 @app.route('/login', methods=['GET','POST'])
 def login():
     sso = db.session.query(eve_sso).all()
@@ -3170,69 +3281,72 @@ def login():
 
     if jsonData:
         #print jsonData
-        refresh_token = jsonData['refresh_token']
-        auth_code = jsonData['access_token']
-        headers1 = {'Authorization': 'Bearer ' + auth_code}
-        response1 = requests.get('https://esi.evetech.net/verify/', headers=headers1)
-        jsonData1 = json.loads(response1.text)
-        #print jsonData1
+        try:
+            refresh_token = jsonData['refresh_token']
+            auth_code = jsonData['access_token']
+            headers1 = {'Authorization': 'Bearer ' + auth_code}
+            response1 = requests.get('https://esi.evetech.net/verify/', headers=headers1)
+            jsonData1 = json.loads(response1.text)
+            #print jsonData1
 
-        if jsonData1:
-            character_id = str(jsonData1['CharacterID'])
-            #print character_id
-            payload = {'datasource':'tranquility'}
-            response2 = requests.get('https://esi.evetech.net/latest/characters/'+character_id, params=payload)
-            jsonData2 = json.loads(response2.text)
-            #print jsonData2
-            corp_id = str(jsonData2['corporation_id'])
-            response3 = requests.get('https://esi.evetech.net/latest/corporations/'+corp_id, params=payload)
-            jsonData3 = json.loads(response3.text)
-            corp_name = jsonData3['name']
-            character_name = jsonData1['CharacterName']
-            new_expiration = jsonData1['ExpiresOn']
-            myUser = db.session.query(users).filter_by(character_id=character_id).all()
-            home_station_id = '0'
-            structure_role_bonus = 1.0
-            default_bp_me = 2.0
-            structure_rig_bonus = 2.0
-            default_bp_te = 10.0
+            if jsonData1:
+                character_id = str(jsonData1['CharacterID'])
+                #print character_id
+                payload = {'datasource':'tranquility'}
+                response2 = requests.get('https://esi.evetech.net/latest/characters/'+character_id, params=payload)
+                jsonData2 = json.loads(response2.text)
+                #print jsonData2
+                corp_id = str(jsonData2['corporation_id'])
+                response3 = requests.get('https://esi.evetech.net/latest/corporations/'+corp_id, params=payload)
+                jsonData3 = json.loads(response3.text)
+                corp_name = jsonData3['name']
+                character_name = jsonData1['CharacterName']
+                new_expiration = jsonData1['ExpiresOn']
+                myUser = db.session.query(users).filter_by(character_id=character_id).all()
+                home_station_id = '0'
+                structure_role_bonus = 1.0
+                default_bp_me = 2.0
+                structure_rig_bonus = 2.0
+                default_bp_te = 10.0
 
-            if myUser:
-                lli = myUser[0].last_logged_in.strftime('%b %d, %Y')
-                myUser[0].auth_code = auth_code
-                myUser[0].expiration = new_expiration
-                myUser[0].last_logged_in = datetime.now()
-                myUser[0].active = True
-                myUser[0].refresh_token = refresh_token
-                home_station_id = myUser[0].home_station_id
-                structure_role_bonus = float(myUser[0].structure_role_bonus)
-                default_bp_me = float(myUser[0].default_bp_me)
-                structure_rig_bonus = float(myUser[0].structure_rig_bonus)
-                default_bp_te = float(myUser[0].default_bp_te)
-                db.session.add(myUser[0])
-                db.session.commit()
+                if myUser:
+                    lli = myUser[0].last_logged_in.strftime('%b %d, %Y')
+                    myUser[0].auth_code = auth_code
+                    myUser[0].expiration = new_expiration
+                    myUser[0].last_logged_in = datetime.now()
+                    myUser[0].active = True
+                    myUser[0].refresh_token = refresh_token
+                    home_station_id = myUser[0].home_station_id
+                    structure_role_bonus = float(myUser[0].structure_role_bonus)
+                    default_bp_me = float(myUser[0].default_bp_me)
+                    structure_rig_bonus = float(myUser[0].structure_rig_bonus)
+                    default_bp_te = float(myUser[0].default_bp_te)
+                    db.session.add(myUser[0])
+                    db.session.commit()
 
-                flash('Successful login. '+character_name+' last logged in on: ' + lli,  'success')
-            else:
-                myUser = users(character_id, character_name, refresh_token, new_expiration, auth_code, True, datetime.now(), home_station_id, structure_role_bonus, default_bp_me, structure_rig_bonus, default_bp_te, corp_id)
-                db.session.add(myUser)
-                db.session.commit()
+                    flash('Successful login. '+character_name+' last logged in on: ' + lli,  'success')
+                else:
+                    myUser = users(character_id, character_name, refresh_token, new_expiration, auth_code, True, datetime.now(), home_station_id, structure_role_bonus, default_bp_me, structure_rig_bonus, default_bp_te, corp_id)
+                    db.session.add(myUser)
+                    db.session.commit()
 
-                flash('Successfully created new login. Welcome, '+character_name+ '!',  'success')
+                    flash('Successfully created new login. Welcome, '+character_name+ '!',  'success')
 
-            session['logged_in'] = True
-            session['name'] = character_name
-            session['myUser_id'] = character_id
-            session['access_token'] = auth_code
-            session['expiration'] = new_expiration
-            session['corp_id'] = corp_id
-            session['home_station_id'] = home_station_id
-            session['structure_role_bonus'] = structure_role_bonus
-            session['default_bp_me'] = default_bp_me
-            session['structure_rig_bonus'] = structure_rig_bonus
-            session['default_bp_te'] = default_bp_te
-            session['corp_name'] = corp_name
-
+                session['logged_in'] = True
+                session['name'] = character_name
+                session['myUser_id'] = character_id
+                session['access_token'] = auth_code
+                session['expiration'] = new_expiration
+                session['corp_id'] = corp_id
+                session['home_station_id'] = home_station_id
+                session['structure_role_bonus'] = structure_role_bonus
+                session['default_bp_me'] = default_bp_me
+                session['structure_rig_bonus'] = structure_rig_bonus
+                session['default_bp_te'] = default_bp_te
+                session['corp_name'] = corp_name
+        except Exception as e:
+            app.logger.info(str(e))    
+            flash('Problem Logging in with EVE Oath. Try again later.', 'danger')
 
     return redirect(url_for('index'))
 
@@ -3261,6 +3375,7 @@ def do_refresh_token(character_id):
         print 'Successfully refreshed '+myUser[0].character_name+'\'s auth token.'
         session['logged_in'] = True
         session['access_token'] = auth_code
+        print(session['access_token'])
         return 0
     else:
         print 'Problem with logged in user.'

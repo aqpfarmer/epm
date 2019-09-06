@@ -364,6 +364,327 @@
                 </td>
                 <td class="noBorder py-0"></td>
               </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Atmospheric Gases</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.atmo_gas) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Cadmium</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.cadmium) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Caesium</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.caesium) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Chromium</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.chromium) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Cobalt</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.cobalt) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Dysprosium</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.dysprosium) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Evaporite Deposits</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.evap_dep) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Hafnium</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.hafnium) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Hydrocarbons</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.hydrocarbons) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Mercury</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.mercury) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Neodymium</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.neodymium) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Platinum</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.platinum) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Promethium</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.promethium) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Scandium</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.scandium) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Silicates</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.silicates) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Technetium</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.technetium) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Thulium</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.thulium) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Titanium</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.titanium) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Tungsten</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.tungsten) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
+              <tr>
+                <td class="noBorder text-right py-0"></td>
+                <td class="noBorder py-0"> </td>
+                <td class="noBorder py-0 text-right" colspan="2">Vanadium</td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0">
+                  {% if mined_moons %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.vanadium) }}">
+                  {% else %}
+                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  {% endif %}
+                </td>
+                <td class="noBorder py-0"></td>
+                <td class="noBorder py-0"></td>
+              </tr>
+
               <tr>
                 <td colspan="4"></td>
                 <form action="{{ url_for('mining')}}" method="post">
@@ -385,6 +706,15 @@
         <li class="list-group-item d-flex justify-content-between lh-condensed">
           <img src="{{ url_for('static', filename='img/mining_chart.png') }}" class="img-fluid mx-auto" alt="Ore Chart" width="1000">
       </li>
+
+      <li class="list-group-item d-flex justify-content-between lh-condensed">
+        <h5 class="text-center col-sm-12 text-primary">
+          Moon Ore Distribution Chart
+        </h5>
+      </li>
+      <li class="list-group-item d-flex justify-content-between lh-condensed">
+        <img src="{{ url_for('static', filename='img/moon_ores.png') }}" class="img-fluid mx-auto" alt="Ore Chart" width="1000">
+    </li>
     </ul>
   </div>
 </div>
