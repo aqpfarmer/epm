@@ -54,9 +54,9 @@ def get_marketValue(type_id, queryType):
     marketValue = 0
 
     if queryType == 'buy': 
-        buy_or_sell = "false" 
+        buy_or_sell = "true" 
     else:
-        buy_or_sell = "true"
+        buy_or_sell = "false"
 
     myQuery = db.session.execute("SELECT ROUND(PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY price)::numeric, 2) AS median_price FROM forge_market WHERE type_id = '" + str(type_id)+"' AND is_buy_order = '" + buy_or_sell + "';")
 
