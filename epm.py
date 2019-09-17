@@ -823,6 +823,15 @@ class BomMaterial():
         self.material_vol = material_vol
         self.portion_size = portion_size
 
+class BomRollup():    
+    def __init__(self, material_id, material, material_qty, material_cost, material_vol, build_or_buy):
+        self.material_id = material_id
+        self.material = material
+        self.material_qty = material_qty
+        self.material_cost = material_cost
+        self.material_vol = material_vol
+        self.build_or_buy = build_or_buy
+
 class MinedMinerals():
     def __init__(self, trit, pye, mex, iso, nox, zyd, meg, morph):
         self.trit = trit
@@ -1257,467 +1266,518 @@ def financial():
 @app.route("/fittings", methods=['GET','POST'])
 def fittings():
     if 'myUser_id' in session:
-        #try:
-        build_id = 0
-        user_id = session['myUser_id']
-        ships = db.session.query(v_ships).all()
-        ship_name = ''
-        num_rigslots = 0
-        num_lowslots = 0
-        num_medslots = 0
-        num_highslots = 0
-        rigsize = 0
-        fittingIndex = 0
-        ship_id = 0
-        nonBuildableFittings = []
-        nonBuildablefittingRollup = []
-        nonBuildableTotal = 0.0
-        buildableFittings = []
-        buildablefittingRollup = []
-        buildableTotal = 0.0
-        fittingCost = 0.0
-        fittingPM = 0.0
-        fitting_list = []
-        subtract_oh_assets = 'None'
+        try:
+            build_id = 0
+            user_id = session['myUser_id']
+            ships = db.session.query(v_ships).all()
+            ship_name = ''
+            num_rigslots = 0
+            num_lowslots = 0
+            num_medslots = 0
+            num_highslots = 0
+            rigsize = 0
+            fittingIndex = 0
+            ship_id = 0
+            nonBuildableFittings = []
+            nonBuildablefittingRollup = []
+            nonBuildableTotal = 0.0
+            buildableFittings = []
+            buildablefittingRollup = []
+            buildableTotal = 0.0
+            fittingCost = 0.0
+            fittingPM = 0.0
+            fitting_list = []
+            subtract_oh_assets = 'None'
 
-        myFittingsCount = db.session.query(v_count_fittings).filter_by(user_id=user_id).order_by('ship_name').count()
-        myFittings = db.session.query(v_count_fittings).filter_by(user_id=user_id).order_by('build_id').all()
+            myFittingsCount = db.session.query(v_count_fittings).filter_by(user_id=user_id).order_by('ship_name').count()
+            myFittings = db.session.query(v_count_fittings).filter_by(user_id=user_id).order_by('build_id').all()
 
-        if request.form.get('ship_id'):
-            ship_id = int(request.form.get('ship_id'))
+            if request.form.get('ship_id'):
+                ship_id = int(request.form.get('ship_id'))
 
-        if request.args.get('build_id'):
-            build_id = request.args.get('build_id')
-            #print 'build args id = ' + str(build_id)
+            if request.args.get('build_id'):
+                build_id = request.args.get('build_id')
+                #print 'build args id = ' + str(build_id)
 
-        if request.form.get('build_id'):
-            build_id = request.form.get('build_id')
-            #print 'build form id = ' + str(build_id)
+            if request.form.get('build_id'):
+                build_id = request.form.get('build_id')
+                #print 'build form id = ' + str(build_id)
 
-        if myFittingsCount > 0:
-            if request.form.get('fittingIndex'): fittingIndex = int(request.form.get('fittingIndex'))
-            if request.args.get('fittingIndex'): fittingIndex = int(request.args.get('fittingIndex'))
+            if myFittingsCount > 0:
+                if request.form.get('fittingIndex'): fittingIndex = int(request.form.get('fittingIndex'))
+                if request.args.get('fittingIndex'): fittingIndex = int(request.args.get('fittingIndex'))
 
-            if request.form.get('action') == 'prev':
-                fittingIndex = int(request.form.get('fittingIndex')) -1
-            elif request.form.get('action') == 'next':
-                fittingIndex = int(request.form.get('fittingIndex')) +1
-            if fittingIndex < 0:
-                build_id = myFittings[0].build_id
-                fittingIndex = 0
-                #print 'build id index0= ' + str(build_id)
-            elif fittingIndex > myFittingsCount-1:
-                build_id = myFittings[-1].build_id
-                fittingIndex -= 1
-                #print 'build id indexmax= ' + str(build_id)
+                if request.form.get('action') == 'prev':
+                    fittingIndex = int(request.form.get('fittingIndex')) -1
+                elif request.form.get('action') == 'next':
+                    fittingIndex = int(request.form.get('fittingIndex')) +1
+                if fittingIndex < 0:
+                    build_id = myFittings[0].build_id
+                    fittingIndex = 0
+                    #print 'build id index0= ' + str(build_id)
+                elif fittingIndex > myFittingsCount-1:
+                    build_id = myFittings[-1].build_id
+                    fittingIndex -= 1
+                    #print 'build id indexmax= ' + str(build_id)
 
-            if build_id == 0:
-                build_id = myFittings[0].build_id
-                #print 'myfittings build id at index0 = ' + str(build_id)
-            else:
-                build_id = myFittings[fittingIndex].build_id
-                #print 'build id from myFittings (default) = ' + str(build_id)
-
-            if request.form.get('newBuild'):
-                build_id = myFittings[-1].build_id +1
-                #print 'build id last+1 = ' + str(build_id)
-            else:
-                if request.form.get('action') <> 'new': ship_id = myFittings[fittingIndex].ship_id
-                shipFittings = db.session.query(ship_fittings).filter_by(user_id=user_id, build_id=build_id).order_by('ship_name').all()
-                nonBuildableFittings = db.session.query(v_buildable_fittings).filter(v_buildable_fittings.meta <> 2).filter(v_buildable_fittings.meta <> 14).filter(v_buildable_fittings.rollup==1).filter(v_buildable_fittings.user_id==user_id).with_entities('ship_id', 'ship_name', 'jita_buy', 'qty', 'id', 'component', 'component_cost', 'component_qty', 'build_cost', 'meta', 'rollup','user_id', 'bp_id').all()
-
-                nonBuildablefittingRollup = fitting_rollup_qty(nonBuildableFittings)
-                for nbf in nonBuildableFittings:
-                    nonBuildableTotal += (float(nbf.qty) * float(nbf.component_qty) * float(nbf.component_cost))
-
-                buildableFittings = db.session.query(v_buildable_fittings_all).filter_by(rollup=1, user_id=user_id).with_entities('ship_id', 'ship_name', 'jita_buy', 'qty', 'id', 'component', 'component_cost', 'component_qty', 'build_cost', 'meta', 'rollup', 'user_id', 'bp_id').all()
-
-                buildablefittingRollup = fitting_rollup_qty(buildableFittings)
-                for bf in buildableFittings:
-                    buildableTotal += (float(bf.qty) * float(bf.component_qty) * float(bf.component_cost))
-
-
-                fittingCost = fitting_rollup_cost(shipFittings)
-                if fittingCost > 0: fittingPM = ((float(shipFittings[fittingIndex].qty) * float(shipFittings[fittingIndex].contract_sell_price)) / float(fittingCost)) -1.0
-
-        if ship_id > 0 :
-            rigs = db.session.query(v_shipslots).filter_by(id=1137, ship_id=ship_id).one()
-            rigsize = db.session.query(v_shipslots).filter_by(id=1547, ship_id=ship_id).one()
-            myRigSize = rigsize.valfloat
-            rig_modules = db.session.query(v_rigs).filter_by(size=myRigSize).all()
-            lows = db.session.query(v_shipslots).filter_by(id=12, ship_id=ship_id).one()
-            low_modules = db.session.query(v_modules).filter_by(category=11).all()
-            meds = db.session.query(v_shipslots).filter_by(id=13, ship_id=ship_id).one()
-            med_modules = db.session.query(v_modules).filter_by(category=13).all()
-            highs = db.session.query(v_shipslots).filter_by(id=14, ship_id=ship_id).one()
-            high_modules = db.session.query(v_modules).filter_by(category=12).all()
-            ammos = db.session.query(v_item_by_cat).filter_by(category=8).all()
-            drones = db.session.query(v_item_by_cat).filter_by(category=18).all()
-            tech3 = db.session.query(v_item_by_cat).filter_by(category=32).all()
-            if rigs.valfloat:
-                num_rigslots = rigs.valfloat
-            else:
-                num_rigslots = rigs.valint
-            if rigsize.valfloat:
-                rigsize = rigs.valfloat
-            else:
-                rigsize = rigs.valint
-            if lows.valfloat:
-                num_lowslots = lows.valfloat
-            else:
-                num_lowslots = lows.valint
-            if meds.valfloat:
-                num_medslots = meds.valfloat
-            else:
-                num_medslots = meds.valint
-            if highs.valfloat:
-                num_highslots = highs.valfloat
-            else:
-                num_highslots = highs.valint
-            
-            if num_highslots == None:
-                num_highslots = 7
-                num_medslots = 7
-                num_lowslots = 7
-
-        #print request.method
-        if request.method == 'POST':
-            #print request.form.get('action')
-            if request.form.get('fetch'):
-                myAssets = get_fittings()
-                for item in myAssets:
-                    #print item
-                    if item =='error' or item=='timeout':
-                        flash ('Problem fetching fittings from EVE.', 'danger')
-                        break
-                    else:
-                        my_import = FittingList(item['fitting_id'], item['name'])
-                        fitting_list += [my_import]
-
-            if request.form.get('import'):
-                fitting_selection = int(request.form.get('fitting_selection'))
-                myAssets = get_fittings()
-                for item in myAssets:
-                    #print item
-                    if item =='error' or item=='timeout':
-                        flash ('Problem fetching this fitting from EVE.', 'danger')
-                        break
-                    else:
-                        if item['fitting_id'] == fitting_selection:
-                            result = import_fitting(item)
-                            return redirect(url_for('fittings'))
-
-            if request.form.get('action') == 'new':
-                if ship_id > 0 :
-                    item = db.session.query(v_ships).filter_by(id = ship_id).one()
-                    ship_name = item.ship
-                    if myFittings:
-                        build_id = myFittings[-1].build_id + 1
-                    else:
-                        build_id = 1
-                    print ('new build id: ' + str(build_id))
-
-                    return render_template('fittings.html', ships=ships, myFittingsCount=myFittingsCount, ship_id=ship_id, build_id=build_id, ship_name=ship_name, num_rigslots=num_rigslots, num_lowslots=num_lowslots, num_medslots=num_medslots, num_highslots=num_highslots, rig_modules=rig_modules, low_modules=low_modules, med_modules=med_modules, high_modules=high_modules,ammos=ammos, tech3=tech3, drones=drones, myFittings=myFittings, fittingIndex=fittingIndex, fittingCost=fittingCost, fittingPM=fittingPM, newBuild=True)
+                if build_id == 0:
+                    build_id = myFittings[0].build_id
+                    #print 'myfittings build id at index0 = ' + str(build_id)
                 else:
-                    flash('Pick a ship to build.', 'danger')
+                    build_id = myFittings[fittingIndex].build_id
+                    #print 'build id from myFittings (default) = ' + str(build_id)
 
-            elif request.form.get('action') == 'delete':
-                existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id']).all()
-                for fit in existingFitting:
-                    db.session.delete(fit)
-                    db.session.commit()
+                if request.form.get('newBuild'):
+                    build_id = myFittings[-1].build_id +1
+                    #print 'build id last+1 = ' + str(build_id)
+                else:
+                    if request.form.get('action') <> 'new': ship_id = myFittings[fittingIndex].ship_id
+                    shipFittings = db.session.query(ship_fittings).filter_by(user_id=user_id, build_id=build_id).order_by('ship_name').all()
+                    nonBuildableFittings = db.session.query(v_buildable_fittings).filter(v_buildable_fittings.meta <> 2).filter(v_buildable_fittings.meta <> 14).filter(v_buildable_fittings.rollup==1).filter(v_buildable_fittings.user_id==user_id).with_entities('ship_id', 'ship_name', 'jita_buy', 'qty', 'id', 'component', 'component_cost', 'component_qty', 'build_cost', 'meta', 'rollup','user_id', 'bp_id').all()
 
-                flash('Successfully deleted fitting.', 'success')
-                return redirect(url_for('fittings'))
+                    nonBuildablefittingRollup = fitting_rollup_qty(nonBuildableFittings)
+                    for nbf in nonBuildableFittings:
+                        nonBuildableTotal += (float(nbf.qty) * float(nbf.component_qty) * float(nbf.component_cost))
 
-            elif request.form.get('build'):
-                for bfr in buildablefittingRollup:
-                    myMaterialCost = []
-                    jitaCost = []
-                    myBuildCost = 0
-                    myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = bfr.bp_id, product_id=bfr.id).with_entities('id','material','material_id','group_id','qty','product_id', 'vol', 'portion_size').all()
+                    buildableFittings = db.session.query(v_buildable_fittings_all).filter_by(rollup=1, user_id=user_id).with_entities('ship_id', 'ship_name', 'jita_buy', 'qty', 'id', 'component', 'component_cost', 'component_qty', 'build_cost', 'meta', 'rollup', 'user_id', 'bp_id').all()
 
-                    for requirements in myBuildRequirements:
-                        myBuildCost += (get_marketValue(requirements.material_id, 'sell') * requirements.qty)
+                    buildablefittingRollup = fitting_rollup_qty(buildableFittings)
+                    for bf in buildableFittings:
+                        buildableTotal += (float(bf.qty) * float(bf.component_qty) * float(bf.component_cost))
 
-                    for requirements in myBuildRequirements:
-                        me = session['default_bp_me']
-                        te = session['default_bp_te']
-                        compQty = calc_comp_efficiency(requirements.qty, bfr.component_qty, me)
-                        myCost = get_marketValue(requirements.material_id, 'sell') * int(compQty)                        
-                        eng_rig = session['structure_rig_bonus'] 
-                        eng_role = session['structure_role_bonus']
-                        
-                        pipeline = build_pipeline(session['myUser_id'], bfr.id, bfr.bp_id, bfr.component_qty * bfr.qty, requirements.material_id, compQty * bfr.qty, myCost, bfr.component, requirements.material, requirements.group_id, 0, bfr.component_cost, 0, myBuildCost, 0, 0, requirements.vol * bfr.qty, 1, me, te, eng_rig, eng_role)
-                        
-                        db.session.add(pipeline)
+
+                    fittingCost = fitting_rollup_cost(shipFittings)
+                    if fittingCost > 0: fittingPM = ((float(shipFittings[fittingIndex].qty) * float(shipFittings[fittingIndex].contract_sell_price)) / float(fittingCost)) -1.0
+
+            if ship_id > 0 :
+                rigs = db.session.query(v_shipslots).filter_by(id=1137, ship_id=ship_id).one()
+                rigsize = db.session.query(v_shipslots).filter_by(id=1547, ship_id=ship_id).one()
+                myRigSize = rigsize.valfloat
+                rig_modules = db.session.query(v_rigs).filter_by(size=myRigSize).all()
+                lows = db.session.query(v_shipslots).filter_by(id=12, ship_id=ship_id).one()
+                low_modules = db.session.query(v_modules).filter_by(category=11).all()
+                meds = db.session.query(v_shipslots).filter_by(id=13, ship_id=ship_id).one()
+                med_modules = db.session.query(v_modules).filter_by(category=13).all()
+                highs = db.session.query(v_shipslots).filter_by(id=14, ship_id=ship_id).one()
+                high_modules = db.session.query(v_modules).filter_by(category=12).all()
+                ammos = db.session.query(v_item_by_cat).filter_by(category=8).all()
+                drones = db.session.query(v_item_by_cat).filter_by(category=18).all()
+                tech3 = db.session.query(v_item_by_cat).filter_by(category=32).all()
+                if rigs.valfloat:
+                    num_rigslots = rigs.valfloat
+                else:
+                    num_rigslots = rigs.valint
+                if rigsize.valfloat:
+                    rigsize = rigs.valfloat
+                else:
+                    rigsize = rigs.valint
+                if lows.valfloat:
+                    num_lowslots = lows.valfloat
+                else:
+                    num_lowslots = lows.valint
+                if meds.valfloat:
+                    num_medslots = meds.valfloat
+                else:
+                    num_medslots = meds.valint
+                if highs.valfloat:
+                    num_highslots = highs.valfloat
+                else:
+                    num_highslots = highs.valint
+                
+                if num_highslots == None:
+                    num_highslots = 7
+                    num_medslots = 7
+                    num_lowslots = 7
+
+            #print request.method
+            if request.method == 'POST':
+                #print request.form.get('action')
+                if request.form.get('fetch'):
+                    myAssets = get_fittings()
+                    for item in myAssets:
+                        #print item
+                        if item =='error' or item=='timeout':
+                            flash ('Problem fetching fittings from EVE.', 'danger')
+                            break
+                        else:
+                            my_import = FittingList(item['fitting_id'], item['name'])
+                            fitting_list += [my_import]
+
+                if request.form.get('import'):
+                    fitting_selection = int(request.form.get('fitting_selection'))
+                    myAssets = get_fittings()
+                    for item in myAssets:
+                        #print item
+                        if item =='error' or item=='timeout':
+                            flash ('Problem fetching this fitting from EVE.', 'danger')
+                            break
+                        else:
+                            if item['fitting_id'] == fitting_selection:
+                                result = import_fitting(item)
+                                return redirect(url_for('fittings'))
+
+                if request.form.get('action') == 'new':
+                    if ship_id > 0 :
+                        item = db.session.query(v_ships).filter_by(id = ship_id).one()
+                        ship_name = item.ship
+                        if myFittings:
+                            build_id = myFittings[-1].build_id + 1
+                        else:
+                            build_id = 1
+                        print ('new build id: ' + str(build_id))
+
+                        return render_template('fittings.html', ships=ships, myFittingsCount=myFittingsCount, ship_id=ship_id, build_id=build_id, ship_name=ship_name, num_rigslots=num_rigslots, num_lowslots=num_lowslots, num_medslots=num_medslots, num_highslots=num_highslots, rig_modules=rig_modules, low_modules=low_modules, med_modules=med_modules, high_modules=high_modules,ammos=ammos, tech3=tech3, drones=drones, myFittings=myFittings, fittingIndex=fittingIndex, fittingCost=fittingCost, fittingPM=fittingPM, newBuild=True)
+                    else:
+                        flash('Pick a ship to build.', 'danger')
+
+                elif request.form.get('action') == 'delete':
+                    existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id']).all()
+                    for fit in existingFitting:
+                        db.session.delete(fit)
                         db.session.commit()
 
-                flash('Successfully added to build pipeline as future builds.','success')
-                return redirect(url_for('pipeline'))
+                    flash('Successfully deleted fitting.', 'success')
+                    return redirect(url_for('fittings'))
 
-            elif request.form.get('action') == 'edit':
-                item = db.session.query(v_ships).filter_by(id = ship_id).one()
-                ship_name = item.ship
-                ship_jita_buy = get_marketValue(ship_id,'sell')
-                myRollup = 0
+                elif request.form.get('build'):
+                    for bfr in buildablefittingRollup:
+                        myMaterialCost = []
+                        jitaCost = []
+                        myBuildCost = 0
+                        myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = bfr.bp_id, product_id=bfr.id).with_entities('id','material','material_id','group_id','qty','product_id', 'vol', 'portion_size').all()
 
-                if request.args.get('build_id'):
-                    build_id = request.args.get('build_id')
-                    myContractPrice = float(request.args.get('contract_sell_price').replace(',', ''))
-                    fitting_name = request.args.get('fitting_name')
-                    myQty = int(request.args.get('qty'))
-                    if request.args.get('rollup') == 'on':
-                        myRollup = 1
+                        for requirements in myBuildRequirements:
+                            if get_marketValue(requirements.material_id, 'sell') is not None:
+                                myBuildCost += (get_marketValue(requirements.material_id, 'sell') * requirements.qty)
+                            else:
+                                myBuildCost += 0
+
+                        for requirements in myBuildRequirements:
+                            me = session['default_bp_me']
+                            te = session['default_bp_te']
+                            compQty = calc_comp_efficiency(requirements.qty, bfr.component_qty, me)
+                            if get_marketValue(requirements.material_id, 'sell') is not None:
+                                myCost = get_marketValue(requirements.material_id, 'sell') * int(compQty)                        
+                            else:
+                                myCost = 0
+                            eng_rig = session['structure_rig_bonus'] 
+                            eng_role = session['structure_role_bonus']
+                            
+                            pipeline = build_pipeline(session['myUser_id'], bfr.id, bfr.bp_id, bfr.component_qty * bfr.qty, requirements.material_id, compQty * bfr.qty, myCost, bfr.component, requirements.material, requirements.group_id, 0, bfr.component_cost, 0, myBuildCost, 0, 0, requirements.vol * bfr.qty, 1, me, te, eng_rig, eng_role)
+                            
+                            db.session.add(pipeline)
+                            db.session.commit()
+
+                    flash('Successfully added to build pipeline as future builds.','success')
+                    return redirect(url_for('pipeline'))
+
+                elif request.form.get('action') == 'edit':
+                    item = db.session.query(v_ships).filter_by(id = ship_id).one()
+                    ship_name = item.ship
+                    if get_marketValue(ship_id,'sell') is not None:
+                        ship_jita_buy = get_marketValue(ship_id,'sell')
                     else:
-                        myRollup = 0
-                else:
-                    build_id = request.form.get('build_id')
-                    myContractPrice = float(request.form.get('contract_sell_price').replace(',', ''))
-                    fitting_name = request.form.get('fitting_name')
-                    myQty = int(request.form.get('qty'))
+                        ship_jita_buy = 0
+                    myRollup = 0
 
-                    if request.form.get('rollup') == 'on':
-                        myRollup = 1
+                    if request.args.get('build_id'):
+                        build_id = request.args.get('build_id')
+                        myContractPrice = float(request.args.get('contract_sell_price').replace(',', ''))
+                        fitting_name = request.args.get('fitting_name')
+                        myQty = int(request.args.get('qty'))
+                        if request.args.get('rollup') == 'on':
+                            myRollup = 1
+                        else:
+                            myRollup = 0
                     else:
-                        myRollup = 0
+                        build_id = request.form.get('build_id')
+                        myContractPrice = float(request.form.get('contract_sell_price').replace(',', ''))
+                        fitting_name = request.form.get('fitting_name')
+                        myQty = int(request.form.get('qty'))
 
-                existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='ship').all()
-                if existingFitting:
-                    existingFitting[0].qty = myQty
-                    existingFitting[0].component_id = ship_id
-                    existingFitting[0].component_qty = 1
-                    existingFitting[0].component_cost = ship_jita_buy
-                    existingFitting[0].component = ship_name
-                    existingFitting[0].fitting_name = fitting_name
-                    existingFitting[0].contract_sell_price = myContractPrice
-                    existingFitting[0].rollup = myRollup
-                    db.session.add(existingFitting[0])
-                    db.session.commit()
-                    #print ('update existing. Contract price: ' + str(myContractPrice))
-                else:
-                    if build_id == 0: build_id = 1
-                    myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, ship_id, 1, ship_jita_buy, ship_name, 'ship', myContractPrice, 0, ship_jita_buy, myRollup)
-                    db.session.add(myFittings)
-                    db.session.commit()
-
-                existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='high').all()
-                if num_highslots > 0:
-                    for n in range(1, num_highslots+1):
-                        if request.form.get('hi'+str(n)) > 0:
-                            comp_id  = request.form.get('hi'+str(n))
-                            #print comp_id
-                            if comp_id > 0:
-                                comp_jita_buy = get_marketValue(comp_id,'sell')
-                                comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
-
-                            if existingFitting:
-                                #print 'rollup = ' + str(myRollup)
-                                fit = existingFitting[n-1]
-                                fit.qty = myQty
-                                fit.component_id = comp_id
-                                fit.component_qty = 1
-                                fit.component_cost = comp_jita_buy
-                                fit.component = comp[0]
-                                fit.fitting_name = fitting_name
-                                fit.contract_sell_price = myContractPrice
-                                fit.rollup = myRollup
-                                db.session.add(fit)
-                                db.session.commit()
-                            else:
-                                if build_id == 0: build_id = 1
-                                comp_jita_buy = get_marketValue(comp_id,'sell')
-                                myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp[0], 'high', myContractPrice, 0, ship_jita_buy, myRollup)
-                                db.session.add(myFittings)
-                                db.session.commit()
-
-                existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='med').all()
-                if num_medslots > 0:
-                    for n in range(1, num_medslots+1):
-                        if request.form.get('med'+str(n)) > 0:
-                            comp_id  = request.form.get('med'+str(n))
-                            if comp_id > 0:
-                                comp_jita_buy = get_marketValue(comp_id,'sell')
-                                comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
-
-                            if existingFitting:
-                                fit = existingFitting[n-1]
-                                fit.qty = myQty
-                                fit.component_id = comp_id
-                                fit.component_qty = 1
-                                fit.component_cost = comp_jita_buy
-                                fit.component = comp[0]
-                                fit.fitting_name = fitting_name
-                                fit.contract_sell_price = myContractPrice
-                                fit.rollup = myRollup
-                                db.session.add(fit)
-                                db.session.commit()
-                            else:
-                                if build_id == 0: build_id = 1
-                                comp_jita_buy = get_marketValue(comp_id,'sell')
-                                myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp[0], 'med', myContractPrice, 0, ship_jita_buy, myRollup)
-                                db.session.add(myFittings)
-                                db.session.commit()
-
-                existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='low').all()
-                if num_lowslots > 0:
-                    for n in range(1, num_lowslots+1):
-                        if request.form.get('low'+str(n)) > 0:
-                            comp_id  = request.form.get('low'+str(n))
-                            if comp_id > 0:
-                                comp_jita_buy = get_marketValue(comp_id,'sell')
-                                comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
-
-                            if existingFitting:
-                                fit = existingFitting[n-1]
-                                fit.qty = myQty
-                                fit.component_id = comp_id
-                                fit.component_qty = 1
-                                fit.component_cost = comp_jita_buy
-                                fit.component = comp[0]
-                                fit.fitting_name = fitting_name
-                                fit.contract_sell_price = myContractPrice
-                                fit.rollup = myRollup
-                                db.session.add(fit)
-                                db.session.commit()
-                            else:
-                                if build_id == 0: build_id = 1
-                                comp_jita_buy = get_marketValue(comp_id,'sell')
-                                myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp[0], 'low', myContractPrice, 0, ship_jita_buy, myRollup)
-                                db.session.add(myFittings)
-                                db.session.commit()
-
-                existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='rig').all()
-                if num_rigslots > 0:
-                    for n in range(1, num_rigslots+1):
-                        if request.form.get('rig'+str(n)) > 0:
-                            comp_id  = request.form.get('rig'+str(n))
-                            if comp_id > 0:
-                                comp_jita_buy = get_marketValue(comp_id,'sell')
-                                comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
-
-                            if existingFitting:
-                                fit = existingFitting[n-1]
-                                fit.qty = myQty
-                                fit.component_id = comp_id
-                                fit.component_qty = 1
-                                fit.component_cost = comp_jita_buy
-                                fit.component = comp[0]
-                                fit.fitting_name = fitting_name
-                                fit.contract_sell_price = myContractPrice
-                                fit.rollup = myRollup
-                                db.session.add(fit)
-                                db.session.commit()
-                            else:
-                                if build_id == 0: build_id = 1
-                                comp_jita_buy = get_marketValue(comp_id,'sell')
-                                myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp[0], 'rig', myContractPrice, 0, ship_jita_buy, myRollup)
-                                db.session.add(myFittings)
-                                db.session.commit()
-
-                existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='tech3').all()
-                for n in range(1, 5):
-                    if request.form.get('tech3'+str(n)) > 0:
-                        comp_id  = request.form.get('tech3'+str(n))
-                        if comp_id > 0:
-                            comp_jita_buy = get_marketValue(comp_id,'sell')
-                            comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
-
-                        if existingFitting:
-                            fit = existingFitting[n-1]
-                            fit.qty = myQty
-                            fit.component_id = comp_id
-                            fit.component_cost = comp_jita_buy
-                            fit.component = comp[0]
-                            fit.fitting_name = fitting_name
-                            fit.contract_sell_price = myContractPrice
-                            fit.rollup = myRollup
-                            db.session.add(fit)
-                            db.session.commit()
+                        if request.form.get('rollup') == 'on':
+                            myRollup = 1
                         else:
-                            if build_id == 0: build_id = 1
-                            comp_jita_buy = get_marketValue(comp_id,'sell')
-                            myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp[0], 'tech3', myContractPrice, 0, ship_jita_buy, myRollup)
-                            db.session.add(myFittings)
-                            db.session.commit()
+                            myRollup = 0
 
-                existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='ammo').all()
-                for n in range(1, 13):
-                    if request.form.get('ammo'+str(n)) > 0:
-                        comp_qty = request.form.get('ammo_qty'+str(n))
-                        comp_id  = request.form.get('ammo'+str(n))
-                        if comp_id > 0:
-                            comp_jita_buy = get_marketValue(comp_id,'sell')
-                            comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
+                    existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='ship').all()
+                    if existingFitting:
+                        existingFitting[0].qty = myQty
+                        existingFitting[0].component_id = ship_id
+                        existingFitting[0].component_qty = 1
+                        existingFitting[0].component_cost = ship_jita_buy
+                        existingFitting[0].component = ship_name
+                        existingFitting[0].fitting_name = fitting_name
+                        existingFitting[0].contract_sell_price = myContractPrice
+                        existingFitting[0].rollup = myRollup
+                        db.session.add(existingFitting[0])
+                        db.session.commit()
+                        #print ('update existing. Contract price: ' + str(myContractPrice))
+                    else:
+                        if build_id == 0: build_id = 1
+                        myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, ship_id, 1, ship_jita_buy, ship_name, 'ship', myContractPrice, 0, ship_jita_buy, myRollup)
+                        db.session.add(myFittings)
+                        db.session.commit()
 
-                        if existingFitting:
-                            fit = existingFitting[n-1]
-                            fit.qty = myQty
-                            fit.component_id = comp_id
-                            fit.component_qty = comp_qty
-                            fit.component_cost = comp_jita_buy
-                            fit.component = comp[0]
-                            fit.fitting_name = fitting_name
-                            fit.contract_sell_price = myContractPrice
-                            fit.rollup = myRollup
-                            db.session.add(fit)
-                            db.session.commit()
-                        else:
-                            if build_id == 0: build_id = 1
-                            comp_jita_buy = get_marketValue(comp_id,'sell')
-                            myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, comp_qty, comp_jita_buy, comp[0], 'ammo', myContractPrice, 0, ship_jita_buy, myRollup)
-                            db.session.add(myFittings)
-                            db.session.commit()
+                    existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='high').all()
+                    if num_highslots > 0:
+                        for n in range(1, num_highslots+1):
+                            if request.form.get('hi'+str(n)) > 0:
+                                comp_id  = request.form.get('hi'+str(n))
+                                #print comp_id
+                                if comp_id > 0:
+                                    if get_marketValue(comp_id,'sell') is not None:
+                                        comp_jita_buy = get_marketValue(comp_id,'sell')
+                                    else:
+                                        comp_jita_buy = 0
+                                    comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
 
-                existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='drone').all()
-                for n in range(1, 13):
-                    if request.form.get('drone'+str(n)) > 0:
-                        comp_qty = request.form.get('drone_qty'+str(n))
-                        comp_id  = request.form.get('drone'+str(n))
-                        if comp_id > 0:
-                            comp_jita_buy = get_marketValue(comp_id,'sell')
-                            comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
+                                if existingFitting:
+                                    #print 'rollup = ' + str(myRollup)
+                                    fit = existingFitting[n-1]
+                                    fit.qty = myQty
+                                    fit.component_id = comp_id
+                                    fit.component_qty = 1
+                                    fit.component_cost = comp_jita_buy
+                                    fit.component = comp[0]
+                                    fit.fitting_name = fitting_name
+                                    fit.contract_sell_price = myContractPrice
+                                    fit.rollup = myRollup
+                                    db.session.add(fit)
+                                    db.session.commit()
+                                else:
+                                    if build_id == 0: build_id = 1
+                                    if get_marketValue(comp_id,'sell') is not None:
+                                        comp_jita_buy = get_marketValue(comp_id,'sell')
+                                    else:
+                                        comp_jita_buy = 0
+                                    myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp[0], 'high', myContractPrice, 0, ship_jita_buy, myRollup)
+                                    db.session.add(myFittings)
+                                    db.session.commit()
 
-                        if existingFitting:
-                            fit = existingFitting[n-1]
-                            fit.qty = myQty
-                            fit.component_id = comp_id
-                            fit.component_qty = comp_qty
-                            fit.component_cost = comp_jita_buy
-                            fit.component = comp[0]
-                            fit.fitting_name = fitting_name
-                            fit.contract_sell_price = myContractPrice
-                            fit.rollup = myRollup
-                            db.session.add(fit)
-                            db.session.commit()
-                        else:
-                            if build_id == 0: build_id = 1
-                            comp_jita_buy = get_marketValue(comp_id,'sell')
-                            myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, comp_qty, comp_jita_buy, comp[0], 'drone', myContractPrice, 0, ship_jita_buy, myRollup)
-                            db.session.add(myFittings)
-                            db.session.commit()
+                    existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='med').all()
+                    if num_medslots > 0:
+                        for n in range(1, num_medslots+1):
+                            if request.form.get('med'+str(n)) > 0:
+                                comp_id  = request.form.get('med'+str(n))
+                                if comp_id > 0:
+                                    if get_marketValue(comp_id,'sell') is not None:
+                                        comp_jita_buy = get_marketValue(comp_id,'sell')
+                                    else:
+                                        comp_jita_buy = 0
+                                    comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
 
-                flash('Successfully updated fitting.', 'success')
-                return redirect(url_for('fittings', fittingIndex=fittingIndex, build_id=build_id))
+                                if existingFitting:
+                                    fit = existingFitting[n-1]
+                                    fit.qty = myQty
+                                    fit.component_id = comp_id
+                                    fit.component_qty = 1
+                                    fit.component_cost = comp_jita_buy
+                                    fit.component = comp[0]
+                                    fit.fitting_name = fitting_name
+                                    fit.contract_sell_price = myContractPrice
+                                    fit.rollup = myRollup
+                                    db.session.add(fit)
+                                    db.session.commit()
+                                else:
+                                    if build_id == 0: build_id = 1
+                                    if get_marketValue(comp_id,'sell') is not None:
+                                        comp_jita_buy = get_marketValue(comp_id,'sell')
+                                    else:
+                                        comp_jita_buy = 0
+                                    myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp[0], 'med', myContractPrice, 0, ship_jita_buy, myRollup)
+                                    db.session.add(myFittings)
+                                    db.session.commit()
+
+                    existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='low').all()
+                    if num_lowslots > 0:
+                        for n in range(1, num_lowslots+1):
+                            if request.form.get('low'+str(n)) > 0:
+                                comp_id  = request.form.get('low'+str(n))
+                                if comp_id > 0:
+                                    if get_marketValue(comp_id,'sell') is not None:
+                                        comp_jita_buy = get_marketValue(comp_id,'sell')
+                                    else:
+                                        comp_jita_buy = 0
+                                    comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
+
+                                if existingFitting:
+                                    fit = existingFitting[n-1]
+                                    fit.qty = myQty
+                                    fit.component_id = comp_id
+                                    fit.component_qty = 1
+                                    fit.component_cost = comp_jita_buy
+                                    fit.component = comp[0]
+                                    fit.fitting_name = fitting_name
+                                    fit.contract_sell_price = myContractPrice
+                                    fit.rollup = myRollup
+                                    db.session.add(fit)
+                                    db.session.commit()
+                                else:
+                                    if build_id == 0: build_id = 1
+                                    if get_marketValue(comp_id,'sell') is not None:
+                                        comp_jita_buy = get_marketValue(comp_id,'sell')
+                                    else:
+                                        comp_jita_buy = 0
+                                    myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp[0], 'low', myContractPrice, 0, ship_jita_buy, myRollup)
+                                    db.session.add(myFittings)
+                                    db.session.commit()
+
+                    existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='rig').all()
+                    if num_rigslots > 0:
+                        for n in range(1, num_rigslots+1):
+                            if request.form.get('rig'+str(n)) > 0:
+                                comp_id  = request.form.get('rig'+str(n))
+                                if comp_id > 0:
+                                    if get_marketValue(comp_id,'sell') is not None:
+                                        comp_jita_buy = get_marketValue(comp_id,'sell')
+                                    else:
+                                        comp_jita_buy = 0
+                                    comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
+
+                                if existingFitting:
+                                    fit = existingFitting[n-1]
+                                    fit.qty = myQty
+                                    fit.component_id = comp_id
+                                    fit.component_qty = 1
+                                    fit.component_cost = comp_jita_buy
+                                    fit.component = comp[0]
+                                    fit.fitting_name = fitting_name
+                                    fit.contract_sell_price = myContractPrice
+                                    fit.rollup = myRollup
+                                    db.session.add(fit)
+                                    db.session.commit()
+                                else:
+                                    if build_id == 0: build_id = 1
+                                    if get_marketValue(comp_id,'sell') is not None:
+                                        comp_jita_buy = get_marketValue(comp_id,'sell')
+                                    else:
+                                        comp_jita_buy = 0
+                                    myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp[0], 'rig', myContractPrice, 0, ship_jita_buy, myRollup)
+                                    db.session.add(myFittings)
+                                    db.session.commit()
+
+                    existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='tech3').all()
+                    for n in range(1, 5):
+                        if request.form.get('tech3'+str(n)) > 0:
+                            comp_id  = request.form.get('tech3'+str(n))
+                            if comp_id > 0:
+                                if get_marketValue(comp_id,'sell') is not None:
+                                    comp_jita_buy = get_marketValue(comp_id,'sell')
+                                else:
+                                    comp_jita_buy = 0
+                                comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
+
+                            if existingFitting:
+                                fit = existingFitting[n-1]
+                                fit.qty = myQty
+                                fit.component_id = comp_id
+                                fit.component_cost = comp_jita_buy
+                                fit.component = comp[0]
+                                fit.fitting_name = fitting_name
+                                fit.contract_sell_price = myContractPrice
+                                fit.rollup = myRollup
+                                db.session.add(fit)
+                                db.session.commit()
+                            else:
+                                if build_id == 0: build_id = 1
+                                if get_marketValue(comp_id,'sell') is not None:
+                                    comp_jita_buy = get_marketValue(comp_id,'sell')
+                                else:
+                                    comp_jita_buy = 0
+                                myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, 1, comp_jita_buy, comp[0], 'tech3', myContractPrice, 0, ship_jita_buy, myRollup)
+                                db.session.add(myFittings)
+                                db.session.commit()
+
+                    existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='ammo').all()
+                    for n in range(1, 13):
+                        if request.form.get('ammo'+str(n)) > 0:
+                            comp_qty = request.form.get('ammo_qty'+str(n))
+                            comp_id  = request.form.get('ammo'+str(n))
+                            if comp_id > 0:
+                                if get_marketValue(comp_id,'sell') is not None:
+                                    comp_jita_buy = get_marketValue(comp_id,'sell')
+                                else:
+                                    comp_jita_buy = 0
+                                comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
+
+                            if existingFitting:
+                                fit = existingFitting[n-1]
+                                fit.qty = myQty
+                                fit.component_id = comp_id
+                                fit.component_qty = comp_qty
+                                fit.component_cost = comp_jita_buy
+                                fit.component = comp[0]
+                                fit.fitting_name = fitting_name
+                                fit.contract_sell_price = myContractPrice
+                                fit.rollup = myRollup
+                                db.session.add(fit)
+                                db.session.commit()
+                            else:
+                                if build_id == 0: build_id = 1
+                                if get_marketValue(comp_id,'sell') is not None:
+                                    comp_jita_buy = get_marketValue(comp_id,'sell')
+                                else:
+                                    comp_jita_buy = 0
+                                myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, comp_qty, comp_jita_buy, comp[0], 'ammo', myContractPrice, 0, ship_jita_buy, myRollup)
+                                db.session.add(myFittings)
+                                db.session.commit()
+
+                    existingFitting = db.session.query(ship_fittings).filter_by(build_id = build_id, user_id=session['myUser_id'], component_slot='drone').all()
+                    for n in range(1, 13):
+                        if request.form.get('drone'+str(n)) > 0:
+                            comp_qty = request.form.get('drone_qty'+str(n))
+                            comp_id  = request.form.get('drone'+str(n))
+                            if comp_id > 0:
+                                if get_marketValue(comp_id,'sell') is not None:
+                                    comp_jita_buy = get_marketValue(comp_id,'sell')
+                                else:
+                                    comp_jita_buy = 0
+                                comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
+
+                            if existingFitting:
+                                fit = existingFitting[n-1]
+                                fit.qty = myQty
+                                fit.component_id = comp_id
+                                fit.component_qty = comp_qty
+                                fit.component_cost = comp_jita_buy
+                                fit.component = comp[0]
+                                fit.fitting_name = fitting_name
+                                fit.contract_sell_price = myContractPrice
+                                fit.rollup = myRollup
+                                db.session.add(fit)
+                                db.session.commit()
+                            else:
+                                if build_id == 0: build_id = 1
+                                if get_marketValue(comp_id,'sell') is not None:
+                                    comp_jita_buy = get_marketValue(comp_id,'sell')
+                                else:
+                                    comp_jita_buy = 0
+                                myFittings = ship_fittings(build_id, session['myUser_id'], ship_id, ship_name, fitting_name, myQty, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, comp_qty, comp_jita_buy, comp[0], 'drone', myContractPrice, 0, ship_jita_buy, myRollup)
+                                db.session.add(myFittings)
+                                db.session.commit()
+
+                    flash('Successfully updated fitting.', 'success')
+                    return redirect(url_for('fittings', fittingIndex=fittingIndex, build_id=build_id))
 
 
-        if myFittingsCount > 0:
-            myFittingsHigh = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='high').all()
-            myFittingsMed = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='med').all()
-            myFittingsLow = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='low').all()
-            myFittingsRig = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='rig').all()
-            myFittingsTech3 = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='tech3').all()
-            myFittingsAmmo = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='ammo').all()
-            myFittingsDrone = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='drone').all()
+            if myFittingsCount > 0:
+                myFittingsHigh = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='high').all()
+                myFittingsMed = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='med').all()
+                myFittingsLow = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='low').all()
+                myFittingsRig = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='rig').all()
+                myFittingsTech3 = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='tech3').all()
+                myFittingsAmmo = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='ammo').all()
+                myFittingsDrone = db.session.query(ship_fittings).filter_by(user_id=user_id, ship_id=ship_id, component_slot='drone').all()
 
-            return render_template('fittings.html', ships=ships, ship_id=ship_id, ship_name=ship_name, num_rigslots=num_rigslots, num_lowslots=num_lowslots, num_medslots=num_medslots, num_highslots=num_highslots, rig_modules=rig_modules, low_modules=low_modules, med_modules=med_modules, high_modules=high_modules,ammos=ammos, tech3=tech3, drones=drones, myFittingsCount=myFittingsCount, myFittings=myFittings, myFittingsHigh=myFittingsHigh, myFittingsMed=myFittingsMed, myFittingsLow=myFittingsLow, myFittingsRig=myFittingsRig, myFittingsAmmo=myFittingsAmmo, myFittingsTech3=myFittingsTech3, myFittingsDrone=myFittingsDrone, fittingIndex=fittingIndex, fittingCost=fittingCost, fittingPM=fittingPM, buildableFittings=buildableFittings, nonBuildableFittings=nonBuildableFittings, nonBuildableTotal=nonBuildableTotal, buildableTotal=buildableTotal, build_id=build_id, nonBuildablefittingRollup=nonBuildablefittingRollup, buildablefittingRollup=buildablefittingRollup, fitting_list=fitting_list)
+                return render_template('fittings.html', ships=ships, ship_id=ship_id, ship_name=ship_name, num_rigslots=num_rigslots, num_lowslots=num_lowslots, num_medslots=num_medslots, num_highslots=num_highslots, rig_modules=rig_modules, low_modules=low_modules, med_modules=med_modules, high_modules=high_modules,ammos=ammos, tech3=tech3, drones=drones, myFittingsCount=myFittingsCount, myFittings=myFittings, myFittingsHigh=myFittingsHigh, myFittingsMed=myFittingsMed, myFittingsLow=myFittingsLow, myFittingsRig=myFittingsRig, myFittingsAmmo=myFittingsAmmo, myFittingsTech3=myFittingsTech3, myFittingsDrone=myFittingsDrone, fittingIndex=fittingIndex, fittingCost=fittingCost, fittingPM=fittingPM, buildableFittings=buildableFittings, nonBuildableFittings=nonBuildableFittings, nonBuildableTotal=nonBuildableTotal, buildableTotal=buildableTotal, build_id=build_id, nonBuildablefittingRollup=nonBuildablefittingRollup, buildablefittingRollup=buildablefittingRollup, fitting_list=fitting_list)
 
-        return render_template('fittings.html', ships=ships, myFittingsCount=0, ship_id=0, build_id=build_id, myFittings=myFittings, fittingCost=fittingCost, fitting_list=fitting_list)
+            return render_template('fittings.html', ships=ships, myFittingsCount=0, ship_id=0, build_id=build_id, myFittings=myFittings, fittingCost=fittingCost, fitting_list=fitting_list)
 
-        #except Exception as e:
-        ##    flash('Problem with Ship Fittings - see log.', 'danger')
-        #    app.logger.info(str(e))
-        #    return redirect(url_for('fittings'))
+        except Exception as e:
+            flash('Problem with Ship Fittings - see log.', 'danger')
+            app.logger.info(str(e))
+            return redirect(url_for('fittings'))
     else:
         flash('You must be logged in to use Ship Fittings.', 'danger')
         return redirect(url_for('index'))
@@ -1726,122 +1786,122 @@ def fittings():
 def mining():
     asteroid_groups = db.session.query(v_asteroid_groups).all()
     if 'myUser_id' in session:
-        #try:
-        calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
-        if not calcs:
-            calc = mining_calc(session['myUser_id'],  300, 120, 30, .5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-            db.session.add(calc)
-            db.session.commit()
+        try:
+            calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
+            if not calcs:
+                calc = mining_calc(session['myUser_id'],  300, 120, 30, .5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+                db.session.add(calc)
+                db.session.commit()
 
 
-        if request.method == 'POST':
-            if request.form.get('m3_per_cycle'):
-                for calc in calcs:
-                    calc.m3_per_cycle = request.form.get('m3_per_cycle',type=int)
-                    calc.cycle_time = request.form.get('cycle_time',type=int)
-                    calc.num_cycles = request.form.get('num_cycles')
-                    calc.refinery = float(request.form.get('refinery'))/100
-                    db.session.add(calc)
-                    db.session.commit()
+            if request.method == 'POST':
+                if request.form.get('m3_per_cycle'):
+                    for calc in calcs:
+                        calc.m3_per_cycle = request.form.get('m3_per_cycle',type=int)
+                        calc.cycle_time = request.form.get('cycle_time',type=int)
+                        calc.num_cycles = request.form.get('num_cycles')
+                        calc.refinery = float(request.form.get('refinery'))/100
+                        db.session.add(calc)
+                        db.session.commit()
 
-            if request.form.get('clear'):
-                for calc in calcs:
-                    calc.trit_required = 0
-                    calc.pye_required = 0
-                    calc.mex_required = 0
-                    calc.iso_required = 0
-                    calc.nox_required = 0
-                    calc.zyd_required = 0
-                    calc.meg_required = 0
-                    calc.morph_required = 0
-                    db.session.add(calc)
-                    db.session.commit()
+                if request.form.get('clear'):
+                    for calc in calcs:
+                        calc.trit_required = 0
+                        calc.pye_required = 0
+                        calc.mex_required = 0
+                        calc.iso_required = 0
+                        calc.nox_required = 0
+                        calc.zyd_required = 0
+                        calc.meg_required = 0
+                        calc.morph_required = 0
+                        db.session.add(calc)
+                        db.session.commit()
 
-            mined_mins1 = MinedMinerals(0,0,0,0,0,0,0,0)
-            mined_mins2 = MinedMinerals(0,0,0,0,0,0,0,0)
-            mined_mins3 = MinedMinerals(0,0,0,0,0,0,0,0)
-            mined_mins4 = MinedMinerals(0,0,0,0,0,0,0,0)
+                mined_mins1 = MinedMinerals(0,0,0,0,0,0,0,0)
+                mined_mins2 = MinedMinerals(0,0,0,0,0,0,0,0)
+                mined_mins3 = MinedMinerals(0,0,0,0,0,0,0,0)
+                mined_mins4 = MinedMinerals(0,0,0,0,0,0,0,0)
 
-            mined_moons1 = MinedMoons(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
-            mined_moons2 = MinedMoons(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
-            mined_moons3 = MinedMoons(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
-            mined_moons4 = MinedMoons(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
-            min_id1 = 0
-            min_id2 = 0
-            min_id3 = 0
-            min_id4 = 0
-            group_id1 = 0
-            group_id2 = 0
-            group_id3 = 0
-            group_id4 = 0
-            asteroid_name1 = ''
-            asteroid_name2 = ''
-            asteroid_name3 = ''
-            asteroid_name4 = ''
+                mined_moons1 = MinedMoons(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+                mined_moons2 = MinedMoons(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+                mined_moons3 = MinedMoons(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+                mined_moons4 = MinedMoons(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+                min_id1 = 0
+                min_id2 = 0
+                min_id3 = 0
+                min_id4 = 0
+                group_id1 = 0
+                group_id2 = 0
+                group_id3 = 0
+                group_id4 = 0
+                asteroid_name1 = ''
+                asteroid_name2 = ''
+                asteroid_name3 = ''
+                asteroid_name4 = ''
 
-            if request.form.get('asteroid'):
-                if int(request.form.get('asteroid')) > 0:
-                    min_id1 = request.form.get('asteroid')
-                    #print (min_id1)
-                    asteroid_stats1 = db.session.query(v_asteroids).filter_by(id=min_id1).one()
-                    mined_mins1 = refine_asteroid(min_id1, calcs, asteroid_stats1)
-                    mined_moons1 = refine_moon(min_id1, calcs, asteroid_stats1)
-                    group_id1 = asteroid_stats1.group_id
-                    asteroid_name1 = asteroid_stats1.asteroid
+                if request.form.get('asteroid'):
+                    if int(request.form.get('asteroid')) > 0:
+                        min_id1 = request.form.get('asteroid')
+                        #print (min_id1)
+                        asteroid_stats1 = db.session.query(v_asteroids).filter_by(id=min_id1).one()
+                        mined_mins1 = refine_asteroid(min_id1, calcs, asteroid_stats1)
+                        mined_moons1 = refine_moon(min_id1, calcs, asteroid_stats1)
+                        group_id1 = asteroid_stats1.group_id
+                        asteroid_name1 = asteroid_stats1.asteroid
 
-            if request.form.get('asteroid1'):
-                if int(request.form.get('asteroid1')) > 0:
-                    min_id2 = request.form.get('asteroid1')
-                    asteroid_stats2 = db.session.query(v_asteroids).filter_by(id=min_id2).one()                    
-                    mined_mins2 = refine_asteroid(min_id2, calcs, asteroid_stats2)
-                    mined_moons2 = refine_moon(min_id2, calcs, asteroid_stats2)
-                    group_id2 = asteroid_stats2.group_id
-                    asteroid_name2 = asteroid_stats2.asteroid
+                if request.form.get('asteroid1'):
+                    if int(request.form.get('asteroid1')) > 0:
+                        min_id2 = request.form.get('asteroid1')
+                        asteroid_stats2 = db.session.query(v_asteroids).filter_by(id=min_id2).one()                    
+                        mined_mins2 = refine_asteroid(min_id2, calcs, asteroid_stats2)
+                        mined_moons2 = refine_moon(min_id2, calcs, asteroid_stats2)
+                        group_id2 = asteroid_stats2.group_id
+                        asteroid_name2 = asteroid_stats2.asteroid
 
-            if request.form.get('asteroid2'):
-                if int(request.form.get('asteroid2')) > 0:
-                    min_id3 = request.form.get('asteroid2')
-                    asteroid_stats3 = db.session.query(v_asteroids).filter_by(id=min_id3).one()
-                    mined_mins3 = refine_asteroid(min_id3, calcs, asteroid_stats3)
-                    mined_moons3 = refine_moon(min_id3, calcs, asteroid_stats3)
-                    group_id3 = asteroid_stats3.group_id
-                    asteroid_name3 = asteroid_stats3.asteroid
+                if request.form.get('asteroid2'):
+                    if int(request.form.get('asteroid2')) > 0:
+                        min_id3 = request.form.get('asteroid2')
+                        asteroid_stats3 = db.session.query(v_asteroids).filter_by(id=min_id3).one()
+                        mined_mins3 = refine_asteroid(min_id3, calcs, asteroid_stats3)
+                        mined_moons3 = refine_moon(min_id3, calcs, asteroid_stats3)
+                        group_id3 = asteroid_stats3.group_id
+                        asteroid_name3 = asteroid_stats3.asteroid
 
-            if request.form.get('asteroid3'):
-                if int(request.form.get('asteroid3')) > 0:
-                    min_id4 = request.form.get('asteroid3')
-                    asteroid_stats4 = db.session.query(v_asteroids).filter_by(id=min_id4).one()
-                    mined_mins4 = refine_asteroid(min_id4, calcs, asteroid_stats4)
-                    mined_moons4 = refine_moon(min_id4, calcs, asteroid_stats4)
-                    group_id4 = asteroid_stats4.group_id
-                    asteroid_name4 = asteroid_stats4.asteroid
+                if request.form.get('asteroid3'):
+                    if int(request.form.get('asteroid3')) > 0:
+                        min_id4 = request.form.get('asteroid3')
+                        asteroid_stats4 = db.session.query(v_asteroids).filter_by(id=min_id4).one()
+                        mined_mins4 = refine_asteroid(min_id4, calcs, asteroid_stats4)
+                        mined_moons4 = refine_moon(min_id4, calcs, asteroid_stats4)
+                        group_id4 = asteroid_stats4.group_id
+                        asteroid_name4 = asteroid_stats4.asteroid
 
-            mined_mins = MinedMinerals(mined_mins1.trit +mined_mins2.trit +mined_mins3.trit +mined_mins4.trit, mined_mins1.pye +mined_mins2.pye +mined_mins3.pye +mined_mins4.pye, mined_mins1.mex +mined_mins2.mex +mined_mins3.mex +mined_mins4.mex, mined_mins1.iso +mined_mins2.iso +mined_mins3.iso +mined_mins4.iso, mined_mins1.nox +mined_mins2.nox +mined_mins3.nox +mined_mins4.nox, mined_mins1.zyd +mined_mins2.zyd +mined_mins3.zyd +mined_mins4.zyd, mined_mins1.meg +mined_mins2.meg +mined_mins3.meg +mined_mins4.meg, mined_mins1.morph +mined_mins2.morph +mined_mins3.morph +mined_mins4.morph)
-            #print group_id1
-            mined_moons = MinedMoons(
-                mined_moons1.atmo_gas + mined_moons2.atmo_gas + mined_moons3.atmo_gas + mined_moons4.atmo_gas, 
-                mined_moons1.cadmium + mined_moons2.cadmium + mined_moons3.cadmium + mined_moons4.cadmium, mined_moons1.caesium + mined_moons2.caesium + mined_moons3.caesium + mined_moons4.caesium, 
-                mined_moons1.chromium + mined_moons2.chromium +mined_moons3.chromium +mined_moons4.chromium, 
-                mined_moons1.cobalt + mined_moons2.cobalt +mined_moons3.cobalt +mined_moons4.cobalt, 
-                mined_moons1.dysprosium + mined_moons2.dysprosium + mined_moons3.dysprosium + mined_moons4.dysprosium, mined_moons1.evap_dep + mined_moons2.evap_dep + mined_moons3.evap_dep + mined_moons4.evap_dep, 
-                mined_moons1.hafnium + mined_moons3.hafnium + mined_moons3.hafnium + mined_moons4.hafnium, 
-                mined_moons1.hydrocarbons + mined_moons2.hydrocarbons + mined_moons3.hydrocarbons + mined_moons4.hydrocarbons, mined_moons1.mercury + mined_moons2.mercury + mined_moons3.mercury + mined_moons4.mercury, 
-                mined_moons1.neodymium + mined_moons2.neodymium + mined_moons3.neodymium + mined_moons4.neodymium, mined_moons1.platinum + mined_moons2.platinum + mined_moons3.platinum + mined_moons4.platinum, mined_moons1.promethium + mined_moons2.promethium + mined_moons3.promethium + mined_moons4.promethium, mined_moons1.scandium + mined_moons2.scandium + mined_moons3.scandium + mined_moons4.scandium, 
-                mined_moons1.silicates + mined_moons2.silicates + mined_moons3.silicates + mined_moons4.silicates, mined_moons1.technetium + mined_moons2.technetium + mined_moons3.technetium + mined_moons4.technetium, mined_moons1.thulium + mined_moons2.thulium + mined_moons3.thulium + mined_moons4.thulium, 
-                mined_moons1.titanium + mined_moons2.titanium + mined_moons3.titanium + mined_moons4.titanium, 
-                mined_moons1.tungsten + mined_moons2.tungsten + mined_moons3.tungsten + mined_moons4.tungsten, 
-                mined_moons1.vanadium + mined_moons2.vanadium + mined_moons3.vanadium + mined_moons4.vanadium )
+                mined_mins = MinedMinerals(mined_mins1.trit +mined_mins2.trit +mined_mins3.trit +mined_mins4.trit, mined_mins1.pye +mined_mins2.pye +mined_mins3.pye +mined_mins4.pye, mined_mins1.mex +mined_mins2.mex +mined_mins3.mex +mined_mins4.mex, mined_mins1.iso +mined_mins2.iso +mined_mins3.iso +mined_mins4.iso, mined_mins1.nox +mined_mins2.nox +mined_mins3.nox +mined_mins4.nox, mined_mins1.zyd +mined_mins2.zyd +mined_mins3.zyd +mined_mins4.zyd, mined_mins1.meg +mined_mins2.meg +mined_mins3.meg +mined_mins4.meg, mined_mins1.morph +mined_mins2.morph +mined_mins3.morph +mined_mins4.morph)
+                #print group_id1
+                mined_moons = MinedMoons(
+                    mined_moons1.atmo_gas + mined_moons2.atmo_gas + mined_moons3.atmo_gas + mined_moons4.atmo_gas, 
+                    mined_moons1.cadmium + mined_moons2.cadmium + mined_moons3.cadmium + mined_moons4.cadmium, mined_moons1.caesium + mined_moons2.caesium + mined_moons3.caesium + mined_moons4.caesium, 
+                    mined_moons1.chromium + mined_moons2.chromium +mined_moons3.chromium +mined_moons4.chromium, 
+                    mined_moons1.cobalt + mined_moons2.cobalt +mined_moons3.cobalt +mined_moons4.cobalt, 
+                    mined_moons1.dysprosium + mined_moons2.dysprosium + mined_moons3.dysprosium + mined_moons4.dysprosium, mined_moons1.evap_dep + mined_moons2.evap_dep + mined_moons3.evap_dep + mined_moons4.evap_dep, 
+                    mined_moons1.hafnium + mined_moons3.hafnium + mined_moons3.hafnium + mined_moons4.hafnium, 
+                    mined_moons1.hydrocarbons + mined_moons2.hydrocarbons + mined_moons3.hydrocarbons + mined_moons4.hydrocarbons, mined_moons1.mercury + mined_moons2.mercury + mined_moons3.mercury + mined_moons4.mercury, 
+                    mined_moons1.neodymium + mined_moons2.neodymium + mined_moons3.neodymium + mined_moons4.neodymium, mined_moons1.platinum + mined_moons2.platinum + mined_moons3.platinum + mined_moons4.platinum, mined_moons1.promethium + mined_moons2.promethium + mined_moons3.promethium + mined_moons4.promethium, mined_moons1.scandium + mined_moons2.scandium + mined_moons3.scandium + mined_moons4.scandium, 
+                    mined_moons1.silicates + mined_moons2.silicates + mined_moons3.silicates + mined_moons4.silicates, mined_moons1.technetium + mined_moons2.technetium + mined_moons3.technetium + mined_moons4.technetium, mined_moons1.thulium + mined_moons2.thulium + mined_moons3.thulium + mined_moons4.thulium, 
+                    mined_moons1.titanium + mined_moons2.titanium + mined_moons3.titanium + mined_moons4.titanium, 
+                    mined_moons1.tungsten + mined_moons2.tungsten + mined_moons3.tungsten + mined_moons4.tungsten, 
+                    mined_moons1.vanadium + mined_moons2.vanadium + mined_moons3.vanadium + mined_moons4.vanadium )
 
-            return render_template('mining.html', asteroid_groups=asteroid_groups, calcs=calcs, min_id1=min_id1, min_id2=min_id2, min_id3=min_id3, min_id4=min_id4, group_id1=group_id1, group_id2=group_id2, group_id3=group_id3, group_id4=group_id4, asteroid_name1=asteroid_name1, asteroid_name2=asteroid_name2, asteroid_name3=asteroid_name3, asteroid_name4=asteroid_name4, mined_mins=mined_mins, mined_moons=mined_moons)
+                return render_template('mining.html', asteroid_groups=asteroid_groups, calcs=calcs, min_id1=min_id1, min_id2=min_id2, min_id3=min_id3, min_id4=min_id4, group_id1=group_id1, group_id2=group_id2, group_id3=group_id3, group_id4=group_id4, asteroid_name1=asteroid_name1, asteroid_name2=asteroid_name2, asteroid_name3=asteroid_name3, asteroid_name4=asteroid_name4, mined_mins=mined_mins, mined_moons=mined_moons)
 
-        calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
+            calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
 
-        return render_template('mining.html', asteroid_groups=asteroid_groups, calcs=calcs)
+            return render_template('mining.html', asteroid_groups=asteroid_groups, calcs=calcs)
 
-        #except Exception as e:
-        #    flash('Problem with Mining Calculator - see log.', 'danger')
-        #    app.logger.info(str(e))
-        #    return redirect(url_for('mining'))
+        except Exception as e:
+            flash('Problem with Mining Calculator - see log.', 'danger')
+            app.logger.info(str(e))
+            return redirect(url_for('mining'))
     else:
         flash('You must be logged in to use mining calculator.', 'danger')
         return redirect(url_for('index'))
@@ -1933,20 +1993,30 @@ def pipeline():
                                 db.session.commit()
 
                             selected_product = db.session.query(v_product).filter_by(id = product_id).one()
-                            querySell = get_marketValue(selected_product.t2_id,'sell')
+                            if get_marketValue(selected_product.t2_id,'sell') is not None:
+                                querySell = get_marketValue(selected_product.t2_id,'sell')
+                            else:
+                                querySell = 0
                             myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = product_id, product_id=selected_product.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id', 'vol').all()
                             myProduct = db.session.query(invTypes).filter_by(typeID = int(selected_product.t2_id)).one()
+                            #local_sell_price = float(request.form.get('local_sell').replace(',', ''))
 
                             myBuildCost = 0
                             myMaterialCost = []
                             for requirements in myBuildRequirements:
-                                myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
+                                if get_marketValue(requirements.material_id, 'sell') is not None:
+                                    myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
+                                else:
+                                    myMaterialCost += 0
 
                             for cost in myMaterialCost:
                                 myBuildCost = myBuildCost + cost
 
                             for requirements in myBuildRequirements:
-                                myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty
+                                if get_marketValue(requirements.material_id, 'sell') is not None:
+                                    myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty
+                                else:
+                                    myCost = 0
                                 if request.form.get('mat_eff') == None:
                                     me = session['default_bp_me']
                                     te = session['default_bp_te']
@@ -1956,7 +2026,15 @@ def pipeline():
                                 eng_rig = session['structure_rig_bonus'] 
                                 eng_role = session['structure_role_bonus']
 
-                                pipeline = build_pipeline(session['myUser_id'],  selected_product.t2_id, product_id, runs, requirements.material_id, requirements.qty, myCost, product_name, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2, requirements.vol, myProduct.portionSize, me, te, eng_rig, eng_role)
+                                pipelineData = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'], blueprint_id = bp_id).all()
+                                for data in pipelineData:
+                                    me = data.mat_eff
+
+                                compQty = calc_comp_efficiency(requirements.qty, runs, me)
+                                compQty = (compQty * float(runs))
+
+                                #pipeline = build_pipeline(session['myUser_id'],  selected_product.t2_id, product_id, runs, requirements.material_id, compQty, myCost, product_name, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2, requirements.vol, myProduct.portionSize, me, te, eng_rig, eng_role)
+                                pipeline = build_pipeline(session['myUser_id'], selected_product.t2_id, product_id, int(runs), requirements.material_id, compQty, myCost, product_name, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2, requirements.vol, myProduct.portionSize, me, te, eng_rig, eng_role)
 
                                 db.session.add(pipeline)
                                 db.session.commit()
@@ -1997,13 +2075,19 @@ def pipeline():
 
                         selected_bp = db.session.query(v_build_product).filter_by(id = bp_id).one()
                         myProduct = db.session.query(invTypes).filter_by(typeID = int(selected_bp.t2_id)).one()
-                        querySell = get_marketValue(str(myProduct.typeID),'sell')
+                        if get_marketValue(str(myProduct.typeID),'sell') is not None:
+                            querySell = get_marketValue(str(myProduct.typeID),'sell')
+                        else:
+                            querySell = 0
                         myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = bp_id, product_id=myProduct.typeID).with_entities('id','material','material_id','group_id','qty','product_id', 'vol').all()
 
                         myBuildCost = 0
                         myMaterialCost = []
                         for requirements in myBuildRequirements:
-                            myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
+                            if get_marketValue(requirements.material_id, 'sell') is not None:
+                                myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
+                            else:
+                                myMaterialCost += [0]
 
                         for cost in myMaterialCost:
                             myBuildCost = myBuildCost + cost
@@ -2011,7 +2095,10 @@ def pipeline():
                         
 
                         for requirements in myBuildRequirements:
-                            myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty * int(runs)
+                            if get_marketValue(requirements.material_id, 'sell') is not None:
+                                myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty * int(runs)
+                            else:
+                                myCost = 0
                             compQty = calc_comp_efficiency(requirements.qty, runs, me)
                             compQty = (compQty * float(runs))
                             
@@ -2077,13 +2164,13 @@ def bom():
         subtract_oh_assets = request.form.get('subtract_oh_assets')
         #print (subtract_oh_assets)
         if request.method == 'POST':
-            if request.form.get('build_or_buy') == 'sell':
+            if request.form.get('build_or_buy') == 'buy':
                 build_or_buy = 0
             elif request.form.get('build_or_buy') == 'build':
                 build_or_buy = 1
 
             if request.form.get('build_or_buy_all'):
-                if request.form.get('build_or_buy_all') == 'sell':
+                if request.form.get('build_or_buy_all') == 'buy':
                     build_or_buy = 0
                     build_or_buy_all = 0
                     flash('Buying all Advanced Components.', 'success')
@@ -2099,7 +2186,7 @@ def bom():
                     db.session.commit()
 
             if request.form.get('build_or_buy_all_t1'):
-                if request.form.get('build_or_buy_all_t1') == 'sell':
+                if request.form.get('build_or_buy_all_t1') == 'buy':
                     build_or_buy = 0
                     build_or_buy_all_t1 = 0
                     flash('Buying all Tech 1 components.', 'success')
@@ -2125,7 +2212,7 @@ def bom():
             if request.form.get('mine_or_buy'):
                 if request.form.get('mine_or_buy') == 'mine':
                     build_or_buy = 1
-                elif request.form.get('mine_or_buy') == 'sell':
+                elif request.form.get('mine_or_buy') == 'buy':
                     build_or_buy = 0
 
                 pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],group_id=18, status=2).all()
@@ -2134,7 +2221,10 @@ def bom():
                     if build_or_buy == 1:
                         item.material_cost = 0.0
                     else:
-                        item.material_cost = get_marketValue(item.material_id, 'sell') * item.material_qty
+                        if get_marketValue(item.material_id, 'sell') is not None:
+                            item.material_cost = get_marketValue(item.material_id, 'sell') * item.material_qty
+                        else:
+                            item.material_cost = 0
 
                     db.session.add(item)
                     db.session.commit()
@@ -2151,13 +2241,32 @@ def bom():
 
         inv_pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore', 'datacore_vol','status').order_by('datacore').all()
 
-        planetary_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==1034, build_pipeline.group_id==1040, build_pipeline.group_id==1041, build_pipeline.group_id==1042, build_pipeline.group_id==1033, build_pipeline.group_id==1035))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
+        #planetary_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==1034, build_pipeline.group_id==1040, build_pipeline.group_id==1041, build_pipeline.group_id==1042, build_pipeline.group_id==1033, build_pipeline.group_id==1035))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
 
-        salvage_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==754))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
+        planetary_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol,build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=1034 or group_id=1040 or group_id=1041 or group_id=1042 or group_id=1033 or group_id=1035) group by material, material_id,material_vol, build_or_buy order by material")
+
+        planetary_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=1034 or group_id=1040 or group_id=1041 or group_id=1042 or group_id=1033 or group_id=1035) group by material_id order by material_id")
+        
+        planetary_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=1034 or group_id=1040 or group_id=1041 or group_id=1042 or group_id=1033 or group_id=1035) group by material_id order by material_id")
+
+        #salvage_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==754))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
+
+        salvage_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=754) group by material, material_id,material_vol, build_or_buy order by material")
+
+        salvage_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=574) group by material_id order by material_id")
+
+        salvage_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=574) group by material_id order by material_id")
 
         component_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==334, build_pipeline.group_id==964, build_pipeline.group_id==754, build_pipeline.group_id==536))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
 
+        component_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=754 or group_id=536) group by material, material_id,material_vol, build_or_buy order by material")
+
+        component_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=754 or group_id=536) group by material_id order by material_id")
+
+        component_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=754 or group_id=536) group by material_id order by material_id")
+
         comp_blueprint_id = 0 
+        build_or_buy_change = False
         for component in component_pipeline:
 
             compQty = component.material_qty            
@@ -2187,8 +2296,11 @@ def bom():
                             #print ('Subtracting OH quantities. Compy QTY:' + str(compQty) + ', MAT OH:' +str(mat_oh))
                             if compQty < 0: compQty = 0 
                         
-                        myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * compQty
-                        #myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity 
+                        if get_marketValue(requirements.material_id, 'sell') is not None:
+                            myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * compQty
+                        else:
+                            myCost = 0
+                        
                         matQty = calc_mat_efficiency(compQty, requirements.quantity)
                         
                         me = session['default_bp_me']
@@ -2212,10 +2324,14 @@ def bom():
                     comp.build_cost = materialCost / comp.runs
                     db.session.add(comp)
                     db.session.commit()
+                build_or_buy_change = True
 
             elif component.build_or_buy == 0 and component.material_cost == 0:
                 comp = db.session.query(build_pipeline).filter_by(id=component.id).one()
-                comp.material_cost = get_marketValue(component.material_id, 'sell') * component.material_qty
+                if get_marketValue(component.material_id, 'sell') is not None:
+                    comp.material_cost = get_marketValue(component.material_id, 'sell') * component.material_qty
+                else:
+                    comp.material_cost = 0
                 db.session.add(comp)
                 db.session.commit()
                 mat_id = comp.material_id
@@ -2241,12 +2357,34 @@ def bom():
                     comp.build_cost = materialCost / comp.runs
                     db.session.add(comp)
                     db.session.commit()
+                build_or_buy_change = True        
 
-        component_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==334, build_pipeline.group_id==964, build_pipeline.group_id==536, build_pipeline.group_id==754))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol','portion_size').order_by('material').all()
+        if build_or_buy_change == True:
+            component_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==334, build_pipeline.group_id==964, build_pipeline.group_id==536, build_pipeline.group_id==754))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol','portion_size').order_by('material').all()
 
-        material_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=429, status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol','portion_size').order_by('material').all()
+            component_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=754 or group_id=536) group by material, material_id,material_vol, build_or_buy order by material")
+
+            component_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=754 or group_id=536) group by material_id order by material_id")
+
+            component_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=754 or group_id=536) group by material_id order by material_id")
+
+            build_or_buy_change = False
+
+        #material_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=429, status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol','portion_size').order_by('material').all()
+
+        material_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=429) group by material, material_id,material_vol, build_or_buy order by material")
+
+        material_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=429) group by material_id order by material_id")
+
+        material_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=429) group by material_id order by material_id")
 
         tech1_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id']).filter(build_pipeline.group_id <> 536).filter(build_pipeline.group_id <> 964).filter(build_pipeline.group_id <> 334).filter(build_pipeline.group_id <> 18).filter(build_pipeline.group_id <> 1034).filter(build_pipeline.group_id <> 332).filter(build_pipeline.group_id <> 1040).filter(build_pipeline.group_id <> 429).filter(build_pipeline.group_id <> 1041).filter(build_pipeline.group_id <> 1042).filter(build_pipeline.group_id <> 754).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
+
+        tech1_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id<>536 and group_id<>964 and group_id<>334 and group_id<>18 and group_id<>1034 and group_id<>332 and group_id<>1040 and group_id<>429 and group_id<>1041 and group_id<>1042 and group_id<>754) group by material, material_id,material_vol, build_or_buy order by material")
+
+        tech1_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id<>536 and group_id<>964 and group_id<>334 and group_id<>18 and group_id<>1034 and group_id<>332 and group_id<>1040 and group_id<>429 and group_id<>1041 and group_id<>1042 and group_id<>754) group by material_id order by material_id")
+
+        tech1_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id<>536 and group_id<>964 and group_id<>334 and group_id<>18 and group_id<>1034 and group_id<>332 and group_id<>1040 and group_id<>429 and group_id<>1041 and group_id<>1042 and group_id<>754) group by material_id order by material_id")
 
         for component1 in tech1_pipeline:
             if component1.build_or_buy == 1 and component1.material_cost > 0:
@@ -2268,8 +2406,11 @@ def bom():
                         #print (me)
                     #compQty = calc_comp_efficiency(requirements.quantity, component1.material_qty, me)
                     compQty = calc_mat_efficiency(requirements.quantity, component1.material_qty)
-                    myCost = float(get_marketValue(requirements.material_id, 'sell')) * float(compQty)
-                    #myCost = float(get_marketValue(requirements.material_id, 'sell')) 
+                    if get_marketValue(requirements.material_id, 'sell') is not None:
+                        myCost = float(get_marketValue(requirements.material_id, 'sell')) * float(compQty)
+                    else:
+                        myCost = 0
+                    
                     eng_rig = session['structure_rig_bonus'] 
                     eng_role = session['structure_role_bonus']
 
@@ -2285,6 +2426,7 @@ def bom():
                     comp.build_cost = materialCost / comp.runs
                     db.session.add(comp)
                     db.session.commit()
+                build_or_buy_change = True
 
             elif component1.build_or_buy == 0 and component1.material_cost == 0:
                 comp = db.session.query(build_pipeline).filter_by(user_id=session['myUser_id'],id=component1.id).one()
@@ -2315,11 +2457,26 @@ def bom():
                     comp.build_cost = materialCost / comp.runs
                     db.session.add(comp)
                     db.session.commit()
+                build_or_buy_change = True        
 
-        tech1_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id']).filter(build_pipeline.group_id <> 536).filter(build_pipeline.group_id <> 964).filter(build_pipeline.group_id <> 334).filter(build_pipeline.group_id <> 18).filter(build_pipeline.group_id <> 1034).filter(build_pipeline.group_id <> 332).filter(build_pipeline.group_id <> 1040).filter(build_pipeline.group_id <> 1041).filter(build_pipeline.group_id <> 1042).filter(build_pipeline.group_id <> 429).filter(build_pipeline.group_id <> 754).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
+        if build_or_buy_change == True:
+            tech1_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id']).filter(build_pipeline.group_id <> 536).filter(build_pipeline.group_id <> 964).filter(build_pipeline.group_id <> 334).filter(build_pipeline.group_id <> 18).filter(build_pipeline.group_id <> 1034).filter(build_pipeline.group_id <> 332).filter(build_pipeline.group_id <> 1040).filter(build_pipeline.group_id <> 1041).filter(build_pipeline.group_id <> 1042).filter(build_pipeline.group_id <> 429).filter(build_pipeline.group_id <> 754).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
 
+            tech1_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id<>536 and group_id<>964 and group_id<>334 and group_id<>18 and group_id<>1034 and group_id<>332 and group_id<>1040 and group_id<>429 and group_id<>1041 and group_id<>1042 and group_id<>754) group by material, material_id,material_vol, build_or_buy order by material")
+
+            tech1_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id<>536 and group_id<>964 and group_id<>334 and group_id<>18 and group_id<>1034 and group_id<>332 and group_id<>1040 and group_id<>429 and group_id<>1041 and group_id<>1042 and group_id<>754) group by material_id order by material_id")
+
+            tech1_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id<>536 and group_id<>964 and group_id<>334 and group_id<>18 and group_id<>1034 and group_id<>332 and group_id<>1040 and group_id<>429 and group_id<>1041 and group_id<>1042 and group_id<>754) group by material_id order by material_id")
+
+            build_or_buy_change = False
 
         ram_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=332,status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
+
+        ram_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=332) group by material, material_id,material_vol, build_or_buy order by material")
+
+        ram_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=332) group by material_id order by material_id")
+
+        ram_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=332) group by material_id order by material_id")
 
         for component2 in ram_pipeline:
             if component2.build_or_buy == 1 and component2.material_cost > 0:
@@ -2331,7 +2488,10 @@ def bom():
                 myBuildComponents = db.session.query(v_build_components).filter_by(id = component2.material_id).with_entities('id','material','material_id','quantity', 'vol', 'group_id').all()
 
                 for requirements in myBuildComponents:
-                    myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * component2.material_qty
+                    if get_marketValue(requirements.material_id, 'sell') is not None:
+                        myCost = get_marketValue(requirements.material_id, 'sell') * requirements.quantity * component2.material_qty
+                    else:
+                        myCost = 0
                     if request.form.get('mat_eff') == None:
                         me = session['default_bp_me']
                         te = session['default_bp_te']
@@ -2345,10 +2505,14 @@ def bom():
 
                     db.session.add(pipeline)
                     db.session.commit()
+                    build_or_buy_change = True
 
             elif component2.build_or_buy == 0 and component2.material_cost == 0:
                 comp = db.session.query(build_pipeline).filter_by(id=component2.id).one()
-                comp.material_cost = get_marketValue(component2.material_id, 'sell') * component2.material_qty
+                if get_marketValue(component2.material_id, 'sell') is not None:
+                    comp.material_cost = get_marketValue(component2.material_id, 'sell') * component2.material_qty
+                else:
+                    comp.material_cost = 0
                 db.session.add(comp)
                 db.session.commit()
                 mat_id = comp.product_id
@@ -2357,92 +2521,50 @@ def bom():
                 for mat in mats:
                     db.session.delete(mat)
                     db.session.commit()
+                build_or_buy_change = True
 
-        ram_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=332, status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
+        if build_or_buy_change == True:
+            ram_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=332, status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
 
-        mineral_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=18, status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material_id').all()
+            ram_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=332) group by material, material_id,material_vol, build_or_buy order by material")
+
+            ram_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=332) group by material_id order by material_id")
+
+            ram_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=332) group by material_id order by material_id")
+
+        #mineral_pipeline = db.session.query(build_pipeline).filter_by(user_id= session['myUser_id'],group_id=18, status=2).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material_id').all()
+
+        mineral_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=18) and material_vol=0.01 group by material, material_id,material_vol, build_or_buy order by material_id")
+
+        mineral_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=18) and material_vol=0.01 group by material_id order by material_id")
+
+        mineral_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=18) and material_vol=0.01 group by material_id order by material_id")
 
         calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
-        mineralInPipeline = build_pipeline_rollup_qty(mineral_pipeline, subtract_oh_assets) 
+        #mineralInPipeline = build_pipeline_rollup_qty(mineral_rollup, subtract_oh_assets) 
 
         if request.form.get('add_mining'):
-            trit_required = 0
-            pye_required = 0
-            mex_required = 0
-            iso_required = 0
-            nox_required = 0
-            zyd_required = 0
-            meg_required = 0
-            morph_required = 0
+            trit_required = mineral_requirement(34)
+            pye_required = mineral_requirement(35)
+            mex_required = mineral_requirement(36)
+            iso_required = mineral_requirement(37)
+            nox_required = mineral_requirement(38)
+            zyd_required = mineral_requirement(39)
+            meg_required = mineral_requirement(40)
+            morph_required = mineral_requirement(11399)
             upd_or_add = 0;
-
-            trit_pipeline = db.session.query(func.sum(build_pipeline.material_qty)).filter_by(user_id=session['myUser_id'], group_id=18,status=2,material_id=34).one()
-            trit_assets = db.session.query(func.sum(assets_onhand.qty)).filter_by(user_id=session['myUser_id'], product_id=34).one()
-            pye_pipeline = db.session.query(func.sum(build_pipeline.material_qty)).filter_by(user_id=session['myUser_id'], group_id=18,status=2,material_id=35).one()
-            pye_assets = db.session.query(func.sum(assets_onhand.qty)).filter_by(user_id=session['myUser_id'], product_id=35).one()
-            mex_pipeline = db.session.query(func.sum(build_pipeline.material_qty)).filter_by(user_id=session['myUser_id'], group_id=18,status=2,material_id=36).one()
-            mex_assets = db.session.query(func.sum(assets_onhand.qty)).filter_by(user_id=session['myUser_id'], product_id=36).one()
-            iso_pipeline = db.session.query(func.sum(build_pipeline.material_qty)).filter_by(user_id=session['myUser_id'], group_id=18,status=2,material_id=37).one()
-            iso_assets = db.session.query(func.sum(assets_onhand.qty)).filter_by(user_id=session['myUser_id'], product_id=37).one()
-            nox_pipeline = db.session.query(func.sum(build_pipeline.material_qty)).filter_by(user_id=session['myUser_id'], group_id=18,status=2,material_id=38).one()
-            nox_assets = db.session.query(func.sum(assets_onhand.qty)).filter_by(user_id=session['myUser_id'], product_id=38).one()
-            zyd_pipeline = db.session.query(func.sum(build_pipeline.material_qty)).filter_by(user_id=session['myUser_id'], group_id=18,status=2,material_id=39).one()
-            zyd_assets = db.session.query(func.sum(assets_onhand.qty)).filter_by(user_id=session['myUser_id'], product_id=39).one()
-            meg_pipeline = db.session.query(func.sum(build_pipeline.material_qty)).filter_by(user_id=session['myUser_id'], group_id=18,status=2,material_id=40).one()
-            meg_assets = db.session.query(func.sum(assets_onhand.qty)).filter_by(user_id=session['myUser_id'], product_id=40).one()
-            morph_pipeline = db.session.query(func.sum(build_pipeline.material_qty)).filter_by(user_id=session['myUser_id'], group_id=18,status=2,material_id=11399).one()
-            morph_assets = db.session.query(func.sum(assets_onhand.qty)).filter_by(user_id=session['myUser_id'], product_id=11399).one()
-            
+                        
             for calc in calcs:
                 upd_or_add = 1
-                if trit_pipeline[0] <> None:
-                    if trit_assets[0] == None: trit_assets[0]=0
-                    if trit_pipeline[0] - trit_assets[0] < 0:
-                        calc.trit_required = 0
-                    else:
-                        calc.trit_required = trit_pipeline[0] - trit_assets[0]
-                if pye_pipeline[0] <> None:
-                    if pye_assets[0] == None: pye_assets[0]=0
-                    if pye_pipeline[0] - pye_assets[0] < 0:
-                        calc.pye_required = 0
-                    else:
-                        calc.pye_required = pye_pipeline[0] - pye_assets[0]                        
-                if iso_pipeline[0] <> None:
-                    if iso_assets[0] == None: iso_assets[0]=0
-                    if iso_pipeline[0] - iso_assets[0] < 0:
-                        calc.iso_required = 0
-                    else:
-                        calc.iso_required = iso_pipeline[0] - iso_assets[0]
-                if nox_pipeline[0] <> None:
-                    if nox_assets[0] == None: nox_assets[0]=0
-                    if nox_pipeline[0] - nox_assets[0] < 0:
-                        calc.nox_required = 0
-                    else:
-                        calc.nox_required = nox_pipeline[0] - nox_assets[0]
-                if mex_pipeline[0] <> None:
-                    if mex_assets[0] == None: mex_assets[0]=0
-                    if mex_pipeline[0] - mex_assets[0] < 0:
-                        calc.mex_required = 0
-                    else:
-                        calc.mex_required = mex_pipeline[0] - mex_assets[0]
-                if zyd_pipeline[0] <> None:
-                    if zyd_assets[0] == None: zyd_assets[0]=0
-                    if zyd_pipeline[0] - zyd_assets[0] < 0:
-                        calc.zyd_required = 0
-                    else:
-                        calc.zyd_required = zyd_pipeline[0] - zyd_assets[0]
-                if meg_pipeline[0] <> None:
-                    if meg_assets[0] == None: meg_assets[0]=0
-                    if meg_pipeline[0] - meg_assets[0] < 0:
-                        calc.meg_required = 0
-                    else:
-                        calc.meg_required = meg_pipeline[0] - meg_assets[0]
-                if morph_pipeline[0] <> None:
-                    if morph_assets[0] == None: morph_assets[0]=0
-                    if morph_pipeline[0] - morph_assets[0] < 0:
-                        calc.morph_required = 0
-                    else:
-                        calc.morph_required = morph_pipeline[0] - morph_assets[0]
+                calc.trit_required = trit_required
+                calc.pye_required = pye_required
+                calc.iso_required = iso_required
+                calc.nox_required = nox_required
+                calc.mex_required = mex_required
+                calc.zyd_required = zyd_required
+                calc.meg_required = meg_required
+                calc.morph_required = morph_required
+                
                 db.session.add(calc)
                 db.session.commit()
                 flash('Successfully updated mining calculations.','success')
@@ -2456,33 +2578,42 @@ def bom():
 
         component_vol_total = 0
         tech1_vol_total = 0
-        calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
+        #calcs = db.session.query(mining_calc).filter_by(user_id=session['myUser_id']).all()
+
         datacoresInPipeline = invent_pipeline_rollup_qty(inv_pipeline, subtract_oh_assets)
         dc_total = invent_pipeline_rollup_cost(inv_pipeline, subtract_oh_assets)
         vol_total = invent_pipeline_rollup_vol(inv_pipeline, subtract_oh_assets)
-        planetaryInPipeline = build_pipeline_rollup_qty(planetary_pipeline, subtract_oh_assets)
-        planet_total = build_pipeline_rollup_cost(planetary_pipeline, subtract_oh_assets)
-        planet_vol_total = build_pipeline_rollup_vol(planetary_pipeline, subtract_oh_assets)
-        salvageInPipeline = build_pipeline_rollup_qty(salvage_pipeline, subtract_oh_assets)
-        salvage_total = build_pipeline_rollup_cost(salvage_pipeline, subtract_oh_assets)
-        salvage_vol_total = build_pipeline_rollup_vol(salvage_pipeline, subtract_oh_assets)
-        componentInPipeline = build_pipeline_rollup_qty(component_pipeline, subtract_oh_assets)
-        component_total = build_pipeline_rollup_cost(component_pipeline, subtract_oh_assets)
+
+        planetaryInPipeline = build_pipeline_rollup_qty(planetary_rollup, subtract_oh_assets)
+        planet_total = build_pipeline_rollup_cost(planetary_cost, subtract_oh_assets)
+        planet_vol_total = build_pipeline_rollup_vol(planetary_vol, subtract_oh_assets)
+
+        salvageInPipeline = build_pipeline_rollup_qty(salvage_rollup, subtract_oh_assets)
+        salvage_total = build_pipeline_rollup_cost(salvage_cost, subtract_oh_assets)
+        salvage_vol_total = build_pipeline_rollup_vol(salvage_vol, subtract_oh_assets)
+
+        componentInPipeline = build_pipeline_rollup_qty(component_rollup, subtract_oh_assets)
+        component_total = build_pipeline_rollup_cost(component_cost, subtract_oh_assets)
         if component_total > 0:
-            component_vol_total = build_pipeline_rollup_vol(component_pipeline, subtract_oh_assets)
-        materialInPipeline = build_pipeline_rollup_qty(material_pipeline, subtract_oh_assets)
-        material_total = build_pipeline_rollup_cost(material_pipeline, subtract_oh_assets)
-        material_vol_total = build_pipeline_rollup_vol(material_pipeline, subtract_oh_assets)
-        tech1InPipeline = build_pipeline_rollup_qty(tech1_pipeline, subtract_oh_assets)
-        tech1_total = build_pipeline_rollup_cost(tech1_pipeline, subtract_oh_assets)
+            component_vol_total = build_pipeline_rollup_vol(component_vol, subtract_oh_assets)
+
+        materialInPipeline = build_pipeline_rollup_qty(material_rollup, subtract_oh_assets)
+        material_total = build_pipeline_rollup_cost(material_cost, subtract_oh_assets)
+        material_vol_total = build_pipeline_rollup_vol(material_vol, subtract_oh_assets)
+
+        tech1InPipeline = build_pipeline_rollup_qty(tech1_rollup, subtract_oh_assets)
+        tech1_total = build_pipeline_rollup_cost(tech1_cost, subtract_oh_assets)
         if tech1_total > 0:
-            tech1_vol_total = build_pipeline_rollup_vol(tech1_pipeline, subtract_oh_assets)
-        ramInPipeline = build_pipeline_rollup_qty(ram_pipeline, subtract_oh_assets)
-        ram_total = build_pipeline_rollup_cost(ram_pipeline, subtract_oh_assets)
-        ram_vol_total = build_pipeline_rollup_vol(ram_pipeline, subtract_oh_assets)
-        mineralInPipeline = build_pipeline_rollup_qty(mineral_pipeline, subtract_oh_assets)
-        mineral_total = build_pipeline_rollup_cost(mineral_pipeline, subtract_oh_assets)
-        mineral_vol_total = build_pipeline_rollup_vol(mineral_pipeline, subtract_oh_assets)
+            tech1_vol_total = build_pipeline_rollup_vol(tech1_vol, subtract_oh_assets)
+
+        ramInPipeline = build_pipeline_rollup_qty(ram_rollup, subtract_oh_assets)
+        ram_total = build_pipeline_rollup_cost(ram_cost, subtract_oh_assets)
+        ram_vol_total = build_pipeline_rollup_vol(ram_vol, subtract_oh_assets)
+
+        mineralInPipeline = build_pipeline_rollup_qty(mineral_rollup, subtract_oh_assets)
+        mineral_total = build_pipeline_rollup_cost(mineral_cost, subtract_oh_assets)
+        mineral_vol_total = build_pipeline_rollup_vol(mineral_vol, subtract_oh_assets)
+
         total_volume = ram_vol_total + tech1_vol_total + material_vol_total + component_vol_total + planet_vol_total + vol_total
 
         bom_total = 0
@@ -2533,7 +2664,10 @@ def build():
 
                     selected_bp = db.session.query(v_build_product).filter_by(id = product_id).one()
                     myProduct = db.session.query(invTypes).filter_by(typeID = int(selected_bp.t2_id)).one()
-                    querySell = get_marketValue(str(myProduct.typeID),'sell')
+                    if get_marketValue(str(myProduct.typeID),'sell') is not None:
+                        querySell = get_marketValue(str(myProduct.typeID),'sell')
+                    else:
+                        querySell = 0
                     myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = product_id, product_id=myProduct.typeID).with_entities('id','material','material_id','group_id','qty','product_id', 'vol').all()
 
                     myBuildCost = 0
@@ -2602,12 +2736,16 @@ def build():
                     me = item[0].mat_eff
                     te = item[0].time_eff
 
-            pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material','material_vol','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status', 'portion_size').order_by('material').all()
+            #pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material','material_vol','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status', 'portion_size').order_by('material').all()
 
-            pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id', 'runs', 'jita_sell_price','local_sell_price','build_cost','status', 'eng_rig', 'eng_role')
+            pipeline_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and (status=2) group by material, material_id,material_vol, build_or_buy order by material")
 
-            materialInPipeline = build_pipeline_rollup_qty(pipeline, subtract_oh_assets)
-            materialCost = build_pipeline_rollup_cost(pipeline, subtract_oh_assets)
+            pipeline_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and (status=2) group by material_id order by material_id")
+
+            pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id', 'runs', 'jita_sell_price','local_sell_price','build_cost','status', 'eng_rig', 'eng_role').order_by('product_name')
+
+            materialInPipeline = build_pipeline_rollup_qty(pipeline_rollup, subtract_oh_assets)
+            materialCost = build_pipeline_rollup_cost(pipeline_cost, subtract_oh_assets)
 
             return render_template('build.html', blueprints=myBlueprints, bp_id=0, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, bp_all=bp_all, me=me, te=te)
         else:
@@ -2628,90 +2766,90 @@ def build_selected():
     bp_all = True
     me = 2.0
     te = 10.0
-    #if request.form.get('build_product') is not None:
-    #    id = int(request.form.get('build_product'))
-    #if request.args.get('build_product') is not None:
-    id = int(request.args.get('build_product'))
-    #if request.args.get('runs'):
-    #print (reqget('mat_eff'))
-    if 'default_bp_me' in session:
-        me = float(session['default_bp_me'])
-    if 'default_bp_te' in session:
-        te = float(session['default_bp_te'])
-    
-    runs = int(request.args.get('runs'))
-    print(request.args.get('me'))
-    if request.args.get('me') is not None:
-        me = float(request.args.get('me'))
-    if request.args.get('te') is not None:
-        te = float(request.args.get('te'))
+    try:        
+        id = int(request.args.get('build_product'))
+        
+        if 'default_bp_me' in session:
+            me = float(session['default_bp_me'])
+        if 'default_bp_te' in session:
+            te = float(session['default_bp_te'])
+        
+        runs = int(request.args.get('runs'))
+        print(request.args.get('me'))
+        if request.args.get('me') is not None:
+            me = float(request.args.get('me'))
+        if request.args.get('te') is not None:
+            te = float(request.args.get('te'))
 
-    myBlueprints = db.session.query(v_build_product).all()
-    if request.form.get('bp_all') == 'False':
-        myBlueprints = db.session.query(v_my_build_product).filter_by(user_id=session['myUser_id']).all()
-        bp_all = False
+        myBlueprints = db.session.query(v_build_product).all()
+        if request.form.get('bp_all') == 'False':
+            myBlueprints = db.session.query(v_my_build_product).filter_by(user_id=session['myUser_id']).all()
+            bp_all = False
 
-    try:
-        #print id
-        #myBlueprints = db.session.query(v_build_product).all()
-        #try:
-        selected_bp = db.session.query(v_build_product).filter_by(id = id).one()
-    except Exception as e:
-        #id +=1
-        flash('Can\'t find that build info.', 'danger')
-        print 'Not getting anything for item: ' + str(id)
-        return redirect(url_for('build'))
+        try:
+            selected_bp = db.session.query(v_build_product).filter_by(id = id).one()
+        except Exception as e:
+            flash('Can\'t find that build info.', 'danger')
+            print 'Not getting anything for item: ' + str(id)
+            return redirect(url_for('build'))
 
-    myProduct = db.session.query(invTypes).filter_by(typeID = int(selected_bp.t2_id)).one()
-    querySell = get_marketValue(str(myProduct.typeID),'sell')
-    print ('+++ market value is ' +str(querySell))
-    if querySell <> None:
-        mySellMedian = "{:,.0f}".format(querySell)
-    else:
-        querySell = 0
-    buildTime = db.session.query(v_build_time).filter_by(id = id).one()
-    teCalc = (buildTime.time * (1 - te/100))/60
-    myTime = "{:,.2f}".format((teCalc))
-    myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = id, product_id = selected_bp.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id', 'vol').all()
-
-    myBuildCost = 0
-    myMaterialCost = []
-    for requirements in myBuildRequirements:
-        myJitaCost = get_marketValue(requirements.material_id, 'sell') 
-        if myJitaCost <> None:
-            myMaterialCost += [myJitaCost * requirements.qty]
+        myProduct = db.session.query(invTypes).filter_by(typeID = int(selected_bp.t2_id)).one()
+        if get_marketValue(str(myProduct.typeID),'sell') is not None:
+            querySell = get_marketValue(str(myProduct.typeID),'sell')
         else:
-            myMaterialCost += [0]
+            querySell = 0
+        print ('+++ market value is ' +str(querySell))
+        if querySell <> None:
+            mySellMedian = "{:,.0f}".format(querySell)
+        else:
+            querySell = 0
+        buildTime = db.session.query(v_build_time).filter_by(id = id).one()
+        teCalc = (buildTime.time * (1 - te/100))/60
+        myTime = "{:,.2f}".format((teCalc))
+        myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = id, product_id = selected_bp.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id', 'vol').all()
 
-    for cost in myMaterialCost:
-        myBuildCost = myBuildCost + cost
+        myBuildCost = 0
+        myMaterialCost = []
+        for requirements in myBuildRequirements:
+            myJitaCost = get_marketValue(requirements.material_id, 'sell') 
+            if myJitaCost <> None:
+                myMaterialCost += [myJitaCost * requirements.qty]
+            else:
+                myMaterialCost += [0]
 
-    if 'myUser_id' in session:
+        for cost in myMaterialCost:
+            myBuildCost = myBuildCost + cost
 
-        pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material','material_vol','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','status', 'portion_size', 'mat_eff', 'time_eff', 'eng_rig', 'eng_role').order_by('material').all()
+        if 'myUser_id' in session:
 
-        pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost','status', 'portion_size', 'eng_rig', 'eng_role')
+            #pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material','material_vol','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','status', 'portion_size', 'mat_eff', 'time_eff', 'eng_rig', 'eng_role').order_by('material').all()
 
-        materialInPipeline = build_pipeline_rollup_qty(pipeline, subtract_oh_assets)
-        materialCost = build_pipeline_rollup_cost(pipeline, subtract_oh_assets)
-        eng_rig = float(session['structure_rig_bonus'])
-        eng_role = float(session['structure_role_bonus'])
-        calcMe = (1 - (float(eng_role)/100)) * (1 - (float(eng_rig)/100)) * (1 - (float(me)/100))   
+            pipeline_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and (status=2) group by material, material_id,material_vol, build_or_buy order by material")
 
-        return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=int(querySell), time=myTime, buildRequirements = myBuildRequirements, buildCost = int(myBuildCost), materialCost = myMaterialCost, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, runs=runs, calcMe=calcMe, me=me, te=te, eng_rig=eng_rig, eng_role=eng_role, bp_all=bp_all)
+            pipeline_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and (status=2) group by material_id order by material_id")
 
-    else:
-        me = 2.0
-        te = 10.0
-        eng_rig = 2.0
-        eng_role = 1.0
-        calcMe = (1 - (float(eng_role)/100)) * (1 - (float(eng_rig)/100)) * (1 - (float(me)/100)) 
-        return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, runs=runs, calcMe=calcMe, me=me, te=te, eng_rig=eng_rig, eng_role=eng_role,bp_all=bp_all)
+            pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost','status', 'portion_size', 'eng_rig', 'eng_role').order_by('product_name')
 
-    #except Exception as e:
-    #    flash('Problem querying blueprint. See log', 'danger')
-    #    app.logger.info(str(e))
-    #    return redirect(url_for('build'))
+            materialInPipeline = build_pipeline_rollup_qty(pipeline_rollup, subtract_oh_assets)
+            materialCost = build_pipeline_rollup_cost(pipeline_cost, subtract_oh_assets)
+            eng_rig = float(session['structure_rig_bonus'])
+            eng_role = float(session['structure_role_bonus'])
+            calcMe = (1 - (float(eng_role)/100)) * (1 - (float(eng_rig)/100)) * (1 - (float(me)/100))   
+
+            return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=int(querySell), time=myTime, buildRequirements = myBuildRequirements, buildCost = int(myBuildCost), materialCost = myMaterialCost, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products, runs=runs, calcMe=calcMe, me=me, te=te, eng_rig=eng_rig, eng_role=eng_role, bp_all=bp_all)
+
+        else:
+            me = 2.0
+            te = 10.0
+            eng_rig = 2.0
+            eng_role = 1.0
+            calcMe = (1 - (float(eng_role)/100)) * (1 - (float(eng_rig)/100)) * (1 - (float(me)/100)) 
+            return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, runs=runs, calcMe=calcMe, me=me, te=te, eng_rig=eng_rig, eng_role=eng_role,bp_all=bp_all)
+
+    except Exception as e:
+        flash('Problem querying blueprint. See log', 'danger')
+        app.logger.info(str(e))
+        return redirect(url_for('build'))
 
 @app.route('/build_add_pipeline', methods=['POST'])
 def build_add_pipeline():
@@ -2723,7 +2861,10 @@ def build_add_pipeline():
                 myBlueprints = db.session.query(v_build_product).all()
                 selected_bp = db.session.query(v_build_product).filter_by(id = id).one()
                 myProduct = db.session.query(invTypes).filter_by(typeID = int(selected_bp.t2_id)).one()
-                querySell = get_marketValue(str(myProduct.typeID),'sell')
+                if get_marketValue(str(myProduct.typeID),'sell') is not None:
+                    querySell = get_marketValue(str(myProduct.typeID),'sell')
+                else:
+                    querySell = 0
                 buildTime = db.session.query(v_build_time).filter_by(id = id).one()
                 myTime = "{:,}".format(buildTime.time/60)
                 myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = id, product_id=myProduct.typeID).with_entities('id','material','material_id','group_id','qty','product_id', 'vol').all()
@@ -2738,12 +2879,16 @@ def build_add_pipeline():
                 for cost in myMaterialCost:
                     myBuildCost = myBuildCost + cost
 
-                pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material','material_vol','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status', 'portion_size', 'mat_eff', 'time_eff', 'eng_role', 'eng_rig').order_by('material').all()
+                #pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'],status=2).with_entities('id','user_id','product_id','blueprint_id','runs','material_id','material_qty','material_cost','product_name','material','material_vol','group_id','build_or_buy','jita_sell_price','local_sell_price','build_cost','jita_sell_price','local_sell_price','build_cost','material_comp_id','status', 'portion_size', 'mat_eff', 'time_eff', 'eng_role', 'eng_rig').order_by('material').all()
 
-                pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost','status')
+                pipeline_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and (status=2) group by material, material_id,material_vol, build_or_buy order by material")
 
-                materialInPipeline = build_pipeline_rollup_qty(pipeline, subtract_oh_assets)
-                materialCost = build_pipeline_rollup_cost(pipeline, subtract_oh_assets)
+                pipeline_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and (status=2) group by material_id order by material_id")
+
+                pipeline_products = db.session.query(v_build_pipeline_products).filter_by(user_id = session['myUser_id'],status=2).with_entities('product_name', 'user_id', 'blueprint_id', 'product_id','runs','jita_sell_price','local_sell_price','build_cost','status').order_by('product_name')
+
+                materialInPipeline = build_pipeline_rollup_qty(pipeline_rollup, subtract_oh_assets)
+                materialCost = build_pipeline_rollup_cost(pipeline_cost, subtract_oh_assets)
 
                 if request.form.get('job_runs') <> '':
                     for requirements in myBuildRequirements:
@@ -2774,7 +2919,7 @@ def build_add_pipeline():
                     return redirect(url_for('build'))
                 else:
                     flash('Enter a quantity in job runs field.', 'danger')
-                    return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, pipeline=pipeline, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products)
+                    return render_template('build.html', blueprints=myBlueprints, bp_id=id, selected_bp=selected_bp, product=myProduct, sell_median=querySell, time=myTime, buildRequirements = myBuildRequirements, buildCost = myBuildCost, materialCost = myMaterialCost, materialInPipeline=materialInPipeline, pipelineCost=materialCost, pipeline_products=pipeline_products)
 
             else:
                 flash('Choose a product to build.', 'danger')
@@ -2831,7 +2976,7 @@ def invent():
 
             pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','datacore_vol','status').order_by('datacore').all()
 
-            pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status')
+            pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status').order_by('product_name')
 
             materialInPipeline = invent_pipeline_rollup_qty(pipeline, subtract_oh_assets)
             materialCost = invent_pipeline_rollup_cost(pipeline, subtract_oh_assets)
@@ -2885,7 +3030,10 @@ def invent_selected():
         myDatacoreRequirements = db.session.query(v_datacore_requirements).filter_by(id = id).with_entities('id','datacore','quantity','dc_id', 'vol').all()
         myDatacoresCost = 0
         for datacore in myDatacoreRequirements:
-            myDatacoresCost = myDatacoresCost + get_marketValue(datacore.dc_id, 'sell') * datacore.quantity
+            if get_marketValue(datacore.dc_id, 'sell') is not None:
+                myDatacoresCost = myDatacoresCost + get_marketValue(datacore.dc_id, 'sell') * datacore.quantity
+            else:
+                myDatacoresCost = myDatacoresCost
 
         myBaseProduct = db.session.query(v_build_requirements).filter_by(id = selected_bp.t2_id).filter(v_build_requirements.group_id <> 334).filter(v_build_requirements.group_id <> 18).filter(v_build_requirements.group_id <> 1034).filter(v_build_requirements.group_id <> 332).filter(v_build_requirements.group_id <> 1040).one()
 
@@ -2897,7 +3045,7 @@ def invent_selected():
 
             pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','datacore_vol','status').order_by('datacore').all()
 
-            pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status')
+            pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status').order_by('product_name')
 
             materialInPipeline = invent_pipeline_rollup_qty(pipeline, subtract_oh_assets)
             materialCost = invent_pipeline_rollup_cost(pipeline, subtract_oh_assets)
@@ -2924,28 +3072,37 @@ def invent_add_pipeline():
                 selected_bp = db.session.query(v_invention_product).filter_by(id = id).one()
                 selected_product = db.session.query(v_product).filter_by(id = selected_bp.t2_id).one()
                 myProduct = db.session.query(invTypes).filter_by(typeID = int(selected_bp.t2_id)).one()
-                querySell = get_marketValue(str(myProduct.typeID),'sell')
+                if get_marketValue(str(myProduct.typeID),'sell') is not None:
+                    querySell = get_marketValue(str(myProduct.typeID),'sell')
+                else:
+                    querySell = 0
                 inventTime = db.session.query(v_invent_time).filter_by(id = id).one()
                 myTime = "{:,}".format((inventTime.time/60)/60)
                 myDatacoreRequirements = db.session.query(v_datacore_requirements).filter_by(id = id).with_entities('id','datacore','quantity','dc_id', 'vol').all()
                 myInventCost = 0
                 myDatacoreCost = []
                 for requirements in myDatacoreRequirements:
-                    myDatacoreCost += [get_marketValue(requirements.dc_id, 'sell') * requirements.quantity]
+                    if get_marketValue(requirements.dc_id, 'sell') is not None:
+                        myDatacoreCost += [get_marketValue(requirements.dc_id, 'sell') * requirements.quantity]
+                    else:
+                        myDatacoreCost += [0]
 
                 for cost in myDatacoreCost:
                     myInventCost += cost
 
                 pipeline = db.session.query(invent_pipeline).filter_by(user_id = session['myUser_id'],status=3).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','datacore_id','datacore_qty','datacore_cost','datacore','datacore_vol','status').order_by('datacore').all()
 
-                pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status')
+                pipeline_products = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id'],status=3).with_entities('product_name', 'user_id', 'runs','status').order_by('product_name')
 
                 materialInPipeline = invent_pipeline_rollup_qty(pipeline, subtract_oh_assets)
                 materialCost = invent_pipeline_rollup_cost(pipeline, subtract_oh_assets)
 
                 if request.form.get('job_runs') <> '':
                     for requirements in myDatacoreRequirements:
-                        myCost = get_marketValue(requirements.dc_id, 'sell') * requirements.quantity
+                        if get_marketValue(requirements.dc_id, 'sell') is not None:
+                            myCost = get_marketValue(requirements.dc_id, 'sell') * requirements.quantity
+                        else:
+                            myCost = 0
 
                         pipeline = invent_pipeline(session['myUser_id'],  myProduct.typeID, id, request.form.get('job_runs'), selected_bp.t2_blueprint, requirements.dc_id, requirements.quantity, myCost, requirements.datacore, requirements.vol, 3)
 
@@ -3004,7 +3161,7 @@ def logout():
    # try:
     #    response = requests.get('https://api.evemarketer.com/ec/marketstat/json', params=payload)
      #   jsonData = response.json()
-      #  if buyOrSell == 'sell':
+      #  if buyOrSell == 'buy':
     #        return jsonData[0]['sell']['median']
     #    else:
     #        return jsonData[0]['sell']['median']
@@ -3055,50 +3212,57 @@ def fitting_rollup_cost(myFittings):
 
 def build_pipeline_rollup_qty(pipeline, subtract_oh_assets):
     materialInPipeline = []
-    matchFound1 = False
+    mat_oh = 0
+    mat_cost = 0
+    mat_qty = 0
 
     for item in pipeline:
-        mat_oh = 0
-        mat_cost = 0
-        for mat in materialInPipeline:
-            if mat.material_id == item.material_id:
-                if subtract_oh_assets == 'true':
-                    mat_oh = search_assets(session['myUser_id'], item.material_id)
-                mat_qty = (item.material_qty) - mat_oh
-                if mat_qty < 0: mat_qty = 0
-                mat.material_qty += mat_qty
-                mat.material_cost += item.material_cost
+        mat_qty = item.material_qty
+        if subtract_oh_assets == 'true':
+            mat_oh = search_assets(session['myUser_id'], item.material_id)
+        
+        mat_qty -= mat_oh
+        if mat_qty < 0: mat_qty = 0
 
-                matchFound1 = True
-
-        if matchFound1 == True:
-            matchFound1 = False
+        if item.build_or_buy == 1:
+            mat_cost = 0
         else:
-            if subtract_oh_assets == 'true':
-                mat_oh = search_assets(session['myUser_id'], item.material_id)
+            if get_marketValue(item.material_id,'sell') is not None:
+                mat_cost = mat_qty * int(get_marketValue(item.material_id,'sell'))
+            else:
+                mat_cost = 0
+                
 
-            mat_qty = (item.material_qty) - mat_oh
-            if mat_qty < 0: mat_qty = 0
-            if mat_qty > 0: mat_cost = item.material_cost
-
-            my_bom = BomMaterial(item.material_id, item.material, mat_qty, mat_cost, item.runs, item.id, item.build_or_buy, item.blueprint_id, item.material_vol, item.portion_size)
-            materialInPipeline += [my_bom]
+        my_bom = BomRollup(item.material_id, item.material, mat_qty, mat_cost, item.material_vol, item.build_or_buy)
+        
+        materialInPipeline += [my_bom]
+        #print ("Material ID: " +str(my_bom.material_id))
 
     return materialInPipeline
 
 def build_pipeline_rollup_cost(pipeline, subtract_oh_assets):
-    buildCost = 0.0
-    mat_qty = 0
+    #print('Im in')
+    buildCost = 0.0    
     mat_oh = 0
+
     for item in pipeline:
-        mat_oh = 0
+        #print(item.material)        
         if subtract_oh_assets == 'true':
-            mat_oh = search_assets(session['myUser_id'], item.material_id)
+            mat_oh = search_assets(session['myUser_id'], item.material_id)        
 
         if mat_oh == 0:
             buildCost += item.material_cost
+        else:
+            if get_marketValue(item.material_id, 'sell') is not None:
+                item_cost = int(get_marketValue(item.material_id, 'sell'))
+            else:
+                item_cost = 0
+            if item.material_cost - (mat_oh * item_cost) < 0: mat_oh =0
+            buildCost += item.material_cost - (mat_oh * item_cost)
+            #print ('Mat QTY: ' + str(mat_qty) +' Item Cost: ' + str(item_cost))
 
     return buildCost
+
     
 def invent_pipeline_rollup_cost(pipeline, subtract_oh_assets):
     buildCost = 0.0
@@ -3113,20 +3277,30 @@ def invent_pipeline_rollup_cost(pipeline, subtract_oh_assets):
     return buildCost
 
 def build_pipeline_rollup_vol(pipeline, subtract_oh_assets):
-    vol = 0.0
-    mat_oh = 0
+    vol = 0.0    
+    myVol = 0.0
 
     for item in pipeline:
-        mat_oh = 0
+        mat_oh = 0.0
+        vol_oh = 0.0
+        myVol = item.material_vol
+
         if subtract_oh_assets == 'true':
             mat_oh = search_assets(session['myUser_id'], item.material_id)
-            #print 'mat oh = ' + str(mat_oh)
+            #print 'mat oh = ' + str(mat_oh)        
 
-        mat_vol = (item.material_vol * item.material_qty) - (mat_oh * item.material_vol)
+        if mat_oh == 0.0:            
+            vol += myVol
+        #else:
+        ##    item_vol = 0.0
+        #    volQuery = db.session.execute("select volume from \"invTypes\" where \"typeID\"=" + str(item.material_id))
+        #    for vol in volQuery:
+        #        item_vol = vol.volume
+            #print(item_vol)
 
-        if mat_vol > 0:
-            #print 'mat vol = ' + str(mat_vol)
-            vol += mat_vol
+        #    vol_oh = (mat_oh * item_vol)
+        #    if myVol - vol_oh < 0.0: vol_oh = 0.0            
+        #    vol += myVol - vol_oh
 
     return vol
 
@@ -3186,6 +3360,25 @@ def fitting_rollup_qty(shipFittings):
             shipFittingsRollup += [my_bom]
 
     return shipFittingsRollup
+
+def mineral_requirement(min_id):
+    req = 0
+    oh = 0
+    
+    requirement = db.session.query(func.sum(build_pipeline.material_qty)).filter_by(user_id=session['myUser_id'], group_id=18,status=2,material_id=min_id).one() 
+    if requirement[0] is not None:
+        req = requirement[0]
+    
+    oh_assets = db.session.query(func.sum(assets_onhand.qty)).filter_by(user_id=session['myUser_id'], product_id=min_id).one()
+    if oh_assets[0] is not None:
+        oh = oh_assets[0]
+            
+    #print (req)
+    #print (oh)
+    req -= oh
+    if req < 0: req = 0
+
+    return req
 
 def refine_asteroid(min_id, calcs, asteroid_stats):
     asteroid_mins = db.session.query(v_build_components).filter_by(id=min_id).with_entities('id','material','material_id','quantity').all()
@@ -3557,7 +3750,10 @@ def import_fitting(item):
     print 'Importing fit: ' + item['name']
     ship_id = item['ship_type_id']
     existingFitting = db.session.query(ship_fittings).filter_by(build_id = item['fitting_id'], user_id=session['myUser_id'], component_slot='ship').all()
-    ship_jita_buy = get_marketValue(ship_id, 'sell')
+    if get_marketValue(ship_id, 'sell') is not None:
+        ship_jita_buy = get_marketValue(ship_id, 'sell')
+    else:
+        ship_jita_buy = 0
     #ship_jita_buy = 0.0
     ship = db.session.query(v_ships).filter_by(id = ship_id).one()
     ship_name = ship.ship
@@ -3619,7 +3815,10 @@ def import_fitting(item):
             comp_id  = slot['type_id']
             comp_qty = slot['quantity']
             if comp_id > 0:
-                comp_jita_buy = get_marketValue(comp_id,'sell')
+                if get_marketValue(comp_id,'sell') is not None:
+                    comp_jita_buy = get_marketValue(comp_id,'sell')
+                else:
+                    comp_jita_buy = 0
                 comp = db.session.query(invTypes).filter(invTypes.typeID==comp_id).with_entities('"typeName"').one()
 
             myFittings = ship_fittings(item['fitting_id'], session['myUser_id'], ship_id, ship_name, item['name'], 1, num_rigslots, num_lowslots, num_medslots, num_highslots, comp_id, comp_qty, comp_jita_buy, comp[0], slot_position, 0.0, 0, ship_jita_buy, 0)

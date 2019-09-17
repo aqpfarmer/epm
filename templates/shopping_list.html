@@ -445,9 +445,10 @@
                     {% set mine_or_buy = namespace(c=0) %}
                       {% for index in range(0,8,1) %}
                         <td colspan="2"><p class="pl-3">
+                          
                         {% for item in mineralInPipeline %}
                           {% if item.build_or_buy == 1 %}{% set mine_or_buy.c=1 %}{% endif %}
-                          {% if item.material_id == 34 and index == 0 %}
+                          {% if item.material_id == 34 and index == 0%}
                             <p class="pl-3">{{ "{:,.0f}".format(item.material_qty) }}</p>
                           {% endif %}
                           {% if item.material_id == 35 and index == 1 %}

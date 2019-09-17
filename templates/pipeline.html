@@ -39,9 +39,9 @@
                   <td>
                       <p class="mt-1">On Market</p>
                   </td>
-                  <td><p class="mt-1 text-center"><input type="text" class="form-control text-center readonly" size="3" name="qty" value="{{ item.volume_remain }}"></p></td>
+                  <td><p class="mt-1 text-center">{{ item.volume_remain }}</p></td>
                   <td>
-                    <input type="text" class="form-control text-center mt-1 readonly" size="10" name="local_sell" value="{{ "{:,.0f}".format(item.price) }}">
+                      <p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.price) }} </p>
                   </td>
                   <td>
                     <p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.price * item.volume_remain) }}</p>

@@ -159,7 +159,7 @@
                 {% if bp_id > 0 %}
                   {% for datacore in datacoreRequirements %}
                     {{datacore.datacore}}
-<strong>x{{runs}}</strong></br></br>
+<strong>x{{runs * datacore.quantity}}</strong></br></br>
                   {% endfor %}
                 {% else %}
                   --</br>
