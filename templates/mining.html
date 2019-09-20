@@ -34,7 +34,7 @@
                     <input type="text" class="col-sm-6 form-control form-control-sm py-0" name="refinery" value="0">
                   {% endif %}
                 </td>
-                <td class="noBorder py-2 text-center"><strong>Total Mineral Requirement</td>
+                <td class="noBorder py-2 text-left"><strong>Total Mineral Requirement</td>
                 <td class="noBorder py-2 text-center"><strong>Mined</td>
                 <td class="noBorder py-2 text-center"><strong>Net</td>
               </tr>
@@ -50,16 +50,16 @@
                     <td class="noBorder py-1 text-right" colspan="2">Tritanium</td>
                     <td class="noBorder py-0">
                       {% if calcs[0].user_id %}
-                        <input type="text" class="col-sm form-control form-control-sm py-0" name="trit_req" value="{{ "{:,.0f}".format(calcs[0].trit_required) }}">
+                      <p class="text-danger">{{ "{:,.0f}".format(calcs[0].trit_required) }}</p>
                       {% else %}
-                        <input type="text" class="col-sm form-control form-control-sm py-0" name="trit_req" value="0">
+                      <p class="text-primary">0</p>
                       {% endif %}
                 </td>
                 <td class="noBorder py-0">
                   {% if mined_mins %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="trit_mined" value="{{ "{:,.0f}".format(mined_mins.trit) }}">
+                  <p class="text-success">{{ "{:,.0f}".format(mined_mins.trit) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="trit_mined" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
@@ -87,16 +87,16 @@
                 <td class="noBorder py-1 text-right" colspan="2">Pyerite</td>
                 <td class="noBorder py-0">
                   {% if calcs[0].user_id %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="pye_req" value="{{ "{:,.0f}".format(calcs[0].pye_required) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(calcs[0].pye_required) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="pye_req" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
                   {% if mined_mins %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="pye_mined" value="{{ "{:,.0f}".format(mined_mins.pye) }}">
+                  <p class="text-success">{{ "{:,.0f}".format(mined_mins.pye) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="pye_mined" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
@@ -118,16 +118,16 @@
                 <td class="noBorder py-1 text-right" colspan="2">Mexallon</td>
                 <td class="noBorder py-0">
                   {% if calcs[0].user_id %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="mex_req" value="{{ "{:,.0f}".format(calcs[0].mex_required) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(calcs[0].mex_required) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="mex_req" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
                   {% if mined_mins %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="mex_mined" value="{{ "{:,.0f}".format(mined_mins.mex) }}">
+                  <p class="text-success">{{ "{:,.0f}".format(mined_mins.mex) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="mex_mined" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
@@ -146,16 +146,16 @@
                 <td class="noBorder py-1 text-right" colspan="2">Isogen</td>
                 <td class="noBorder py-0">
                   {% if calcs[0].user_id %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="iso_req" value="{{ "{:,.0f}".format(calcs[0].iso_required) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(calcs[0].iso_required) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="iso_req" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
                   {% if mined_mins %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="iso_mined" value="{{ "{:,.0f}".format(mined_mins.iso) }}">
+                  <p class="text-success">{{ "{:,.0f}".format(mined_mins.iso) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="iso_mined" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
@@ -196,16 +196,16 @@
                 <td class="noBorder py-0 text-right" colspan="2">Nocxium</td>
                 <td class="noBorder py-0">
                   {% if calcs[0].user_id %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="nox_req" value="{{ "{:,.0f}".format(calcs[0].nox_required) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(calcs[0].nox_required) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="nox_req" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
                   {% if mined_mins %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="nox_mined" value="{{ "{:,.0f}".format(mined_mins.nox) }}">
+                  <p class="text-success">{{ "{:,.0f}".format(mined_mins.nox) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="nox_mined" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
@@ -244,16 +244,16 @@
                 <td class="noBorder py-0 text-right" colspan="2">Zydrine</td>
                 <td class="noBorder py-0">
                   {% if calcs[0].user_id %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="zyd_req" value="{{ "{:,.0f}".format(calcs[0].zyd_required) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(calcs[0].zyd_required) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="zyd_req" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
                   {% if mined_mins %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="zyd_mined" value="{{ "{:,.0f}".format(mined_mins.zyd) }}">
+                  <p class="text-success">{{ "{:,.0f}".format(mined_mins.zyd) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="zyd_mined" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
@@ -292,16 +292,16 @@
                 <td class="noBorder py-0 text-right" colspan="2">Megacyte</td>
                 <td class="noBorder py-0">
                   {% if calcs[0].user_id %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="meg_req" value="{{ "{:,.0f}".format(calcs[0].meg_required) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(calcs[0].meg_required) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="meg_req" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
                   {% if mined_mins %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="meg_mined" value="{{ "{:,.0f}".format(mined_mins.meg) }}">
+                  <p class="text-success">{{ "{:,.0f}".format(mined_mins.meg) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="meg_mined" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
@@ -341,16 +341,16 @@
                 <td class="noBorder py-0 text-right" colspan="2">Morphite</td>
                 <td class="noBorder py-0">
                   {% if calcs[0].user_id %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="morp_req" value="{{ "{:,.0f}".format(calcs[0].morph_required) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(calcs[0].morph_required) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="morp_req" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
                   {% if mined_mins %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="morph_mined" value="{{ "{:,.0f}".format(mined_mins.morph) }}">
+                  <p class="text-success">{{ "{:,.0f}".format(mined_mins.morph) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" name="morph_mined" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0">
@@ -372,9 +372,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.atmo_gas) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.atmo_gas) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -388,9 +388,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.cadmium) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.cadmium) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -404,9 +404,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.caesium) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.caesium) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -420,9 +420,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.chromium) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.chromium) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -436,9 +436,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.cobalt) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.cobalt) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -452,9 +452,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.dysprosium) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.dysprosium) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -468,9 +468,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.evap_dep) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.evap_dep) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -484,9 +484,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.hafnium) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.hafnium) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -500,9 +500,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.hydrocarbons) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.hydrocarbons) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -516,9 +516,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.mercury) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.mercury) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -532,9 +532,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.neodymium) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.neodymium) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -548,9 +548,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.platinum) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.platinum) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -564,9 +564,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.promethium) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.promethium) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -580,9 +580,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.scandium) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.scandium) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -596,9 +596,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.silicates) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.silicates) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -612,9 +612,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.technetium) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.technetium) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -628,9 +628,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.thulium) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.thulium) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -644,9 +644,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.titanium) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.titanium) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -660,9 +660,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.tungsten) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.tungsten) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>
@@ -676,9 +676,9 @@
                 <td class="noBorder py-0"></td>
                 <td class="noBorder py-0">
                   {% if mined_moons %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="{{ "{:,.0f}".format(mined_moons.vanadium) }}">
+                  <p class="text-danger">{{ "{:,.0f}".format(mined_moons.vanadium) }}</p>
                   {% else %}
-                    <input type="text" class="col-sm form-control form-control-sm py-0" value="0">
+                  <p class="text-primary">0</p>
                   {% endif %}
                 </td>
                 <td class="noBorder py-0"></td>

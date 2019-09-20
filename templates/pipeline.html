@@ -7,34 +7,214 @@
       <li class="list-group-item d-flex justify-content-between lh-condensed bg-secondary">
         <h3 class="mx-auto text-white">Production Pipeline</h3>     
       </li>
-      <li class="list-group-item text-center lh-condensed">
-          <form action="{{ url_for('pipeline')}}" method="POST">
-              <p class="text-center"><input name="action" class="btn-sm btn-danger" type="submit" value="Delete Everything Being Built"></p>
-            </form>
-      </li>
       
-      <li class="list-group-item d-flex justify-content-between lh-condensed p-1">
-          <table class="table table-sm table-condensed table-hover table-responsive pl-0">
-            <thead>
-              <tr>
-                <th scope="col"></th>
-                <th scope="col">Product</th>
-                <th scope="col"><center>Status</th>
-                <th scope="col"><center>QTY</th>
-                <th scope="col"><center>Local Sell Price</th>
-                <th scope="col"><center>Total Value</th>
-                <th scope="col"><center>Prod Cost</th>
-                <th scope="col"><center>PM %</th>
-                <th scope="col"><center>Jita Sell Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% set pipeline_value = namespace(b=0) %}
-              {% if 'myUser_id' in session %}
+      <li class="list-group-item d-flex justify-content-between lh-condensed p-1"> 
+          {% set pipeline_value = namespace(b=0) %}
+          {% if 'myUser_id' in session %}
+
+    <!--Accordion wrapper-->
+    <div class="accordion md-accordion" id="accordionEx" role="tablist" aria-multiselectable="true">
+            
+
+            <!-- Accordion card -->
+            <div class="card">
+                <!-- Card header -->
+                <div class="card-header" role="tab" id="headingOne2">
+                  <a data-toggle="collapse" data-parent="#accordionEx" href="#collapseOne2" aria-expanded="true" aria-controls="collapseOne2">
+                    <h5 class="mb-0">Inventions <i class="fas fa-angle-down rotate-icon"></i></h5>
+                  </a>
+                </div>
+                  <!-- Card body -->
+                  <div id="collapseOne2" class="collapse hide" role="tabpanel" aria-labelledby="headingOne2" data-parent="#accordionEx">
+                    <div class="card-body">  
+                      <table class="table table-sm table-condensed table-hover table-responsive pl-0">
+                          <thead>
+                              <tr>
+                                <th scope="col"></th>
+                                <th scope="col">Product</th>
+                                <th scope="col"><center>Status</th>
+                                <th scope="col"><center>QTY</th>
+                                <th scope="col"><center></th>
+                                <th scope="col"><center></th>
+                                <th scope="col"><center></th>
+                                <th scope="col"><center></th>
+                                <th scope="col"><center></th>
+                              </tr>
+                            </thead>
+                      {% for item in inv_pipeline %}
+                      <form action="{{ url_for('pipeline')}}" method="POST">
+                      <tr>
+                        <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.blueprint_id}}_64.png"></th>
+                        <td><p class="mt-1">{{ item.product_name }}</p></td>
+                        <td>
+                          <select name="inv_pipeline_select" id="pipeline_select" class="form-control text-center mt-1" style="width:160px;">
+                            {% if item.status == 0 %}
+                              <option selected value="0">Future Invent</option>
+                            {% else %}
+                              <option value="0">Future Invent</option>
+                            {% endif %}
+                            {% if item.status == 2 %}
+                              <option selected value="2">Being Built</option>
+                            {% else %}
+                              <option value="2">Being Built</option>
+                            {% endif %}
+                            {% if item.status == 3 %}
+                              <option selected value="3">Being Invented</option>
+                            {% else %}
+                              <option value="3">Being Invented</option>
+                            {% endif %}
+                          </select>
+                          <input name="action" class="btn-sm btn-secondary" type="submit" value="UPD">
+                          <input name="action" class="btn-sm btn-danger" type="submit" value="DEL">
+                        </td>
+                        <td><p class="mt-1 text-center"><input type="text" class="form-control text-center" size="3" name="qty" value="{{ item.runs }}"></p></td>
+                        <td><p class="mt-1 text-center">--</p></td>
+                        <td><p class="mt-1 text-center">--</p></td>
+                        <td><p class="mt-1 text-center">--</p></td>
+                        <td><p class="mt-1 text-center text-primary"><strong>--</strong></p></td>
+                        <td><p class="mt-1 text-center">--</p></td>
+                      </tr>
+                      <input type="hidden" name="blueprint_id" value="{{item.blueprint_id}}">
+                    </form>
+                    {% endfor %}
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Accordion card -->
+            <div class="card">
+                <!-- Card header -->
+                <div class="card-header" role="tab" id="headingOne3">
+                  <a data-toggle="collapse" data-parent="#accordionEx" href="#collapseOne3" aria-expanded="true" aria-controls="collapseOne3">
+                    <h5 class="mb-0">Builds <i class="fas fa-angle-down rotate-icon"></i></h5>
+                  </a>
+                </div>
+                  <!-- Card body -->
+                  <div id="collapseOne3" class="collapse hide" role="tabpanel" aria-labelledby="headingOne3" data-parent="#accordionEx">
+                    <div class="card-body">  
+                    <form action="{{ url_for('pipeline')}}" method="POST">
+                        <p class="text-center"><input name="action" class="btn-sm btn-danger" type="submit" value="Delete Everything Being Built"></p>
+                      </form>
+                    <table class="table table-sm table-condensed table-hover table-responsive pl-0">
+                        <thead>
+                            <tr>
+                              <th scope="col"></th>
+                              <th scope="col">Product</th>
+                              <th scope="col"><center>Status</th>
+                              <th scope="col"><center>QTY</th>
+                              <th scope="col"><center>Local Sell Price</th>
+                              <th scope="col"><center>Total Value</th>
+                              <th scope="col"><center>Prod Cost</th>
+                              <th scope="col"><center>PM %</th>
+                              <th scope="col"><center>Jita Sell Price</th>
+                            </tr>
+                          </thead>
+                    {% for item in bld_pipeline %}
+                      <form action="{{ url_for('pipeline')}}" method="POST">
+                      <tr>
+                        <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.product_id}}_64.png"></th>
+                        <td><p class="mt-1">{{ item.product_name }}</p></td>
+                        <td>
+                          <select name="bld_pipeline_select" id="pipeline_select" class="form-control text-center mt-1" style="width:160px;">
+                            {% if item.status == 0 %}
+                              <option selected value="0">Future Build</option>
+                            {% else %}
+                              <option value="0">Future Build</option>
+                            {% endif %}
+                            {% if item.status == 1 %}
+                              <option selected value="1">On Market</option>
+                            {% endif %}
+                            {% if item.status == 2 %}
+                              <option selected value="2">Being Built</option>
+                            {% else %}
+                              <option value="2">Being Built</option>
+                            {% endif %}
+                          </select>
+                          <input name="action" class="btn-sm btn-secondary" type="submit" value="UPD">
+                          <input name="action" class="btn-sm btn-danger" type="submit" value="DEL">
+                        </td>
+                        <td><p class="mt-1 text-center"><input type="text" class="form-control text-center" size="3" name="qty" value="{{ item.runs }}"></p></td>
+                        <td>
+                          {% if item.local_sell_price == 0 and item.jita_sell_price != None %}
+                            <input type="text" class="form-control text-center mt-1" size="10" name="local_sell" value="{{ "{:,.0f}".format(item.jita_sell_price * 1.20) }}">
+                          {% else %}
+                            <input type="text" class="form-control text-center mt-1" size="10" name="local_sell" value="{{ "{:,.0f}".format(item.local_sell_price) }}">
+                          {% endif %}
+                        </td>
+                        {% set mv = namespace(a=0) %}
+                        {% if item.local_sell_price == 0 and item.jita_sell_price != None %}
+                          {% set mv.a = item.jita_sell_price * 1.20 %}
+                        {% else %}
+                          {% set mv.a = item.local_sell_price %}
+                        {% endif %}
+                        <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(mv.a * item.runs * item.portion_size) }}</p></td>
+                        <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.build_cost/(item.portion_size*item.runs) * item.runs) }}</p></td>
+                        <td>
+                        {% if (mv.a != 0) %}
+                          {% if (mv.a - (item.build_cost/item.portion_size)) / mv.a < 0 %}
+                            <p class="mt-1 text-center text-danger pt-1">
+                          {% else %}
+                            <p class="mt-1 text-center text-primary pt-1">
+                          {% endif %}
+                        {% else %}
+                          <p class="mt-1 text-center text-primary pt-1">  
+                        {% endif %}
+                        {% if (mv.a != 0) %}
+                            {% if item.jita_sell_price != None %}
+                              <strong>{{ "{:.2%}".format((mv.a - (item.build_cost/(item.portion_size*item.runs) * item.runs)) / mv.a) }}</strong></p>
+                            {% else %}
+                              <strong>{{ "{:.2%}".format((mv.a - (0 * item.runs)) / mv.a) }}</strong></p>
+                            {% endif %}
+                          {% else %}
+                            <strong></strong></p>
+                          {% endif %}
+                        </td>
+                        {% if item.jita_sell_price != None %}
+                            <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.jita_sell_price) }}</p></td>
+                          {% else %}
+                            <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(0) }}</p></td>
+                        {% endif %}
+                      </tr>
+                      <input type="hidden" name="blueprint_id" value="{{item.blueprint_id}}">
+                    </form>
+                    {% set pipeline_value.b = pipeline_value.b + (mv.a * item.runs) %}
+                  {% endfor %}
+                  {% endif %}
+                  </table>
+                  </div>
+                </div>
+              </div>
+
+<!-- Accordion card -->
+<div class="card">
+    <!-- Card header -->
+    <div class="card-header" role="tab" id="headingOne1">
+      <a data-toggle="collapse" data-parent="#accordionEx" href="#collapseOne1" aria-expanded="true" aria-controls="collapseOne1">
+        <h5 class="mb-0">Market Orders <i class="fas fa-angle-down rotate-icon"></i></h5>
+      </a>
+    </div>
+      <!-- Card body -->
+      <div id="collapseOne1" class="collapse hide" role="tabpanel" aria-labelledby="headingOne1" data-parent="#accordionEx">
+        <div class="card-body">                  
+            <table class="table table-md table-condensed table-hover table-responsive pl-0">
+                <thead>
+                    <tr>
+                      <th scope="col"></th>
+                      <th scope="col">Product</th>
+                      <th scope="col"><center>Status</th>
+                      <th scope="col"><center>QTY</th>
+                      <th scope="col"><center>Local Sell Price</th>
+                      <th scope="col"><center>Total Value</th>
+                      <th scope="col"><center>Prod Cost</th>
+                      <th scope="col"><center>PM %</th>
+                      <th scope="col"><center></th>
+                    </tr>
+                  </thead>
 
               {% for item in my_orders %}
                 <tr>
-                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.type_id}}_64.png"></th>
+                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.type_id}}_32.png"></th>
                   <td><p class="mt-1">{{ item.product_name }}</p></td>
                   <td>
                       <p class="mt-1">On Market</p>
@@ -60,123 +240,67 @@
                   <td><p class="mt-1 text-center">--</p></td>
                 </tr>
               {% endfor %}
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Accordion card -->
+      <div class="card">
+          <!-- Card header -->
+          <div class="card-header" role="tab" id="headingOne4">
+            <a data-toggle="collapse" data-parent="#accordionEx" href="#collapseOne4" aria-expanded="true" aria-controls="collapseOne4">
+              <h5 class="mb-0">Open Contracts <i class="fas fa-angle-down rotate-icon"></i></h5>
+            </a>
+          </div>
+            <!-- Card body -->
+            <div id="collapseOne4" class="collapse hide" role="tabpanel" aria-labelledby="headingOne4" data-parent="#accordionEx">
+              <div class="card-body">                  
+                  <table class="table table-sm table-condensed table-hover table-responsive pl-0">
+                      <thead>
+                          <tr>
+                            <th scope="col" colspan="2">Title</th>
+                            <th scope="col"><center></th>
+                            <th scope="col"><center>Date Issued</th>
+                            <th scope="col"><center>Time Remaining</th>
+                            <th scope="col"><center>Availability</th>
+                            <th scope="col"><center></th>
+                            <th scope="col"><center>Price</th>                            
+                          </tr>
+                        </thead>
+  
+                    {% for item in my_contracts %}
+                      <tr>
+                        <td colspan="2"><p class="mt-1 mr-2"><a href='/pipeline?contract_id={{item.contract_id}}'>{{ item.title }}</a></p></td>
+                        <td></td>
+                        <td><p class="mt-1 text-center">{{ item.date_issued.strftime('%m-%d-%Y') }}</p></td>
+                        <td>
+                            <p class="mt-1 text-center"> {{ item.days_remaining }}</p>
+                        </td>
+                        <td> <p class="mt-1 text-center">{{ item.availability }} </p></td>
+                        <td></td>                        
+                        <td><p class="mt-1">{{ "{:,.0f}".format(item.price) }}</p></td>
+                      </tr>
+                    {% endfor %}
+                    </table>
+                  </div>
+                </div>
+              </div>
 
-                {% for item in inv_pipeline %}
-                <form action="{{ url_for('pipeline')}}" method="POST">
-                <tr>
-                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.blueprint_id}}_64.png"></th>
-                  <td><p class="mt-1">{{ item.product_name }}</p></td>
-                  <td>
-                    <select name="inv_pipeline_select" id="pipeline_select" class="form-control text-center mt-1" style="width:160px;">
-                      {% if item.status == 0 %}
-                        <option selected value="0">Future Invent</option>
-                      {% else %}
-                        <option value="0">Future Invent</option>
-                      {% endif %}
-                      {% if item.status == 2 %}
-                        <option selected value="2">Being Built</option>
-                      {% else %}
-                        <option value="2">Being Built</option>
-                      {% endif %}
-                      {% if item.status == 3 %}
-                        <option selected value="3">Being Invented</option>
-                      {% else %}
-                        <option value="3">Being Invented</option>
-                      {% endif %}
-                    </select>
-                    <input name="action" class="btn-sm btn-secondary" type="submit" value="UPD">
-                    <input name="action" class="btn-sm btn-danger" type="submit" value="DEL">
-                  </td>
-                  <td><p class="mt-1 text-center"><input type="text" class="form-control text-center" size="3" name="qty" value="{{ item.runs }}"></p></td>
-                  <td><p class="mt-1 text-center">--</p></td>
-                  <td><p class="mt-1 text-center">--</p></td>
-                  <td><p class="mt-1 text-center">--</p></td>
-                  <td><p class="mt-1 text-center text-primary"><strong>--</strong></p></td>
-                  <td><p class="mt-1 text-center">--</p></td>
-                </tr>
-                <input type="hidden" name="blueprint_id" value="{{item.blueprint_id}}">
-              </form>
-              {% endfor %}
-              {% for item in bld_pipeline %}
-                <form action="{{ url_for('pipeline')}}" method="POST">
-                <tr>
-                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.product_id}}_64.png"></th>
-                  <td><p class="mt-1">{{ item.product_name }}</p></td>
-                  <td>
-                    <select name="bld_pipeline_select" id="pipeline_select" class="form-control text-center mt-1" style="width:160px;">
-                      {% if item.status == 0 %}
-                        <option selected value="0">Future Build</option>
-                      {% else %}
-                        <option value="0">Future Build</option>
-                      {% endif %}
-                      {% if item.status == 1 %}
-                        <option selected value="1">On Market</option>
-                      {% endif %}
-                      {% if item.status == 2 %}
-                        <option selected value="2">Being Built</option>
-                      {% else %}
-                        <option value="2">Being Built</option>
-                      {% endif %}
-                    </select>
-                    <input name="action" class="btn-sm btn-secondary" type="submit" value="UPD">
-                    <input name="action" class="btn-sm btn-danger" type="submit" value="DEL">
-                  </td>
-                  <td><p class="mt-1 text-center"><input type="text" class="form-control text-center" size="3" name="qty" value="{{ item.runs }}"></p></td>
-                  <td>
-                    {% if item.local_sell_price == 0 and item.jita_sell_price != None %}
-                      <input type="text" class="form-control text-center mt-1" size="10" name="local_sell" value="{{ "{:,.0f}".format(item.jita_sell_price * 1.20) }}">
-                    {% else %}
-                      <input type="text" class="form-control text-center mt-1" size="10" name="local_sell" value="{{ "{:,.0f}".format(item.local_sell_price) }}">
-                    {% endif %}
-                  </td>
-                  {% set mv = namespace(a=0) %}
-                  {% if item.local_sell_price == 0 and item.jita_sell_price != None %}
-                    {% set mv.a = item.jita_sell_price * 1.20 %}
-                  {% else %}
-                    {% set mv.a = item.local_sell_price %}
-                  {% endif %}
-                  <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(mv.a * item.runs * item.portion_size) }}</p></td>
-                  <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.build_cost/(item.portion_size*item.runs) * item.runs) }}</p></td>
-                  <td>
-                  {% if (mv.a != 0) %}
-                    {% if (mv.a - (item.build_cost/item.portion_size)) / mv.a < 0 %}
-                      <p class="mt-1 text-center text-danger pt-1">
-                    {% else %}
-                      <p class="mt-1 text-center text-primary pt-1">
-                    {% endif %}
-                  {% else %}
-                    <p class="mt-1 text-center text-primary pt-1">  
-                  {% endif %}
-                  {% if (mv.a != 0) %}
-                      {% if item.jita_sell_price != None %}
-                        <strong>{{ "{:.2%}".format((mv.a - (item.build_cost/(item.portion_size*item.runs) * item.runs)) / mv.a) }}</strong></p>
-                      {% else %}
-                        <strong>{{ "{:.2%}".format((mv.a - (0 * item.runs)) / mv.a) }}</strong></p>
-                      {% endif %}
-                    {% else %}
-                      <strong></strong></p>
-                    {% endif %}
-                  </td>
-                  {% if item.jita_sell_price != None %}
-                      <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(item.jita_sell_price) }}</p></td>
-                    {% else %}
-                      <td><p class="mt-1 text-center pt-1">{{ "{:,.0f}".format(0) }}</p></td>
-                  {% endif %}
-                </tr>
-                <input type="hidden" name="blueprint_id" value="{{item.blueprint_id}}">
-              </form>
-              {% set pipeline_value.b = pipeline_value.b + (mv.a * item.runs) %}
-            {% endfor %}
-            {% endif %}
-
+      </div>
+      <!-- Accordion wrapper -->
+        
             </tbody>
           </table>
-        </form>
       </li>
+      </ul>
+
+    
+
       <li class="list-group-item d-flex justify-content-between lh-condensed">
           <h5 class="text-center col-sm-12">
             {% if 'myUser_id' in session %}
-            {% set total_pipeline = (pipeline_value.b  + my_order_total) %}
+            {% set total_pipeline = (pipeline_value.b  + my_order_total + my_contract_total) %}
               Total Pipeline Value: {{ "{:,.0f}".format(total_pipeline) }}
             {% else %}
               Total Pipeline Value: --

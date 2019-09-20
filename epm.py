@@ -13,7 +13,7 @@ import math
 from forge_market_dump import get_marketValue
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chris:funkytown@192.168.1.106/evesde1'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chris:funkytown@127.0.0.1/evesde1'
 app.debug = True # disable this in production!
 app.config['SECRET_KEY'] = 'super-secret-foolish-fool112'
 app.config['SECURITY_REGISTERABLE'] = True
@@ -24,6 +24,41 @@ app.config['ISOLATION_LEVEL'] = 'READ UNCOMMITTED'
 app.config['POOL_RECYCLE'] = 3600
 
 db = SQLAlchemy(app)
+
+class user_contracts(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.String(100))
+    contract_id = db.Column(db.String(100))    
+    date_issued = db.Column(db.DateTime())
+    date_expired = db.Column(db.DateTime())
+    date_completed = db.Column(db.DateTime())
+    date_accepted = db.Column(db.DateTime())
+    for_corporation = db.Column(db.Boolean())
+    issue_corporation_id = db.Column(db.String(100))
+    price = db.Column(db.Numeric())
+    status = db.Column(db.String(100))    
+    title = db.Column(db.String(100))
+    duration = db.Column(db.Integer())
+    type = db.Column(db.String(100))
+    build_cost = db.Column(db.Numeric())
+    availability = db.Column(db.String(100))    
+
+    def __init__(self, user_id, contract_id, date_issued, date_expired, date_completed, date_accepted, for_corporation, issue_corporation_id, price, status, title, duration, type, build_cost, availability):
+        self.user_id = user_id
+        self.contract_id = contract_id
+        self.date_issued = date_issued
+        self.date_expired = date_expired
+        self.date_completed = date_completed
+        self.date_accepted = date_accepted
+        self.for_corporation = for_corporation
+        self.issue_corporation_id = issue_corporation_id
+        self.price = price
+        self.status = status
+        self.title = title
+        self.duration = duration
+        self.type = type
+        self.build_cost = build_cost
+        self.availability = availability
 
 class user_orders(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
@@ -792,6 +827,12 @@ class LoginForm(Form):
     email = StringField('Email', [validators.Length(min=6, max=50)])
     password = PasswordField('Password', [validators.DataRequired()])
 
+class ContractItems():
+    def __init__(self, contract_id, product_name, qty):
+        self.contract_id = contract_id
+        self.product_name = product_name
+        self.qty = qty        
+
 class BomDatacores():
     def __init__(self, datacore_id, datacore, datacore_qty, datacore_cost, runs, datacore_vol):
         self.datacore_id = datacore_id
@@ -900,10 +941,25 @@ class Jobs():
         self.job_cost = job_cost
         self.remainder = remainder
 
+class Contracts():
+    def __init__(self, contract_id, title, date_issued, days_remaining, availability, price):
+        self.contract_id = contract_id
+        self.title = title
+        self.date_issued = date_issued
+        self.days_remaining = days_remaining
+        self.availability = availability
+        self.price = price
+
 @app.route("/")
 def index():
     if 'myUser_id' in session:
+        #try:
         session['wallet_balance'] = get_wallet_balance()
+        #except Exception as e:
+        #    flash('Problem getting wallet balance.', 'danger')
+        #    app.logger.info(str(e))
+        #    return redirect(url_for('index'))
+        #print('Logging in')
 
     return render_template('home.html')
 
@@ -1133,36 +1189,43 @@ def fetch_fittings():
 @app.route("/financial", methods=['GET','POST'])
 def financial():
     if 'myUser_id' in session:
+        session['wallet_balance'] = get_wallet_balance()
+        
         if request.form.get('fetch'):
             journal = get_wallet_journal()
             transactions = get_wallet_transactions()
+            try:
+                for item in journal:
+                    #print item
+                    if item =='error' or item=='timeout':
+                        flash ('Problem fetching financial data from EVE.', 'danger')
+                        break
+                    else:
+                        #print item['ref_type'] + ' - ' + str(item['amount'])
+                        existing = db.session.query(wallet_journal).filter_by(user_id=session['myUser_id'], transaction_id=str(item['id'])).all()
+                        if not existing:
+                            entry = wallet_journal(session['myUser_id'], item['amount'], item['date'], item['id'], item['ref_type'])
+                            db.session.add(entry)
+                            db.session.commit()
+            except Exception as e:
+                flash('Problem getting wallet journal.', 'danger')
+                app.logger.info(str(e))
 
-            for item in journal:
-                #print item
-                if item =='error' or item=='timeout':
-                    flash ('Problem fetching financial data from EVE.', 'danger')
-                    break
-                else:
-                    #print item['ref_type'] + ' - ' + str(item['amount'])
-                    existing = db.session.query(wallet_journal).filter_by(user_id=session['myUser_id'], transaction_id=str(item['id'])).all()
-                    if not existing:
-                        entry = wallet_journal(session['myUser_id'], item['amount'], item['date'], item['id'], item['ref_type'])
-                        db.session.add(entry)
-                        db.session.commit()
-
-            for item in transactions:
-                #print item
-                if item =='error' or item=='timeout':
-                    flash ('Problem fetching financial data from EVE.', 'danger')
-                    break
-                else:
-                    existing = db.session.query(wallet_transactions).filter_by(transaction_id=str(item['transaction_id'])).all()
-                    if not existing:
-                        entry = wallet_transactions(session['myUser_id'], item['unit_price'], item['date'], item['transaction_id'], item['client_id'], item['location_id'], item['quantity'], item['type_id'])
-                        db.session.add(entry)
-                        db.session.commit()
-
-            return redirect(url_for('financial'))
+            try:
+                for item in transactions:
+                    #print item
+                    if item =='error' or item=='timeout':
+                        flash ('Problem fetching financial data from EVE.', 'danger')
+                        break
+                    else:
+                        existing = db.session.query(wallet_transactions).filter_by(transaction_id=str(item['transaction_id'])).all()
+                        if not existing:
+                            entry = wallet_transactions(session['myUser_id'], item['unit_price'], item['date'], item['transaction_id'], item['client_id'], item['location_id'], item['quantity'], item['type_id'])
+                            db.session.add(entry)
+                            db.session.commit()
+            except Exception as e:
+                flash('Problem getting wallet transactions.', 'danger')
+                app.logger.info(str(e))
 
         total_transaction_taxes = 0.0
         total_broker_fees = 0.0
@@ -1915,34 +1978,229 @@ def utility_processor():
 
     return dict(getAsteroids=getAsteroids)
 
+    def getContractItems(contract_id):
+        contract_items = fetch_contract_items(contract_id)
+        for item in contract_items:
+            product_name = db.session.query(invTypes).filter_by()
+            ContractItems += (contract_id, )
+        return contract_items
+
+    return dict(getContractItems=getContractItems)
+
 @app.route("/pipeline", methods=['GET','POST'])
 def pipeline():
     if 'myUser_id' in session:
-        try:
-            inv_pipeline = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name','user_id','runs','blueprint_id','status').order_by('product_name').all()
+        #try:
+        inv_pipeline = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name','user_id','runs','blueprint_id','status').order_by('product_name').all()
 
-            bld_pipeline = db.session.query(v_build_pipeline_products).filter_by(user_id= session['myUser_id']).with_entities('product_name','user_id','blueprint_id','product_id','runs','jita_sell_price','local_sell_price','build_cost','status', 'portion_size').order_by('product_name').all()
+        bld_pipeline = db.session.query(v_build_pipeline_products).filter_by(user_id= session['myUser_id']).with_entities('product_name','user_id','blueprint_id','product_id','runs','jita_sell_price','local_sell_price','build_cost','status', 'portion_size').order_by('product_name').all()
 
-            fetch_orders()            
-            my_orders = db.session.query(user_orders).filter_by(user_id=session['myUser_id']).order_by('product_name')
-            my_order_total = 0
-            
-            for item in my_orders:
-                my_order_total += (item.volume_remain * item.price)
-            for item in my_orders:
-                pipeline_hx_exist = db.session.query(build_pipeline_hx).filter_by(user_id = session['myUser_id'], product_id = item.type_id).first()
-                if pipeline_hx_exist:                                
-                    #print ('Market order in build history: ' + str(build_cost_hx))
-                    item.build_cost = pipeline_hx_exist.build_cost
-                    item.build_runs =  pipeline_hx_exist.runs
-                    db.session.add(item)
+        fetch_contracts() 
+        now = datetime.utcnow()           
+        contracts = []
+        my_contracts = db.session.query(user_contracts).filter_by(user_id=session['myUser_id']).order_by('date_issued')
+        for contract in my_contracts:
+            contractx = Contracts(contract.contract_id, contract.title, contract.date_issued, str(contract.date_expired - now).split(".")[0], contract.availability, contract.price)
+            contracts += [contractx]
+        
+        my_contract_total = 0        
+        for item in my_contracts:
+            my_contract_total += (item.price)
+        
+        fetch_orders()            
+        my_orders = db.session.query(user_orders).filter_by(user_id=session['myUser_id']).order_by('product_name')
+        my_order_total = 0
+        
+        for item in my_orders:
+            my_order_total += (item.volume_remain * item.price)
+        for item in my_orders:
+            pipeline_hx_exist = db.session.query(build_pipeline_hx).filter_by(user_id = session['myUser_id'], product_id = item.type_id).first()
+            if pipeline_hx_exist:                                
+                #print ('Market order in build history: ' + str(build_cost_hx))
+                item.build_cost = pipeline_hx_exist.build_cost
+                item.build_runs =  pipeline_hx_exist.runs
+                db.session.add(item)
+                db.session.commit()
+
+
+        if request.method == 'POST':
+            if request.form.get('action') == 'Delete Everything Being Built':
+                pipeline_d = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id']).all()      
+                
+                for hx in pipeline_d: 
+                    pipeline_hx_exist = db.session.query(build_pipeline_hx).filter_by(user_id = session['myUser_id'], product_id = hx.product_id).all()
+                    if pipeline_hx_exist:
+                        for update_hx in pipeline_hx_exist:
+                            print('Updating history: ' + str(update_hx.product_name))
+                            update_hx.local_sell_price = hx.local_sell_price
+                            update_hx.build_cost = hx.build_cost/hx.portion_size
+                            update_hx.material_cost = hx.material_cost
+                            update_hx.runs = hx.runs
+                            db.session.add(update_hx)
+                            db.session.commit()
+                    else:
+                        if hx.material_comp_id == 0:                            
+                            pipeline_hx = build_pipeline_hx(session['myUser_id'],  hx.product_id, hx.blueprint_id, hx.runs, hx.material_id, hx.material_qty, hx.material_cost, hx.product_name, hx.material, hx.group_id, hx.build_or_buy, hx.jita_sell_price, hx.local_sell_price, (hx.build_cost/hx.portion_size), hx.material_comp_id, hx.status, hx.material_vol, hx.portion_size, hx.mat_eff, hx.time_eff, hx.eng_rig, hx.eng_role)
+                            print('Saving to history: ' + str(hx.product_name))
+                            db.session.add(pipeline_hx)
+                            # db.session.commit()
+                for item in pipeline_d:
+                    db.session.delete(item)
+                    db.session.commit()
+                flash('Successfully deleted all pipeline products.', 'success')
+                return redirect(url_for('pipeline'))
+
+            if request.form.get('inv_pipeline_select'):
+                if request.form.get('action') == 'UPD':
+                    bp_id = request.form.get('blueprint_id')
+                    runs = request.form.get('qty')
+                    status = request.form.get('inv_pipeline_select')
+
+                    pipeline = db.session.query(invent_pipeline).filter_by(blueprint_id = bp_id).all()
+                    for item in pipeline:
+                        item.runs = runs
+                        item.status = status
+                        db.session.add(item)
+                        db.session.commit()
+                    #print request.form.get('inv_pipeline_select')
+                    if request.form.get('inv_pipeline_select') == '2':
+
+                        pipeline = db.session.query(invent_pipeline).filter_by(blueprint_id = bp_id).all()
+                        product_id = 0
+                        blueprint_id = 0
+                        product_name = ''
+                        for item in pipeline:
+                            product_id = item.product_id
+                            blueprint_id = item.blueprint_id
+                            product_name = item.product_name
+                            db.session.delete(item)
+                            db.session.commit()
+
+                        selected_product = db.session.query(v_product).filter_by(id = product_id).one()
+                        if get_marketValue(selected_product.t2_id,'sell') is not None:
+                            querySell = get_marketValue(selected_product.t2_id,'sell')
+                        else:
+                            querySell = 0
+                        myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = product_id, product_id=selected_product.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id', 'vol').all()
+                        myProduct = db.session.query(invTypes).filter_by(typeID = int(selected_product.t2_id)).one()
+                        #local_sell_price = float(request.form.get('local_sell').replace(',', ''))
+
+                        myBuildCost = 0
+                        myMaterialCost = []
+                        for requirements in myBuildRequirements:
+                            if get_marketValue(requirements.material_id, 'sell') is not None:
+                                myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
+                            else:
+                                myMaterialCost += 0
+
+                        for cost in myMaterialCost:
+                            myBuildCost = myBuildCost + cost
+
+                        for requirements in myBuildRequirements:
+                            if get_marketValue(requirements.material_id, 'sell') is not None:
+                                myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty
+                            else:
+                                myCost = 0
+                            if request.form.get('mat_eff') == None:
+                                me = session['default_bp_me']
+                                te = session['default_bp_te']
+                            else:
+                                me = request.form.get('mat_eff')
+                                te = request.form.get('time_eff')
+                            eng_rig = session['structure_rig_bonus'] 
+                            eng_role = session['structure_role_bonus']
+
+                            pipelineData = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'], blueprint_id = bp_id).all()
+                            for data in pipelineData:
+                                me = data.mat_eff
+
+                            compQty = calc_comp_efficiency(requirements.qty, runs, me)
+                            compQty = (compQty * float(runs))
+
+                            #pipeline = build_pipeline(session['myUser_id'],  selected_product.t2_id, product_id, runs, requirements.material_id, compQty, myCost, product_name, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2, requirements.vol, myProduct.portionSize, me, te, eng_rig, eng_role)
+                            pipeline = build_pipeline(session['myUser_id'], selected_product.t2_id, product_id, int(runs), requirements.material_id, compQty, myCost, product_name, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2, requirements.vol, myProduct.portionSize, me, te, eng_rig, eng_role)
+
+                            db.session.add(pipeline)
+                            db.session.commit()
+
+                        flash('Successfully converted invention to build product.', 'success')
+                        return redirect(url_for('pipeline'))
+
+                if request.form.get('action') == 'DEL':
+                        bp_id = request.form.get('blueprint_id')
+
+                        pipeline = db.session.query(invent_pipeline).filter_by(user_id=session['myUser_id'],blueprint_id = bp_id).all()                        
+
+                        for item in pipeline:
+                            db.session.delete(item)
+                            db.session.commit()
+                        flash('Successfully deleted invention pipeline product.', 'success')
+
+                inv_pipeline = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name','user_id','runs','blueprint_id','status').order_by('product_name').all()
+
+
+            if request.form.get('bld_pipeline_select'):
+                if request.form.get('action') == 'UPD':
+                    bp_id = request.form.get('blueprint_id')
+                    runs = request.form.get('qty')
+                    status = request.form.get('bld_pipeline_select')
+                    local_sell_price = float(request.form.get('local_sell').replace(',', ''))
+                    me = session['default_bp_me']
+                    te = session['default_bp_te']
+
+                    pipelineData = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'], blueprint_id = bp_id).all()
+                    for data in pipelineData:
+                        me = data.mat_eff
+                        te = data.time_eff
+                        #print (me)
+
+                    pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'], blueprint_id = bp_id).delete()
                     db.session.commit()
 
+                    selected_bp = db.session.query(v_build_product).filter_by(id = bp_id).one()
+                    myProduct = db.session.query(invTypes).filter_by(typeID = int(selected_bp.t2_id)).one()
+                    if get_marketValue(str(myProduct.typeID),'sell') is not None:
+                        querySell = get_marketValue(str(myProduct.typeID),'sell')
+                    else:
+                        querySell = 0
+                    myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = bp_id, product_id=myProduct.typeID).with_entities('id','material','material_id','group_id','qty','product_id', 'vol').all()
 
-            if request.method == 'POST':
-                if request.form.get('action') == 'Delete Everything Being Built':
-                    pipeline_d = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id']).all()      
+                    myBuildCost = 0
+                    myMaterialCost = []
+                    for requirements in myBuildRequirements:
+                        if get_marketValue(requirements.material_id, 'sell') is not None:
+                            myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
+                        else:
+                            myMaterialCost += [0]
+
+                    for cost in myMaterialCost:
+                        myBuildCost = myBuildCost + cost
                     
+                    
+
+                    for requirements in myBuildRequirements:
+                        if get_marketValue(requirements.material_id, 'sell') is not None:
+                            myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty * int(runs)
+                        else:
+                            myCost = 0
+                        compQty = calc_comp_efficiency(requirements.qty, runs, me)
+                        compQty = (compQty * float(runs))
+                        
+                        eng_rig = session['structure_rig_bonus'] 
+                        eng_role = session['structure_role_bonus']
+
+                        pipeline = build_pipeline(session['myUser_id'], myProduct.typeID, bp_id, int(runs), requirements.material_id, compQty, myCost, myProduct.typeName, requirements.material, requirements.group_id, 0, querySell, local_sell_price, myBuildCost, 0, status, requirements.vol, myProduct.portionSize, me, te, eng_rig, eng_role)
+
+                        db.session.add(pipeline)
+                        db.session.commit()
+                    
+                    flash('Successfully updated bill of materials.', 'success')
+
+                if request.form.get('action') == 'DEL':
+                    bp_id = request.form.get('blueprint_id')
+
+                    pipeline_d = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'], blueprint_id = bp_id).all()
+
                     for hx in pipeline_d: 
                         pipeline_hx_exist = db.session.query(build_pipeline_hx).filter_by(user_id = session['myUser_id'], product_id = hx.product_id).all()
                         if pipeline_hx_exist:
@@ -1956,199 +2214,25 @@ def pipeline():
                                 db.session.commit()
                         else:
                             if hx.material_comp_id == 0:                            
-                                pipeline_hx = build_pipeline_hx(session['myUser_id'],  hx.product_id, hx.blueprint_id, hx.runs, hx.material_id, hx.material_qty, hx.material_cost, hx.product_name, hx.material, hx.group_id, hx.build_or_buy, hx.jita_sell_price, hx.local_sell_price, (hx.build_cost/hx.portion_size), hx.material_comp_id, hx.status, hx.material_vol, hx.portion_size, hx.mat_eff, hx.time_eff, hx.eng_rig, hx.eng_role)
+                                pipeline_hx = build_pipeline_hx(session['myUser_id'],  hx.product_id, hx.blueprint_id, hx.runs, hx.material_id, hx.material_qty, hx.material_cost, hx.product_name, hx.material, hx.group_id, hx.build_or_buy, hx.jita_sell_price, hx.local_sell_price, hx.build_cost/hx.portion_size, hx.material_comp_id, hx.status, hx.material_vol, hx.portion_size, hx.mat_eff, hx.time_eff, hx.eng_rig, hx.eng_role)
                                 print('Saving to history: ' + str(hx.product_name))
                                 db.session.add(pipeline_hx)
-                                # db.session.commit()
+                                db.session.commit()
+
                     for item in pipeline_d:
                         db.session.delete(item)
                         db.session.commit()
-                    flash('Successfully deleted all pipeline products.', 'success')
+                    flash('Successfully deleted pipeline product.', 'success')
                     return redirect(url_for('pipeline'))
 
-                if request.form.get('inv_pipeline_select'):
-                    if request.form.get('action') == 'UPD':
-                        bp_id = request.form.get('blueprint_id')
-                        runs = request.form.get('qty')
-                        status = request.form.get('inv_pipeline_select')
+                bld_pipeline = db.session.query(v_build_pipeline_products).filter_by(user_id= session['myUser_id']).with_entities('product_name','user_id','blueprint_id','product_id','runs','jita_sell_price','local_sell_price','build_cost','status', 'portion_size').order_by('product_name').all()
 
-                        pipeline = db.session.query(invent_pipeline).filter_by(blueprint_id = bp_id).all()
-                        for item in pipeline:
-                            item.runs = runs
-                            item.status = status
-                            db.session.add(item)
-                            db.session.commit()
-                        #print request.form.get('inv_pipeline_select')
-                        if request.form.get('inv_pipeline_select') == '2':
+        return render_template('pipeline.html', inv_pipeline=inv_pipeline, bld_pipeline=bld_pipeline, my_orders=my_orders, my_order_total=int(my_order_total), my_contracts=contracts, my_contract_total=int(my_contract_total))
 
-                            pipeline = db.session.query(invent_pipeline).filter_by(blueprint_id = bp_id).all()
-                            product_id = 0
-                            blueprint_id = 0
-                            product_name = ''
-                            for item in pipeline:
-                                product_id = item.product_id
-                                blueprint_id = item.blueprint_id
-                                product_name = item.product_name
-                                db.session.delete(item)
-                                db.session.commit()
-
-                            selected_product = db.session.query(v_product).filter_by(id = product_id).one()
-                            if get_marketValue(selected_product.t2_id,'sell') is not None:
-                                querySell = get_marketValue(selected_product.t2_id,'sell')
-                            else:
-                                querySell = 0
-                            myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = product_id, product_id=selected_product.t2_id ).with_entities('id', 'material', 'material_id', 'group_id', 'qty', 'product_id', 'vol').all()
-                            myProduct = db.session.query(invTypes).filter_by(typeID = int(selected_product.t2_id)).one()
-                            #local_sell_price = float(request.form.get('local_sell').replace(',', ''))
-
-                            myBuildCost = 0
-                            myMaterialCost = []
-                            for requirements in myBuildRequirements:
-                                if get_marketValue(requirements.material_id, 'sell') is not None:
-                                    myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
-                                else:
-                                    myMaterialCost += 0
-
-                            for cost in myMaterialCost:
-                                myBuildCost = myBuildCost + cost
-
-                            for requirements in myBuildRequirements:
-                                if get_marketValue(requirements.material_id, 'sell') is not None:
-                                    myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty
-                                else:
-                                    myCost = 0
-                                if request.form.get('mat_eff') == None:
-                                    me = session['default_bp_me']
-                                    te = session['default_bp_te']
-                                else:
-                                    me = request.form.get('mat_eff')
-                                    te = request.form.get('time_eff')
-                                eng_rig = session['structure_rig_bonus'] 
-                                eng_role = session['structure_role_bonus']
-
-                                pipelineData = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'], blueprint_id = bp_id).all()
-                                for data in pipelineData:
-                                    me = data.mat_eff
-
-                                compQty = calc_comp_efficiency(requirements.qty, runs, me)
-                                compQty = (compQty * float(runs))
-
-                                #pipeline = build_pipeline(session['myUser_id'],  selected_product.t2_id, product_id, runs, requirements.material_id, compQty, myCost, product_name, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2, requirements.vol, myProduct.portionSize, me, te, eng_rig, eng_role)
-                                pipeline = build_pipeline(session['myUser_id'], selected_product.t2_id, product_id, int(runs), requirements.material_id, compQty, myCost, product_name, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2, requirements.vol, myProduct.portionSize, me, te, eng_rig, eng_role)
-
-                                db.session.add(pipeline)
-                                db.session.commit()
-
-                            flash('Successfully converted invention to build product.', 'success')
-                            return redirect(url_for('pipeline'))
-
-                    if request.form.get('action') == 'DEL':
-                            bp_id = request.form.get('blueprint_id')
-
-                            pipeline = db.session.query(invent_pipeline).filter_by(user_id=session['myUser_id'],blueprint_id = bp_id).all()                        
-
-                            for item in pipeline:
-                                db.session.delete(item)
-                                db.session.commit()
-                            flash('Successfully deleted invention pipeline product.', 'success')
-
-                    inv_pipeline = db.session.query(v_invent_pipeline_products).filter_by(user_id = session['myUser_id']).with_entities('product_name','user_id','runs','blueprint_id','status').order_by('product_name').all()
-
-
-                if request.form.get('bld_pipeline_select'):
-                    if request.form.get('action') == 'UPD':
-                        bp_id = request.form.get('blueprint_id')
-                        runs = request.form.get('qty')
-                        status = request.form.get('bld_pipeline_select')
-                        local_sell_price = float(request.form.get('local_sell').replace(',', ''))
-                        me = session['default_bp_me']
-                        te = session['default_bp_te']
-
-                        pipelineData = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'], blueprint_id = bp_id).all()
-                        for data in pipelineData:
-                            me = data.mat_eff
-                            te = data.time_eff
-                            #print (me)
-
-                        pipeline = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'], blueprint_id = bp_id).delete()
-                        db.session.commit()
-
-                        selected_bp = db.session.query(v_build_product).filter_by(id = bp_id).one()
-                        myProduct = db.session.query(invTypes).filter_by(typeID = int(selected_bp.t2_id)).one()
-                        if get_marketValue(str(myProduct.typeID),'sell') is not None:
-                            querySell = get_marketValue(str(myProduct.typeID),'sell')
-                        else:
-                            querySell = 0
-                        myBuildRequirements = db.session.query(v_build_requirements).filter_by(id = bp_id, product_id=myProduct.typeID).with_entities('id','material','material_id','group_id','qty','product_id', 'vol').all()
-
-                        myBuildCost = 0
-                        myMaterialCost = []
-                        for requirements in myBuildRequirements:
-                            if get_marketValue(requirements.material_id, 'sell') is not None:
-                                myMaterialCost += [get_marketValue(requirements.material_id, 'sell') * requirements.qty]
-                            else:
-                                myMaterialCost += [0]
-
-                        for cost in myMaterialCost:
-                            myBuildCost = myBuildCost + cost
-                        
-                        
-
-                        for requirements in myBuildRequirements:
-                            if get_marketValue(requirements.material_id, 'sell') is not None:
-                                myCost = get_marketValue(requirements.material_id, 'sell') * requirements.qty * int(runs)
-                            else:
-                                myCost = 0
-                            compQty = calc_comp_efficiency(requirements.qty, runs, me)
-                            compQty = (compQty * float(runs))
-                            
-                            eng_rig = session['structure_rig_bonus'] 
-                            eng_role = session['structure_role_bonus']
-
-                            pipeline = build_pipeline(session['myUser_id'], myProduct.typeID, bp_id, int(runs), requirements.material_id, compQty, myCost, myProduct.typeName, requirements.material, requirements.group_id, 0, querySell, local_sell_price, myBuildCost, 0, status, requirements.vol, myProduct.portionSize, me, te, eng_rig, eng_role)
-
-                            db.session.add(pipeline)
-                            db.session.commit()
-                        
-                        flash('Successfully updated bill of materials.', 'success')
-
-                    if request.form.get('action') == 'DEL':
-                        bp_id = request.form.get('blueprint_id')
-
-                        pipeline_d = db.session.query(build_pipeline).filter_by(user_id = session['myUser_id'], blueprint_id = bp_id).all()
-
-                        for hx in pipeline_d: 
-                            pipeline_hx_exist = db.session.query(build_pipeline_hx).filter_by(user_id = session['myUser_id'], product_id = hx.product_id).all()
-                            if pipeline_hx_exist:
-                                for update_hx in pipeline_hx_exist:
-                                    print('Updating history: ' + str(update_hx.product_name))
-                                    update_hx.local_sell_price = hx.local_sell_price
-                                    update_hx.build_cost = hx.build_cost/hx.portion_size
-                                    update_hx.material_cost = hx.material_cost
-                                    update_hx.runs = hx.runs
-                                    db.session.add(update_hx)
-                                    db.session.commit()
-                            else:
-                                if hx.material_comp_id == 0:                            
-                                    pipeline_hx = build_pipeline_hx(session['myUser_id'],  hx.product_id, hx.blueprint_id, hx.runs, hx.material_id, hx.material_qty, hx.material_cost, hx.product_name, hx.material, hx.group_id, hx.build_or_buy, hx.jita_sell_price, hx.local_sell_price, hx.build_cost/hx.portion_size, hx.material_comp_id, hx.status, hx.material_vol, hx.portion_size, hx.mat_eff, hx.time_eff, hx.eng_rig, hx.eng_role)
-                                    print('Saving to history: ' + str(hx.product_name))
-                                    db.session.add(pipeline_hx)
-                                    db.session.commit()
-
-                        for item in pipeline_d:
-                            db.session.delete(item)
-                            db.session.commit()
-                        flash('Successfully deleted pipeline product.', 'success')
-                        return redirect(url_for('pipeline'))
-
-                    bld_pipeline = db.session.query(v_build_pipeline_products).filter_by(user_id= session['myUser_id']).with_entities('product_name','user_id','blueprint_id','product_id','runs','jita_sell_price','local_sell_price','build_cost','status', 'portion_size').order_by('product_name').all()
-
-            return render_template('pipeline.html', inv_pipeline=inv_pipeline, bld_pipeline=bld_pipeline, my_orders=my_orders, my_order_total=int(my_order_total))
-
-        except Exception as e:
-            flash('Problem with Pipeline. - see log.', 'danger')
-            app.logger.info(str(e))
-            return redirect(url_for('pipeline'))
+        #except Exception as e:
+        #    flash('Problem with Pipeline. - see log.', 'danger')
+        #    app.logger.info(str(e))
+        #    return redirect(url_for('pipeline'))
     else:
         flash('You must be logged in to view the pipeline', 'danger')
         return redirect(url_for('index'))
@@ -3156,21 +3240,6 @@ def logout():
     flash('You have logged out.', 'success')
     return redirect(url_for('index'))
 
-#def get_marketValue(typeID, buyOrSell):
-#    payload = {'typeid':typeID, 'regionlimit':10000002}
-   # try:
-    #    response = requests.get('https://api.evemarketer.com/ec/marketstat/json', params=payload)
-     #   jsonData = response.json()
-      #  if buyOrSell == 'buy':
-    #        return jsonData[0]['sell']['median']
-    #    else:
-    #        return jsonData[0]['sell']['median']
-
-    #except Exception as e:
-    #    app.logger.info(str(e))
-    #    flash('Problem with Market API. See log', 'danger')
-#    return 0
-
 def calc_comp_efficiency(qty, runs, me):    
     wasteval = (1 - (float(session['structure_rig_bonus']))/100) * (1 - (float(session['structure_role_bonus']))/100) * (1 - (float(me)/100))        
     if int(runs) > 9:
@@ -3291,16 +3360,6 @@ def build_pipeline_rollup_vol(pipeline, subtract_oh_assets):
 
         if mat_oh == 0.0:            
             vol += myVol
-        #else:
-        ##    item_vol = 0.0
-        #    volQuery = db.session.execute("select volume from \"invTypes\" where \"typeID\"=" + str(item.material_id))
-        #    for vol in volQuery:
-        #        item_vol = vol.volume
-            #print(item_vol)
-
-        #    vol_oh = (mat_oh * item_vol)
-        #    if myVol - vol_oh < 0.0: vol_oh = 0.0            
-        #    vol += myVol - vol_oh
 
     return vol
 
@@ -3474,78 +3533,86 @@ def login():
 
     headers = {'Authorization': 'Basic ' + auth}
     payload = {'grant_type':'authorization_code', 'code':code}
+    print(payload)
 
     response = requests.post('https://login.eveonline.com/oauth/token', headers=headers, params=payload)
     jsonData = json.loads(response.text)
+   # print ('Heres the first JSON data upon login.')
+    #print jsonData
 
-    if jsonData:
-        #print jsonData
-        try:
-            refresh_token = jsonData['refresh_token']
-            auth_code = jsonData['access_token']
-            headers1 = {'Authorization': 'Bearer ' + auth_code}
-            response1 = requests.get('https://esi.evetech.net/verify/', headers=headers1)
-            jsonData1 = json.loads(response1.text)
-            #print jsonData1
+    if jsonData:            
+        refresh_token = jsonData['refresh_token']
+        auth_code = jsonData['access_token']
+        headers1 = {'Authorization': 'Bearer ' + auth_code}
+        response1 = requests.get('https://esi.evetech.net/verify/', headers=headers1)
+        #print('Heres tje 2nd JSON data verifying auth_code')
+        #print (response1)
+        jsonData1 = json.loads(response1.text)
+        #print jsonData1
 
-            if jsonData1:
-                character_id = str(jsonData1['CharacterID'])
-                #print character_id
-                payload = {'datasource':'tranquility'}
-                response2 = requests.get('https://esi.evetech.net/latest/characters/'+character_id, params=payload)
-                jsonData2 = json.loads(response2.text)
-                #print jsonData2
-                corp_id = str(jsonData2['corporation_id'])
-                response3 = requests.get('https://esi.evetech.net/latest/corporations/'+corp_id, params=payload)
-                jsonData3 = json.loads(response3.text)
-                corp_name = jsonData3['name']
-                character_name = jsonData1['CharacterName']
-                new_expiration = jsonData1['ExpiresOn']
-                myUser = db.session.query(users).filter_by(character_id=character_id).all()
-                home_station_id = '0'
-                structure_role_bonus = 1.0
-                default_bp_me = 2.0
-                structure_rig_bonus = 2.0
-                default_bp_te = 10.0
+        if jsonData1:
+            character_id = str(jsonData1['CharacterID'])
+            #print character_id
+            payload = {'datasource':'tranquility'}
+            response2 = requests.get('https://esi.evetech.net/latest/characters/'+character_id, params=payload)
+            #print('Here the 3rd JSAON data getting actual chatacter info')
+            #print(response2)
+            jsonData2 = json.loads(response2.text)
+            print (jsonData2)
+            corp_id = str(jsonData2['corporation_id'])
+            response3 = requests.get('https://esi.evetech.net/latest/corporations/'+corp_id, params=payload)
+            jsonData3 = json.loads(response3.text)
+            #print('Heres the 4th JSON data getting corporate info')
+            #print(response3)
+            #print(jsonData3)
+            corp_name = jsonData3['name']
+            character_name = jsonData1['CharacterName']
+            new_expiration = jsonData1['ExpiresOn']
+            myUser = db.session.query(users).filter_by(character_id=character_id).all()
+            home_station_id = '0'
+            structure_role_bonus = 1.0
+            default_bp_me = 2.0
+            structure_rig_bonus = 2.0
+            default_bp_te = 10.0
 
-                if myUser:
-                    lli = myUser[0].last_logged_in.strftime('%b %d, %Y')
-                    myUser[0].auth_code = auth_code
-                    myUser[0].expiration = new_expiration
-                    myUser[0].last_logged_in = datetime.now()
-                    myUser[0].active = True
-                    myUser[0].refresh_token = refresh_token
-                    home_station_id = myUser[0].home_station_id
-                    structure_role_bonus = float(myUser[0].structure_role_bonus)
-                    default_bp_me = float(myUser[0].default_bp_me)
-                    structure_rig_bonus = float(myUser[0].structure_rig_bonus)
-                    default_bp_te = float(myUser[0].default_bp_te)
-                    db.session.add(myUser[0])
-                    db.session.commit()
+            if myUser:
+                #print('Heres the user')
+                #print (character_id)
+                lli = myUser[0].last_logged_in.strftime('%b %d, %Y')
+                myUser[0].auth_code = auth_code
+                myUser[0].expiration = new_expiration
+                myUser[0].last_logged_in = datetime.now()
+                myUser[0].active = True
+                myUser[0].refresh_token = refresh_token
+                home_station_id = myUser[0].home_station_id
+                structure_role_bonus = float(myUser[0].structure_role_bonus)
+                default_bp_me = float(myUser[0].default_bp_me)
+                structure_rig_bonus = float(myUser[0].structure_rig_bonus)
+                default_bp_te = float(myUser[0].default_bp_te)
+                db.session.add(myUser[0])
+               # print('about to commit user info to db')
+                db.session.commit()
 
-                    flash('Successful login. '+character_name+' last logged in on: ' + lli,  'success')
-                else:
-                    myUser = users(character_id, character_name, refresh_token, new_expiration, auth_code, True, datetime.now(), home_station_id, structure_role_bonus, default_bp_me, structure_rig_bonus, default_bp_te, corp_id)
-                    db.session.add(myUser)
-                    db.session.commit()
+                flash('Successful login. '+character_name+' last logged in on: ' + lli,  'success')
+            else:
+                myUser = users(character_id, character_name, refresh_token, new_expiration, auth_code, True, datetime.now(), home_station_id, structure_role_bonus, default_bp_me, structure_rig_bonus, default_bp_te, corp_id)
+                db.session.add(myUser)
+                db.session.commit()
 
-                    flash('Successfully created new login. Welcome, '+character_name+ '!',  'success')
+                flash('Successfully created new login. Welcome, '+character_name+ '!',  'success')
 
-                session['logged_in'] = True
-                session['name'] = character_name
-                session['myUser_id'] = character_id
-                session['access_token'] = auth_code
-                session['expiration'] = new_expiration
-                session['corp_id'] = corp_id
-                session['home_station_id'] = home_station_id
-                session['structure_role_bonus'] = structure_role_bonus
-                session['default_bp_me'] = default_bp_me
-                session['structure_rig_bonus'] = structure_rig_bonus
-                session['default_bp_te'] = default_bp_te
-                session['corp_name'] = corp_name
-        except Exception as e:
-            app.logger.info(str(e))    
-            flash('Problem Logging in with EVE Oath. Try again later.', 'danger')
+            session['logged_in'] = True
+            session['name'] = character_name
+            session['myUser_id'] = character_id
+            session['access_token'] = auth_code
+            session['expiration'] = new_expiration
+            session['corp_id'] = corp_id
+            session['home_station_id'] = home_station_id
+            session['structure_role_bonus'] = structure_role_bonus
+            session['default_bp_me'] = default_bp_me
+            session['structure_rig_bonus'] = structure_rig_bonus
+            session['default_bp_te'] = default_bp_te
+            session['corp_name'] = corp_name
 
     return redirect(url_for('index'))
 
@@ -3560,10 +3627,9 @@ def do_refresh_token(character_id):
 
         headers = {'Authorization': 'Basic ' + auth}
         payload = {'grant_type':'refresh_token', 'refresh_token':refresh_token}
-
         response = requests.post('https://login.eveonline.com/oauth/token', headers=headers, params=payload)
         jsonData = json.loads(response.text)
-        print jsonData
+        #print jsonData
         auth_code = jsonData['access_token']
         myUser[0].auth_code = auth_code
         myUser[0].active = True
@@ -3577,34 +3643,14 @@ def do_refresh_token(character_id):
         print(session['access_token'])
         return 0
     else:
-        print 'Problem with logged in user.'
-        return 1
-
-def check_token(character_id):
-    myUser = db.session.query(users).filter_by(character_id=character_id).all()
-    if myUser:
-        refresh_token = myUser[0].refresh_token
-        auth_code = myUser[0].auth_code
-        headers1 = {'Authorization': 'Bearer ' + auth_code}
-        response1 = requests.get('https://esi.evetech.net/verify/', headers=headers1)
-        jsonData1 = json.loads(response1.text)
-        print 'Get Check Token - ' + str(response1.status_code)
-        print jsonData1
-
-        if response1.status_code <> 200:
-            do_refresh_token(character_id)
-            return 0
-        else:
-            print 'No token refresh needed.'
-            return 0
-    else:
-        print 'Problem with logged in user.'
+        print 'Problem with refreshing token. Ensure cookies are enabled.'
         return 1
 
 def get_wallet_balance():
+    
     payload = {'datasource':'tranquility', 'token':session['access_token']}
     response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/', params=payload)
-    #print payload
+    #print (response)
     print 'Get Wallet Balance - ' + str(response.status_code)
     if response.status_code <> 200 and response.status_code <> 504:
         do_refresh_token(session['myUser_id'])
@@ -3615,7 +3661,7 @@ def get_wallet_balance():
     #print jsonData
     return jsonData
 
-def get_wallet_journal():
+def get_wallet_journal():    
     payload = {'datasource':'tranquility', 'token':session['access_token']}
     response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/journal/', params=payload)
     print 'Get Wallet Journal - ' + str(response.status_code)
@@ -3623,11 +3669,12 @@ def get_wallet_journal():
         do_refresh_token(session['myUser_id'])
         payload = {'datasource':'tranquility', 'token':session['access_token']}
         response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/journal/', params=payload)
-
+        
     jsonData = json.loads(response.text)
-    return jsonData
+    #print jsonData
+    return jsonData 
 
-def get_wallet_transactions():
+def get_wallet_transactions():    
     payload = {'datasource':'tranquility', 'token':session['access_token']}
     response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/wallet/transactions/', params=payload)
     print 'Get Wallet Transactions - ' + str(response.status_code)
@@ -3638,6 +3685,76 @@ def get_wallet_transactions():
 
     jsonData = json.loads(response.text)
     return jsonData
+
+def fetch_contract_items(contract_id):
+    jsonData = []
+    listLengthPrev = 0
+    listLengthCurrent = 0    
+    for n in range(1, 2):
+        payload = {'datasource':'tranquility', 'token':session['access_token'], 'page':n}
+        response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/contracts/'+str(contract_id)+'items/', params=payload)
+        print 'Get Contract Items - page: ' + str(n) + ' - ' + str(response.status_code)
+
+        if response.status_code <> 200 and response.status_code <> 504:
+            do_refresh_token(session['myUser_id'])
+            payload = {'datasource':'tranquility', 'token':session['access_token']}
+            response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/contracts/'+str(contract_id)+'items/', params=payload)
+            jsonData += json.loads(response.text)
+            listLengthCurrent = len(jsonData)
+            if listLengthCurrent > listLengthPrev:
+                listLengthPrev = listLengthCurrent
+            else:
+                break
+
+                #print 'jsondata count: ' + str(len(jsonData))
+            print (jsonData)
+
+    return jsonData        
+
+def fetch_contracts():
+    if 'myUser_id' in session:
+        existing = db.session.query(user_contracts).filter_by(user_id=session['myUser_id']).delete()
+        db.session.commit()
+
+        myContracts = get_contracts()
+        for item in myContracts:   
+            if item =='error' or item=='timeout':
+                flash ('Problem fetching contracts from EVE.', 'danger')
+                break
+            else:
+                if item['status'] != 'finished' and item['status'] != 'deleted' and item['type'] != 'courier':
+
+                    entry = user_contracts(session['myUser_id'], item['contract_id'], item['date_issued'], item['date_expired'], '2999-12-31', '2999-12-31', item['for_corporation'], item['issuer_corporation_id'], item['price'], item['status'], item['title'], 0, item['type'], 0.0, item['availability'] )
+                    #print (item)
+
+                    db.session.add(entry)
+                    db.session.commit()
+
+    return 0
+
+def get_contracts():
+    jsonData = []
+    listLengthPrev = 0
+    listLengthCurrent = 0
+    for n in range(1, 2):
+        payload = {'datasource':'tranquility', 'token':session['access_token'], 'page':n}
+        response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/contracts/', params=payload)
+        print 'Get Contracts - page: ' + str(n) + ' - ' + str(response.status_code)
+        if response.status_code <> 200 and response.status_code <> 504:
+            do_refresh_token(session['myUser_id'])
+            payload = {'datasource':'tranquility', 'token':session['access_token']}
+            response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/contracts/', params=payload)
+
+        jsonData += json.loads(response.text)
+        listLengthCurrent = len(jsonData)
+        if listLengthCurrent > listLengthPrev:
+            listLengthPrev = listLengthCurrent
+        else:
+            break
+
+            #print 'jsondata count: ' + str(len(jsonData))
+        #print (jsonData)
+    return jsonData    
 
 def fetch_orders():
     if 'myUser_id' in session:
@@ -3663,25 +3780,30 @@ def get_orders():
     jsonData = []
     listLengthPrev = 0
     listLengthCurrent = 0
-    for n in range(1, 2):
-        payload = {'datasource':'tranquility', 'token':session['access_token'], 'page':n}
-        response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/orders/', params=payload)
-        print 'Get Market Orders - page: ' + str(n) + ' - ' + str(response.status_code)
-        if response.status_code <> 200 and response.status_code <> 504:
-            do_refresh_token(session['myUser_id'])
-            payload = {'datasource':'tranquility', 'token':session['access_token']}
+    try:
+        for n in range(1, 2):
+            payload = {'datasource':'tranquility', 'token':session['access_token'], 'page':n}
             response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/orders/', params=payload)
+            print 'Get Market Orders - page: ' + str(n) + ' - ' + str(response.status_code)
+            if response.status_code <> 200 and response.status_code <> 504:
+                do_refresh_token(session['myUser_id'])
+                payload = {'datasource':'tranquility', 'token':session['access_token']}
+                response = requests.get('https://esi.evetech.net/latest/characters/'+session['myUser_id']+'/orders/', params=payload)
 
-        jsonData += json.loads(response.text)
-        listLengthCurrent = len(jsonData)
-        if listLengthCurrent > listLengthPrev:
-            listLengthPrev = listLengthCurrent
-        else:
-            break
+            jsonData += json.loads(response.text)
+            listLengthCurrent = len(jsonData)
+            if listLengthCurrent > listLengthPrev:
+                listLengthPrev = listLengthCurrent
+            else:
+                break
 
-            #print 'jsondata count: ' + str(len(jsonData))
+                #print 'jsondata count: ' + str(len(jsonData))
 
-    return jsonData
+        return jsonData
+    except Exception as e:
+        flash('Problem fetching market orders', 'danger')
+        app.logger.info(str(e))
+        return redirect(url_for('pipeline'))
 
 def get_assets_onhand():
     jsonData = []

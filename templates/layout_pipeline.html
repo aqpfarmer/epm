@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html class="" lang="en">
+<head>
+  <title>EVE Production Manager - By Frikkin Genius</title>
+  <meta http-equiv="x-ua-compatible; content-type" content="ie=edge; text/xhtml ">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800">
+  <link rel='stylesheet' href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+  <script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js" integrity="sha384-8iPTk2s/jMVj81dnzb/iFR2sdA7u06vHJyyLlAd4snFpCl/SnyUjRrbdJsw1pGIl" crossorigin="anonymous"></script>
+
+  <style>
+  body {
+    background-image: url("{{ url_for('static', filename='img/29917.png') }}");
+    background-color: #cccccc;
+  }
+  </style>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}" type="image/x-icon">
+  <script type="text/javascript" language="javascript">
+    var contract_detail = { contract_id:'', product_name:'',qty:0 };
+    
+    {% set contract_items = getContractItems(group.id)%}
+        contracts = { 
+                    product_name: '{% item.contract_id %}',
+                    qty: ''
+                    }
+
+    {% endfor %}
+
+  </script>
+
+</head>
+
+<body>
+  {% include 'includes/_navbar.html' %}
+  <div class="container">
+    {% include 'includes/_messages.html' %}
+    {% block body %}{% endblock %}
+  </div>
+  {% include 'includes/_footer.html' %}
+
+  <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+</body>
+</html>
