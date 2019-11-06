@@ -26,7 +26,7 @@
             {% if 'myUser_id' in session %}
               {% for jobx in myJobs %}
               <tr>
-                <td scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{ jobx.product_id }}_64.png"></td>
+                <td scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{ jobx.product_id }}/icon"></td>
                 <td><p class="mt-1 px-2">{{ jobx.product_name }}</p></td>
                 <td><p class="mt-1 px-2">{{ jobx.job_type }}</p></td>
                 <td><p class="mt-1 px-2">{{ jobx.status }}</p></td>

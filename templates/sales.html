@@ -45,7 +45,7 @@
                   {% if 'myUser_id' in session %}
                     {% for item in mySales %}
                     <tr>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.type_id}}_64.png"></th>
+                      <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{item.type_id}}/icon"></th>
                       <td><p class="mt-1"><h5>{{ item.product_name }}</p></td>
                       <td><p class="mt-1"><h5><center>{{ "{:,.0f}".format(item.qty) }}</p></td>
                       <td><p class="mt-1"><h5><center>{{ "{:,.0f}".format(item.amount) }}</p></td>

@@ -26,7 +26,8 @@
 
     asteroidGroups["empty"] = ["Asteroid Type..."];
     {% for group in asteroid_groups %}
-      asteroidGroups["{{ group.group }}"] = {% set asteroids = getAsteroids(group.id) %}[{% for asteroid in asteroids %}"{{ asteroid.asteroid }}",{% endfor %}""];
+      asteroidGroups["{{ group.group }}"] = {% set asteroids = getAsteroids(group.id) %}
+      [{% for asteroid in asteroids %}"{{ asteroid.asteroid }}",{% endfor %}""];
     {% endfor %}
     {% for group in asteroid_groups %}
       asteroidIDs["{{ group.group }}"] = {% set asteroidIDs = getAsteroids(group.id) %}[{% for asteroid in asteroidIDs %}"{{ asteroid.id }}",{% endfor %}""];

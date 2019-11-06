@@ -7,15 +7,14 @@
       <li class="list-group-item d-flex justify-content-between lh-condensed bg-secondary">
         <h3 class="mx-auto text-white">Production Pipeline</h3>     
       </li>
-      
-      <li class="list-group-item d-flex justify-content-between lh-condensed p-1"> 
+      <!--
+      <li class="list-group-item d-flex justify-content-between lh-condensed p-1"> -->
           {% set pipeline_value = namespace(b=0) %}
           {% if 'myUser_id' in session %}
 
     <!--Accordion wrapper-->
     <div class="accordion md-accordion" id="accordionEx" role="tablist" aria-multiselectable="true">
             
-
             <!-- Accordion card -->
             <div class="card">
                 <!-- Card header -->
@@ -44,7 +43,7 @@
                       {% for item in inv_pipeline %}
                       <form action="{{ url_for('pipeline')}}" method="POST">
                       <tr>
-                        <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.blueprint_id}}_64.png"></th>
+                        <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{item.blueprint_id}}/icon"></th>
                         <td><p class="mt-1">{{ item.product_name }}</p></td>
                         <td>
                           <select name="inv_pipeline_select" id="pipeline_select" class="form-control text-center mt-1" style="width:160px;">
@@ -113,7 +112,7 @@
                     {% for item in bld_pipeline %}
                       <form action="{{ url_for('pipeline')}}" method="POST">
                       <tr>
-                        <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.product_id}}_64.png"></th>
+                        <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{item.product_id}}/icon"></th>
                         <td><p class="mt-1">{{ item.product_name }}</p></td>
                         <td>
                           <select name="bld_pipeline_select" id="pipeline_select" class="form-control text-center mt-1" style="width:160px;">
@@ -214,7 +213,7 @@
 
               {% for item in my_orders %}
                 <tr>
-                  <th scope="row"><img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{item.type_id}}_32.png"></th>
+                  <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{item.type_id}}/icon"></th>
                   <td><p class="mt-1">{{ item.product_name }}</p></td>
                   <td>
                       <p class="mt-1">On Market</p>
@@ -259,7 +258,7 @@
                   <table class="table table-sm table-condensed table-hover table-responsive pl-0">
                       <thead>
                           <tr>
-                            <th scope="col" colspan="2">Title</th>
+                            <th scope="col" colspan="1">Title</th>
                             <th scope="col"><center></th>
                             <th scope="col"><center>Date Issued</th>
                             <th scope="col"><center>Time Remaining</th>
@@ -269,9 +268,40 @@
                           </tr>
                         </thead>
   
-                    {% for item in my_contracts %}
+                        {% set count = namespace(a=0) %}
+                        {% for item in my_contracts %}  
+                                          
                       <tr>
-                        <td colspan="2"><p class="mt-1 mr-2"><a href='/pipeline?contract_id={{item.contract_id}}'>{{ item.title }}</a></p></td>
+                        <td colspan="1">
+                          <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#contractModal{{count.a}}">
+                              {{ item.title }}
+                            </button>
+                          <!-- Modal -->
+                          <div class="modal fade" id="contractModal{{count.a}}" tabindex="-1" role="dialog" aria-labelledby="contractModalLabel{{count.a}}" aria-hidden="true" focus="true" >
+                            <div class="modal-dialog" role="document">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <p class="mt-1 text-center" id="contractModalLabel{{count.a}}">{{ item.title }}</p>
+                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                  </button>
+                                </div>
+
+                                <div class="modal-body">                                  
+                                    <div>
+                                        <p class="mt-1 text-center" id="thing{{count.a}}">Placeholder</p>
+                                    </div>
+                                    
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <!-- End Modal -->
+                        
+                        </td>
                         <td></td>
                         <td><p class="mt-1 text-center">{{ item.date_issued.strftime('%m-%d-%Y') }}</p></td>
                         <td>
@@ -281,6 +311,7 @@
                         <td></td>                        
                         <td><p class="mt-1">{{ "{:,.0f}".format(item.price) }}</p></td>
                       </tr>
+                      {% set count.a = count.a + 1 %}
                     {% endfor %}
                     </table>
                   </div>
@@ -293,10 +324,7 @@
             </tbody>
           </table>
       </li>
-      </ul>
-
-    
-
+     
       <li class="list-group-item d-flex justify-content-between lh-condensed">
           <h5 class="text-center col-sm-12">
             {% if 'myUser_id' in session %}
@@ -307,6 +335,7 @@
             {% endif %}
           </h5>
       </li>
+    </ul>
     </div>
   </div>
 

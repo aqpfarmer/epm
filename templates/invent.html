@@ -77,7 +77,7 @@
       </li>
       <li class="list-group-item d-flex justify-content-between lh-condensed">
         {% if bp_id > 0 %}
-          <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{product.typeID}}_64.png">
+          <img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{product.typeID}}/icon">
           <p class="text-right text-success">Jita Market Value: {{sell_median}} isk</p>
         {% else %}
           <img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/invent.png') }}">
@@ -111,7 +111,7 @@
       <li class="list-group-item d-flex justify-content-between lh-condensed">
         <div "col-sm">
           {% if bp_id > 0 %}
-            <img class="img-fluid max-width:auto" src="https://imageserver.eveonline.com/type/{{selected_bp.t2_id}}_64.png">
+            <img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{selected_bp.t2_id}}/icon">
           {% else %}
             <img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/33_128_2.png') }}">
           {% endif %}
