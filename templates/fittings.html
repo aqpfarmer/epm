@@ -469,7 +469,7 @@
                             <tbody>
                                 {% for item in buildablefittingRollup %}
                               <tr>
-                                <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{item.id}}/icon"></th>
+                                <th scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/'+item.id|string+'_32.png') }}"></th>
                                 <td colspan="2"><p class="mt-1">{{ item.component }}</p></td>
                                 <td> {{ "{:,.0f}".format(item.component_qty * item.qty) }} </td>
                                 <td><p class="mt-0 text-center">{{ "{:,.0f}".format(item.component_cost * item.qty * item.component_qty) }}</p></td>

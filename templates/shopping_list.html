@@ -49,7 +49,7 @@
               {% if 'myUser_id' in session %}
                 {% for item in datacoresInPipeline %}
                 <tr>
-                  <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{ item.datacore_id }}/icon"></th>
+                  <th scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/'+item.datacore_id|string +'_32.png') }}"></th>
                   <td colspan="2">{{ item.datacore }}</td>
                   {% if item.datacore_qty > 0 %}
                     <td> {{ "{:,.0f}".format(item.datacore_qty) }} </td>
@@ -92,7 +92,7 @@
                 {% if 'myUser_id' in session %}
                   {% for item in planetaryInPipeline %}
                 <tr>
-                  <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{item.material_id}}/icon"></th>
+                  <th scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/'+item.material_id|string +'_32.png') }}"></th>
                   <td colspan="3"><p class="mt-2">{{ item.material }}</p></td>
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty )  }}</p></td>
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost) }}</p></td>
@@ -145,7 +145,7 @@
                   {% for item in componentInPipeline %}
                   <form action="{{ url_for('bom')}}" method="POST">
                 <tr>
-                  <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{item.material_id}}/icon"></th>
+                  <th scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/'+item.material_id|string +'_64.png') }}"></th>
                   <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty )  }}</p></td>
                   <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost ) }}</p></td>
@@ -204,7 +204,7 @@
                   {% if 'myUser_id' in session %}
                     {% for item in materialInPipeline %}
                     <tr>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{item.material_id}}/icon"></th>
+                      <th scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/'+item.material_id|string +'_32.png') }}"></th>
                       <td colspan="3"><p class="mt-2">{{ item.material }}</p></td>
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty)  }}</p></td>
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost) }}</p></td>
@@ -257,7 +257,7 @@
                     {% for item in tech1InPipeline %}
                     <form action="{{ url_for('bom')}}" method="POST">
                   <tr>
-                    <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{item.material_id}}/icon"></th>
+                    <th scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/'+item.material_id|string +'_64.png') }}"></th>
                     <td colspan="2"><p class="mt-1">{{ item.material }}</p></td>
                     <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty )  }}</p></td>
                     <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost) }}</p></td>
@@ -316,7 +316,7 @@
                       {% for item in ramInPipeline %}
                       <form action="{{ url_for('bom')}}" method="POST">
                     <tr>
-                      <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{item.material_id}}/icon"></th>
+                      <th scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/'+item.material_id|string +'_32.png') }}"></th>
                       <td colspan="3"><p class="mt-1">{{ item.material }}</p></td>
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty )  }}</p></td>
                       <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost ) }}</p></td>
@@ -377,7 +377,7 @@
                       {% if 'myUser_id' in session %}
                         {% for item in salvageInPipeline %}
                       <tr>
-                        <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{item.material_id}}/icon"></th>
+                        <th scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/'+item.material_id|string +'_32.png') }}"></th>
                         <td colspan="3"><p class="mt-2">{{ item.material }}</p></td>
                         <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_qty )  }}</p></td>
                         <td><p class="mt-1 text-center">{{ "{:,.0f}".format(item.material_cost) }}</p></td>
@@ -429,14 +429,14 @@
                   <tbody>
                     <tr>
 		                  <th></th>
-                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/34/icon"></th>
-                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/35/icon"></th>
-                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/36/icon"></th>
-                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/37/icon"></th>
-                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/38/icon"></th>
-                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/39/icon"></th>
-                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/40/icon"></th>
-                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/11399/icon"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/34_64.png') }}"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/35_64.png') }}"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/36_64.png') }}"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/37_64.png') }}"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/38_64.png') }}"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/39_64.png') }}"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/40_64.png') }}"></th>
+                      <th colspan="2" scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/11399_64.png') }}"></th>
                       <th></th>
 		                </tr>
                     <tr>

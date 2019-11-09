@@ -43,7 +43,7 @@
                       {% for item in inv_pipeline %}
                       <form action="{{ url_for('pipeline')}}" method="POST">
                       <tr>
-                        <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{item.blueprint_id}}/icon"></th>
+                        <th scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/'+item.blueprint_id|string+'_64.png') }}"></th>
                         <td><p class="mt-1">{{ item.product_name }}</p></td>
                         <td>
                           <select name="inv_pipeline_select" id="pipeline_select" class="form-control text-center mt-1" style="width:160px;">
@@ -112,7 +112,7 @@
                     {% for item in bld_pipeline %}
                       <form action="{{ url_for('pipeline')}}" method="POST">
                       <tr>
-                        <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{item.product_id}}/icon"></th>
+                        <th scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/'+item.product_id|string+'_64.png') }}"></th>
                         <td><p class="mt-1">{{ item.product_name }}</p></td>
                         <td>
                           <select name="bld_pipeline_select" id="pipeline_select" class="form-control text-center mt-1" style="width:160px;">
@@ -213,7 +213,7 @@
 
               {% for item in my_orders %}
                 <tr>
-                  <th scope="row"><img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{item.type_id}}/icon"></th>
+                  <th scope="row"><img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/'+item.type_id|string+'_32.png') }}"></th>
                   <td><p class="mt-1">{{ item.product_name }}</p></td>
                   <td>
                       <p class="mt-1">On Market</p>

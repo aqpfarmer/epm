@@ -78,7 +78,7 @@
       </li>
       <li class="list-group-item d-flex justify-content-between lh-condensed">
         {% if bp_id > 0 %}
-          <img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{product.typeID}}/icon">          
+          <img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/'+product.typeID|string +'_64.png') }}">          
           <p class="text-right text-success">Jita Market Value: {{ "{:,.0f}".format(sell_median * product.portionSize) }} isk</p>
         {% else %}
           <img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/build.png') }}">
@@ -116,7 +116,7 @@
         <div class="col">
 	 <div>
             {% if bp_id > 0 %}
-              <img class="img-fluid max-width:auto pr-1" src="https://images.evetech.net/types/{{selected_bp.id}}/icon">              
+              <img class="img-fluid max-width:auto pr-1" src="{{ url_for('static', filename='img/Types/'+selected_bp.id|string +'_64.png') }}">              
             {% else %}
               <img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/18_128_2.png') }}">
             {% endif %}
@@ -187,7 +187,7 @@ style="width: 75px;">
                   {% for requirement in buildRequirements %}
                   <tr>
                     <th scope="row">
-                      <img class="img-fluid max-width:auto" src="https://images.evetech.net/types/{{requirement.material_id}}/icon">
+                      <img class="img-fluid max-width:auto" src="{{ url_for('static', filename='img/Types/'+requirement.material_id|string +'_64.png') }}">
                     </th>
                     <td>{{requirement.material}}</td>
                     <td>{{ "{:,.0f}".format((requirement.qty * calcMe) * runs) }}</td>

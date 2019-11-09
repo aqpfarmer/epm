@@ -13,7 +13,7 @@ import math
 from forge_market_dump import get_marketValue
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chris:funkytown@127.0.0.1/evesde1'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chris:funkytown@127.0.0.1/evesde2'
 app.debug = True # disable this in production!
 app.config['SECRET_KEY'] = 'super-secret-foolish-fool112'
 app.config['SECURITY_REGISTERABLE'] = True
@@ -2351,13 +2351,13 @@ def bom():
 
         salvage_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=574) group by material_id order by material_id")
 
-        component_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==334, build_pipeline.group_id==964, build_pipeline.group_id==754, build_pipeline.group_id==536, build_pipeline.group_id==428))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
+        component_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==334, build_pipeline.group_id==964, build_pipeline.group_id==536, build_pipeline.group_id==428))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol', 'portion_size').order_by('material').all()
 
-        component_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=754 or group_id=536 or group_id=428) group by material, material_id,material_vol, build_or_buy order by material")
+        component_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=536 or group_id=428) group by material, material_id,material_vol, build_or_buy order by material")
 
-        component_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=754 or group_id=536 or group_id=428) group by material_id order by material_id")
+        component_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=536 or group_id=428) group by material_id order by material_id")
 
-        component_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=754 or group_id=536 or group_id=428) group by material_id order by material_id")
+        component_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=536 or group_id=428) group by material_id order by material_id")
 
         comp_blueprint_id = 0 
         build_or_buy_change = False
@@ -2465,13 +2465,13 @@ def bom():
                 build_or_buy_change = True        
 
         if build_or_buy_change == True:
-            component_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==334, build_pipeline.group_id==964, build_pipeline.group_id==536, build_pipeline.group_id==754, build_pipeline.group_id==428))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol','portion_size').order_by('material').all()
+            component_pipeline = db.session.query(build_pipeline).filter(build_pipeline.status==2).filter(build_pipeline.user_id == session['myUser_id'], (or_(build_pipeline.group_id==334, build_pipeline.group_id==964, build_pipeline.group_id==536, build_pipeline.group_id==428))).with_entities('id','user_id','product_id','blueprint_id','runs','product_name','material_id','material_qty','material_cost','material','group_id', 'build_or_buy','jita_sell_price','local_sell_price','build_cost','material_comp_id','status','material_vol','portion_size').order_by('material').all()
 
-            component_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=754 or group_id=536 or group_id=428) group by material, material_id,material_vol, build_or_buy order by material")
+            component_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol, build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=536 or group_id=428) group by material, material_id,material_vol, build_or_buy order by material")
 
-            component_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=754 or group_id=536 or group_id=428) group by material_id order by material_id")
+            component_cost = db.session.execute("select material_id, sum(material_cost) as material_cost from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=536 or group_id=428) group by material_id order by material_id")
 
-            component_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=754 or group_id=536 or group_id=428) group by material_id order by material_id")
+            component_vol = db.session.execute("select material_id, sum(material_vol * material_qty) as material_vol from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=334 or group_id=964 or group_id=536 or group_id=428) group by material_id order by material_id")
 
             planetary_rollup = db.session.execute("select material_id, material, sum(material_qty) as material_qty, material_vol,build_or_buy from build_pipeline where user_id=" + str(session['myUser_id']) +" and status=2 and (group_id=1034 or group_id=1040 or group_id=1041 or group_id=1042 or group_id=1033 or group_id=1035 or group_id=1136) group by material, material_id,material_vol, build_or_buy order by material")
 
@@ -3021,6 +3021,20 @@ def build_add_pipeline():
                         portion_size = myProduct.portionSize
                         if requirements.group_id == 428 or requirements.group_id == 1136:
                             if myProduct.typeID == 16681: portion_size = 1500
+                            if myProduct.typeID == 33362: portion_size = 300
+                            if myProduct.typeID == 16670: portion_size = 10000
+                            if myProduct.typeID == 33361: portion_size = 300
+                            if myProduct.typeID == 16682: portion_size = 750
+                            if myProduct.typeID == 16680: portion_size = 2200
+                            if myProduct.typeID == 16673: portion_size = 10000
+                            if myProduct.typeID == 33360: portion_size = 300
+                            if myProduct.typeID == 16679: portion_size = 3000
+                            if myProduct.typeID == 16678: portion_size = 6000
+                            if myProduct.typeID == 17313: portion_size = 200
+                            if myProduct.typeID == 16672: portion_size = 10000
+                            if myProduct.typeID == 16671: portion_size = 10000
+                            if myProduct.typeID == 33359: portion_size = 300
+                            if myProduct.typeID == 16683: portion_size = 400
 
                         pipeline = build_pipeline(session['myUser_id'], myProduct.typeID, id, request.form.get('job_runs'), requirements.material_id, compQty, myCost, myProduct.typeName, requirements.material, requirements.group_id, 0, querySell, 0, myBuildCost, 0, 2, requirements.vol, portion_size, me , te, eng_rig, eng_role)
 

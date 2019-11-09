@@ -9,7 +9,7 @@ from sqlalchemy import or_, desc
 import math
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chris:funkytown@127.0.0.1/evesde1'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://chris:funkytown@127.0.0.1/evesde2'
 app.debug = False # disable this in production!
 app.config['SECRET_KEY'] = 'super-secret-foolish-fool212'
 app.config['SECURITY_REGISTERABLE'] = True
